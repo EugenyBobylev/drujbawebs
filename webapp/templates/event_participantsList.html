@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дружба</title>
+    <link rel="stylesheet" href="/static/participantList.css">
+</head>
+
+<body>
+    <h1>Список <br> участников</h1>
+    <ul>
+        {% for participant in participants %}
+        <li>
+            <div class="participantInfo">
+                <section>
+                    <p id="p">{{ participant["name"] }}</p>
+                    <span>{{ participant["position"] }}</span>
+                </section>
+                <section>
+                    <a data-participantid="{{ participant["id"] }}" href="">Назначить админом</a>
+                </section>
+            </div>
+            <a data-participantid="{{ participant["id"] }}" href=""></a>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="participantSection">
+        <p class="topParagraph">Вы можете также передать права администратора сбора человеку, которого нет в списке.
+            Для
+            этого отправьте ему ссылку на компанию и попросите зарегистрироваться.</p>
+        <p class="smallParagraph">Ссылка на подключение к сбору</p>
+        <p class="linkParagraph">{{ link }}</p>
+    </div>
+    <footer>
+        <a href="" class="bottomBtn">Назад</a>
+    </footer>
+    <script src="/static/participantList.js"></script>
+</body>
+
+</html>
