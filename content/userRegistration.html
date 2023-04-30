@@ -58,11 +58,22 @@
         </div>
     </form>
     <script>
-        document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
-        let timeSelect = document.getElementById("timezone")
-        const date = new Date();
-        const offset = date.getTimezoneOffset()/ 60 * -1;
-        let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
+        let tg = window.Telegram.WebApp;  //получаем объект webapp телеграма
+        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
+        let answer = {
+            userName:  'Максим Исаев',
+            birthDate: '1990-08-02',
+            timeZone: 0,
+        };
+        data = JSON.stringify(answer);
+        tg.sendData(data);
+
+        // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
+        // let timeSelect = document.getElementById("timezone")
+        // const date = new Date();
+        // const offset = date.getTimezoneOffset()/ 60 * -1;
+        // let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
+
         // document.getElementById("timeZoneInput").value = "Часовой пояс: " + Intl.DateTimeFormat().resolvedOptions().timeZone
     </script>
 </body>
