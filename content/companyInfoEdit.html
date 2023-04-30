@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="registration.css">
+    <link rel="stylesheet" href="companyRegistration2.css">
+    <style>
+        .formFooter button{
+            display: inline-block;
+            margin-top: 0 !important;
+            vertical-align: middle;
+        }
+        .closeBtn{
+            width: 48px !important;
+            height: 48px;
+            margin-right: 8px;
+            background: url("button.svg") !important;
+            background-repeat: no-repeat;
+            color: #788bf0 !important;
+        }
+        .saveBtn{
+            width: calc(100% - 56px) !important;
+        }
+        .formFooter{
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Редактирование <br> информации о <br> компании</h1>
+    <form action="" name="companyInfoEditForm">
+        <input type="text" placeholder="Название компании *" required>
+        <input type="text" placeholder="Сфера деятельности *" required>
+        <input type="number" placeholder="Количество человек в компании *" required>
+        <input type="text" placeholder="Ваши имя и фамилия *" required>
+        <input type="text" placeholder="Должность">
+        <input type="text" placeholder="Контактный телефон *" required>
+        <input type="text" placeholder="E-mail *" required>
+        <div class="formFooter">
+            <button class="closeBtn" type="button"></button>
+            <button class="saveBtn">Сохранить</button>
+        </div>
+    </form>
+</body>
+
+</html>
