@@ -57,11 +57,13 @@
 
    tg.expand(); //расширяем на все окно
 
-   tg.MainButton.text = "Changed Text"; //изменяем текст кнопки
-   tg.MainButton.setText("Нажми меня"); //изменяем текст кнопки иначе
+   tg.MainButton.text = "Нажми меня 1"; //изменяем текст кнопки
+   tg.MainButton.setText("Нажми меня 2"); //изменяем текст кнопки иначе
    tg.MainButton.textColor = "#F55353"; //изменяем цвет текста кнопки
    tg.MainButton.color = "#143F6B"; //изменяем цвет бэкграунда кнопки
    tg.MainButton.setParams({"color": "#143F6B"}); //так изменяются все параметры
+   
+   tg.MainButton.show()
 
    let btn = document.getElementById("btn"); //получаем кнопку скрыть/показать
 
