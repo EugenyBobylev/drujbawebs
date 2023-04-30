@@ -65,13 +65,15 @@
         tg.MainButton.show();
         tg.MainButton.enable();
 
-        let answer = {
-            userName:  'Максим Исаев',
-            birthDate: '1990-08-02',
-            timeZone: 0,
-        };
-        data = JSON.stringify(answer);
-        tg.sendData(data);
+        Telegram.WebApp.onEvent('mainButtonClicked', function(){
+            let answer = {
+                userName:  'Максим Исаев',
+                birthDate: '1990-08-02',
+                timeZone: 0,
+            };
+            data = JSON.stringify(answer);
+            tg.sendData(data);
+        });
 
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
         // let timeSelect = document.getElementById("timezone")
