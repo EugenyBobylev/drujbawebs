@@ -15,7 +15,7 @@
     <h1>Регистрация</h1>
     <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
     <form action="" name="userRegistrationForm">
-        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" required value="Пупкин"/>
+        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" required />
         <div class="dateInput">
             <input id="dateInput" type="date" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата рождения' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
             <label for="birthday">Дата рождения</label>
@@ -65,11 +65,14 @@
         tg.MainButton.show();
         tg.MainButton.enable();
 
-        document.getElementById("uname").value = 'Плюшкин';
+        let tgUserName = tg.initDataUnsafe.user.last_name;
+        let tgUser = tg.initDataUnsafe.user.username;
+        document.getElementById("uname").value = tgUserName;
 
         Telegram.WebApp.onEvent('mainButtonClicked', function(){
+            let uname = document.getElementById("uname").value;
             let answer = {
-                userName:  'Максим Исаев',
+                userName:  uname,
                 birthDate: '1990-08-02',
                 timeZone: 0,
             };
