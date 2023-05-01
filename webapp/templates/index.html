@@ -107,6 +107,11 @@
    userid.innerText = `user_id=${tg.initDataUnsafe.user.id}`; //показываем user_id
    usercard.appendChild(userid); //добавляем
 
+   let queryid = document.createElement('p'); //создаем еще параграф
+   queryid.innerText = `query_id=${tg.initDataUnsafe.query_id}`; //показываем user_id
+   usercard.appendChild(queryid); //добавляем
+
+
 
    //работает только в attachment menu
    // let pic = document.createElement('img'); //создаем img
