@@ -17,7 +17,7 @@
     <form action="" name="userRegistrationForm">
         <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="Пушкин"/>
         <div class="dateInput">
-            <input id="dateInput" type="date" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата рождения' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
+            <input type="date" id="birthday" name="birthday"/>
             <label for="birthday">Дата рождения</label>
         </div>
         <select class="timezone" name="timezone" id="timezone">
