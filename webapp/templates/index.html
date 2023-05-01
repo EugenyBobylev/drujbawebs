@@ -98,15 +98,12 @@
 
    let profName = document.createElement('p'); //создаем параграф
    profName.innerText = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}
-   ${tg.initDataUnsafe.user.username} (${tg.initDataUnsafe.user.language_code})`;
+   ${tg.initDataUnsafe.user.username} (${tg.initDataUnsafe.user.language_code})
+   user_id=${tg.initDataUnsafe.user.id}`;
    usercard.appendChild(profName); //добавляем
 
-   let userid = document.createElement('p'); //создаем еще параграф
-   userid.innerText = `user_id=${tg.initDataUnsafe.user.id}`; //показываем user_id
-   usercard.appendChild(userid); //добавляем
-
    let queryid = document.createElement('p'); //создаем еще параграф
-   queryid.innerText = `query_id=Хрен`; //показываем user_id
+   queryid.innerText = `query_id=${tg.initDataUnsafe.query_id}`; //показываем user_id
    usercard.appendChild(queryid); //добавляем
 
 
