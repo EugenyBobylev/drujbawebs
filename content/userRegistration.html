@@ -69,14 +69,14 @@
         // let tgUser = tg.initDataUnsafe.user.username;
         document.getElementById("uname").value = "Егоров";
 
-        Telegram.WebApp.onEvent('mainButtonClicked', function(){
-            let answer = {
+        Telegram.WebApp.onEvent('mainButtonClicked', async function(){
+            let user = {
                 userName:  "Максим Исаев",
                 birthDate: '1990-08-02',
                 timeZone: 0,
             };
-            data = JSON.stringify(answer);
-            fetch("http://127.0.0.1:8000/query/52126")
+            let body = JSON.stringify(user);
+            await fetch("http://127.0.0.1:8000/query/52126")
             // tg.sendData(data);
         });
 
