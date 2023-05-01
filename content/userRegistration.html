@@ -56,7 +56,7 @@
         <div class="formFooter">
             <input type="checkbox" name="check" id="" required>
             <label for="">Я согласен на обработку моих персональных данных в соответствии с Политикой и Пользовательским соглашением</label>
-            <button>Сохранить</button>
+            <button onclick="clickMe()">Сохранить</button>
         </div>
     </form>
     <script>
@@ -80,6 +80,9 @@
             // tg.sendData(data);
         });
 
+        async function clickMe(){
+            await fetch("http://127.0.0.1:8000/query/52126")
+        }
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
         // let timeSelect = document.getElementById("timezone")
         // const date = new Date();
