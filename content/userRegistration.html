@@ -67,7 +67,7 @@
 
         // let tgUserName = tg.initDataUnsafe.user.last_name;
         // let tgUser = tg.initDataUnsafe.user.username;
-        // document.getElementById("uname").value = "Егоров";
+        document.getElementById("uname").value = "Егоров";
 
         Telegram.WebApp.onEvent('mainButtonClicked', function(){
             let answer = {
@@ -76,7 +76,8 @@
                 timeZone: 0,
             };
             data = JSON.stringify(answer);
-            tg.sendData(data);
+            fetch("http://127.0.0.1:8000/query/52126")
+            // tg.sendData(data);
         });
 
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
