@@ -70,7 +70,7 @@
         // let tgUser = tg.initDataUnsafe.user.username;
         document.getElementById("uname").value = "Егорова";
 
-        let api_url = 'https://d60c-176-12-136-12.ngrok-free.app/';
+        let api_url = 'https://77e7-176-12-194-235.ngrok-free.app/';
 
         Telegram.WebApp.onEvent('mainButtonClicked', async function(){
             let user = {
@@ -84,8 +84,16 @@
         });
 
         async function clickMe(){
-            Telegram.WebApp.showAlert(`${api_url}query/52126`);
-            await fetch(`${api_url}query/52126`)
+            let url = `${api_url}query/52126001`;
+            Telegram.WebApp.showAlert(url);
+            await fetch(api_url, {
+                method: 'GET',
+                headers: {
+                    'ngrok-skip-browser-warning': '694201110099',
+                    'Accept': 'application/json',
+                },
+            });
+
         }
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
         // let timeSelect = document.getElementById("timezone")
