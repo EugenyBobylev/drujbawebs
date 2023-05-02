@@ -69,6 +69,8 @@
         // let tgUser = tg.initDataUnsafe.user.username;
         document.getElementById("uname").value = "Егоров";
 
+        let api_url = 'https://c0bf-176-12-136-12.ngrok-free.app/';
+
         Telegram.WebApp.onEvent('mainButtonClicked', async function(){
             let user = {
                 userName:  "Максим Исаев",
@@ -76,12 +78,12 @@
                 timeZone: 0,
             };
             let body = JSON.stringify(user);
-            await fetch("http://127.0.0.1:8000/query/52126")
+            await fetch(`${api_url}query/52126`)
             // tg.sendData(data);
         });
 
         async function clickMe(){
-            await fetch("http://127.0.0.1:8000/query/52126")
+            await fetch(`${api_url}query/52126`)
         }
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
         // let timeSelect = document.getElementById("timezone")

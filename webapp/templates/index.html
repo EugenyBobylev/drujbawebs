@@ -55,6 +55,18 @@
 <script>
    let tg = window.Telegram.WebApp; //получаем объект webapp телеграма
 
+   let usercard = document.getElementById("usercard"); //получаем блок usercard
+
+   let profName = document.createElement('p'); //создаем параграф
+   profName.innerText = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}
+   ${tg.initDataUnsafe.user.username} (${tg.initDataUnsafe.user.language_code})
+   user_id=${tg.initDataUnsafe.user.id}`;
+   usercard.appendChild(profName); //добавляем
+
+   let queryid = document.createElement('p'); //создаем еще параграф
+   queryid.innerText = `query_id=${tg.initDataUnsafe.query_id}`; //показываем user_id
+   usercard.appendChild(queryid); //добавляем
+
    tg.expand(); //расширяем на все окно
 
    tg.MainButton.text = "Нажми меня 1"; //изменяем текст кнопки
@@ -92,21 +104,6 @@
       tg.sendData("some string that we need to send");
       //при клике на основную кнопку отправляем данные в строковом виде
    });
-
-
-   let usercard = document.getElementById("usercard"); //получаем блок usercard
-
-   let profName = document.createElement('p'); //создаем параграф
-   profName.innerText = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}
-   ${tg.initDataUnsafe.user.username} (${tg.initDataUnsafe.user.language_code})
-   user_id=${tg.initDataUnsafe.user.id}`;
-   usercard.appendChild(profName); //добавляем
-
-   let queryid = document.createElement('p'); //создаем еще параграф
-   queryid.innerText = `query_id=${tg.initDataUnsafe.query_id}`; //показываем user_id
-   usercard.appendChild(queryid); //добавляем
-
-
 
    //работает только в attachment menu
    // let pic = document.createElement('img'); //создаем img
