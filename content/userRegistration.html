@@ -83,6 +83,7 @@
         });
 
         async function clickMe(){
+            Telegram.WebApp.showAlert("ты нажал на кнопку!");
             await fetch(`${api_url}query/52126`)
         }
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
