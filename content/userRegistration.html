@@ -86,10 +86,10 @@
         async function clickMe(){
             let url = `${api_url}query/52126001`;
             Telegram.WebApp.showAlert(url);
-            await fetch(api_url, {
+            await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'ngrok-skip-browser-warning': '694201110099',
+                    'ngrok-skip-browser-warning': '694',
                     'Accept': 'application/json',
                 },
             });
