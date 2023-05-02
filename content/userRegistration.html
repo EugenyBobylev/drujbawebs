@@ -12,7 +12,7 @@
     <!--
     <img src="woman.svg" alt="">
     -->
-    <h1>Регистрация</h1>
+    <h3>Регистрация</h3>
     <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
     <form action="" name="userRegistrationForm">
         <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="Пушкин"/>
@@ -56,9 +56,10 @@
         <div class="formFooter">
             <input type="checkbox" name="check" id="" required>
             <label for="">Я согласен на обработку моих персональных данных в соответствии с Политикой и Пользовательским соглашением</label>
-            <button onclick="clickMe()">Сохранить</button>
+            <button>Сохранить</button>
         </div>
     </form>
+    <button  onclick="clickMe()">Нажми меня!</button>
     <script>
         let tg = window.Telegram.WebApp;  //получаем объект webapp телеграма
         tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
