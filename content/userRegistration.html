@@ -66,30 +66,53 @@
         tg.MainButton.show();
         tg.MainButton.enable();
 
-        // let tgUserName = tg.initDataUnsafe.user.last_name;
-        // let tgUser = tg.initDataUnsafe.user.username;
+        let tgUserName = tg.initDataUnsafe.user.last_name;
+        let tgUser = tg.initDataUnsafe.user.username;
         document.getElementById("uname").value = "Егорова";
 
         let api_url = 'https://77e7-176-12-194-235.ngrok-free.app/';
+        Telegram.WebApp.onEvent('mainButtonClicked', "postUser()");
+        // Telegram.WebApp.onEvent('mainButtonClicked', async function(){
+        //     let user = {
+        //         userName:  "Максим Исаев",
+        //         birthDate: '1990-08-02',
+        //         timeZone: 0,
+        //     };
+        //     let body = JSON.stringify(user);
+        //     await fetch(`${api_url}query/52126`)
+        //     // tg.sendData(data);
+        // });
 
-        Telegram.WebApp.onEvent('mainButtonClicked', async function(){
+        // post api fetch (create user)
+        async function postUser(){
+            let url = `${api_url}user/`;
             let user = {
-                userName:  "Максим Исаев",
+                name: document.getElementById("uname").value,
                 birthDate: '1990-08-02',
-                timeZone: 0,
+                timezone: -1,
             };
-            let body = JSON.stringify(user);
-            await fetch(`${api_url}query/52126`)
-            // tg.sendData(data);
-        });
+            const body = JSON.stringify(user)
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                },
+                body: body,
+            });
+            let result = await response.json();
+            console.log(result.message);
+        }
 
         async function clickMe(){
-            let url = `${api_url}query/52126001`;
-            Telegram.WebApp.showAlert(url);
+            let url = `${api_url}query/52126010`;
+            // Telegram.WebApp.showAlert(url);
             await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'ngrok-skip-browser-warning': '694',
+                    'ngrok-skip-browser-warning': '100',
                     'Accept': 'application/json',
                 },
             });
