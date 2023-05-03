@@ -79,8 +79,8 @@
             Telegram.WebApp.showAlert(msg);
             // создать пользователя
             let user = {
-                name:  "Максим Исаев",
-                timezone: 0,
+                name: document.getElementById("uname").value,
+                timezone: -1,
             };
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(user);
