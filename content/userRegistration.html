@@ -81,6 +81,7 @@
             let user = {
                 name: document.getElementById("uname").value,
                 timezone: -1,
+                initdata: tg.initData,
             };
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(user);
