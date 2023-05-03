@@ -70,8 +70,8 @@
         let tgUser = tg.initDataUnsafe.user.username;
         document.getElementById("uname").value = "Егорова";
 
-        let api_url = 'https://cc0c-176-12-194-235.ngrok-free.app/';
-        Telegram.WebApp.onEvent('mainButtonClicked', function (){
+        let api_url = "https://cc0c-176-12-194-235.ngrok-free.app/";
+        Telegram.WebApp.onEvent("mainButtonClicked", function (){
             let url = `${api_url}user/`;
             Telegram.WebApp.showAlert(url);
         });
