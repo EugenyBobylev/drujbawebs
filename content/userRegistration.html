@@ -74,27 +74,27 @@
         Telegram.WebApp.onEvent("mainButtonClicked", testMe);
 
         async function testMe(){
-            let url = `${api_url}user`;
-            
+            let url = `${api_url}user/qqq`;
+
             Telegram.WebApp.showAlert(url);
             let user = {
                 userName:  "Максим Исаев",
                 birthDate: '1990-08-02',
                 timeZone: 0,
             };
-            let body = JSON.stringify(user);
-            let api_url = `${url}user/`;
-            let response = await fetch(api_url, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Content-Type': 'application/json',
-                    'accept': 'application/json',
-                },
-                body: body,
-            });
-            let result = await response.json();
+            // let body = JSON.stringify(user);
+            // let api_url = `${url}user/`;
+            // let response = await fetch(api_url, {
+            //     method: 'POST',
+            //     mode: 'cors',
+            //     headers: {
+            //         'ngrok-skip-browser-warning': '100',
+            //         'Content-Type': 'application/json',
+            //         'accept': 'application/json',
+            //     },
+            //     body: body,
+            // });
+            // let result = await response.json();
         }
 
         // post api fetch (create user)
