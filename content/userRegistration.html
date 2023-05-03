@@ -61,7 +61,7 @@
     </form>
     <button  onclick="clickMe()">Нажми меня!</button>
     <script>
-        let tg = window.Telegram.WebApp;  //получаем объект webapp телеграма
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
         tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
         tg.MainButton.show();
         tg.MainButton.enable();
@@ -71,7 +71,9 @@
         document.getElementById("uname").value = "Егорова";
 
         let api_url = 'https://cc0c-176-12-194-235.ngrok-free.app/';
-        Telegram.WebApp.onEvent('mainButtonClicked', "clicMe");
+        Telegram.WebApp.onEvent('mainButtonClicked', function (){
+            Telegram.WebApp.showAlert(url);
+        });
         // Telegram.WebApp.onEvent('mainButtonClicked', async function(){
         //     let user = {
         //         userName:  "Максим Исаев",
