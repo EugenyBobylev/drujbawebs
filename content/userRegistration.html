@@ -74,7 +74,7 @@
         Telegram.WebApp.onEvent("mainButtonClicked", await testMe);
 
         async function testMe(){
-            let url = `${api_url}query/333001`;
+            let url = `${api_url}query/333002`;
             Telegram.WebApp.showAlert(url);
             await fetch(url, {
                 method: 'GET',
