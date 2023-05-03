@@ -75,14 +75,14 @@
 
         async function testMe(){
             let url = `${api_url}query/333002`;
-            Telegram.WebApp.showAlert(url);
-            await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Accept': 'application/json',
-                },
-            });
+            // Telegram.WebApp.showAlert(url);
+            // await fetch(url, {
+            //     method: 'GET',
+            //     headers: {
+            //         'ngrok-skip-browser-warning': '100',
+            //         'Accept': 'application/json',
+            //     },
+            // });
         }
 
         // Telegram.WebApp.onEvent('mainButtonClicked', async function(){
