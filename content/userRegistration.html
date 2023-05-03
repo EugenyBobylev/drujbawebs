@@ -71,42 +71,20 @@
         document.getElementById("uname").value = "Егорова";
 
         let api_url = "https://cc0c-176-12-194-235.ngrok-free.app/";
-        Telegram.WebApp.onEvent("mainButtonClicked", testMe);
+        Telegram.WebApp.onEvent("mainButtonClicked", postUser);
 
-        async function testMe(){
+        async function postUser(){
             let url = `${api_url}user/`;
-            Telegram.WebApp.showAlert(url);
+            let msg = `query_id=${tg.initDataUnsafe.query_id}`
+            Telegram.WebApp.showAlert(msg);
             // создать пользователя
             let user = {
                 userName:  "Максим Исаев",
-                birthDate: '1990-08-02',
+                bitrate: "1996-06-02",
                 timeZone: 0,
             };
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(user);
-            let response = await fetch(api_url, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Content-Type': 'application/json',
-                    'accept': 'application/json',
-                },
-                body: body,
-            });
-            let result = await response.json();
-        }
-
-        // post api fetch (create user)
-        async function postUser(){
-            Telegram.WebApp.showAlert(url);
-            let url = `${api_url}user/`;
-            let user = {
-                name: document.getElementById("uname").value,
-                birthDate: '1990-08-02',
-                timezone: -1,
-            };
-            const body = JSON.stringify(user)
             let response = await fetch(url, {
                 method: 'POST',
                 mode: 'cors',
@@ -118,7 +96,6 @@
                 body: body,
             });
             let result = await response.json();
-            console.log(result.message);
         }
 
         async function clickMe(){
@@ -131,8 +108,8 @@
                     'Accept': 'application/json',
                 },
             });
-
         }
+
         // document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
         // let timeSelect = document.getElementById("timezone")
         // const date = new Date();
