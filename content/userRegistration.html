@@ -71,10 +71,13 @@
         document.getElementById("uname").value = "Егорова";
 
         let api_url = "https://cc0c-176-12-194-235.ngrok-free.app/";
-        Telegram.WebApp.onEvent("mainButtonClicked", function (){
+        Telegram.WebApp.onEvent("mainButtonClicked", testMe);
+        
+        function testMe(){
             let url = `${api_url}user/`;
             Telegram.WebApp.showAlert(url);
-        });
+        }
+
         // Telegram.WebApp.onEvent('mainButtonClicked', async function(){
         //     let user = {
         //         userName:  "Максим Исаев",
