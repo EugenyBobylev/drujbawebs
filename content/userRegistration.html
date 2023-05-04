@@ -72,8 +72,8 @@
 
         async function postUser(){
             let url = `${api_url}user/`;
-            let auth = btoa(tg.initData);
-            Telegram.WebApp.showAlert(auth);
+            let msg = `query_id=${tg.initDataUnsafe.query_id}`
+            Telegram.WebApp.showAlert(msg);
             // создать пользователя
             let user = {
                 name: document.getElementById("uname").value,
@@ -89,7 +89,7 @@
                     'ngrok-skip-browser-warning': '100',
                     'Content-Type': 'application/json',
                     'accept': 'application/json',
-                    'authorization': auth,
+                    'authorization': btoa(tg.initData),
                 },
                 body: body,
             });
