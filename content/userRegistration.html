@@ -65,13 +65,10 @@
         tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
         tg.MainButton.show();
         tg.MainButton.enable();
-
-        let tgUserName = tg.initDataUnsafe.user.last_name;
-        let tgUser = tg.initDataUnsafe.user.username;
-        document.getElementById("uname").value = "Фефелов";
-
-        let api_url = "https://2b09-176-12-194-235.ngrok-free.app/";
         Telegram.WebApp.onEvent("mainButtonClicked", postUser);
+
+        document.getElementById("uname").value = "Фефелов";
+        let api_url = "https://2b09-176-12-194-235.ngrok-free.app/";
 
         async function postUser(){
             let url = `${api_url}user/`;
@@ -81,7 +78,6 @@
             let user = {
                 name: document.getElementById("uname").value,
                 timezone: -1,
-                initdata: tg.initData,
             };
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(user);
@@ -92,6 +88,7 @@
                     'ngrok-skip-browser-warning': '100',
                     'Content-Type': 'application/json',
                     'accept': 'application/json',
+                    'authorization': btoa(tg.initData),
                 },
                 body: body,
             });
