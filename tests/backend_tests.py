@@ -1,3 +1,15 @@
+import json
+
+import requests
+
+from backend.backend import User
+from config import BotConfig
+
+auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0ExMjQ0NzE3NTElMkMlMjJmaXJzdF9uYW1' \
+       'lJTIyJTNBJTIyJUQwJTk1JUQwJUIyJUQwJUIzJUQwJUI1JUQwJUJEJUQwJUI4JUQwJUI5JTIyJTJDJTIybGFzdF9uYW1lJTIyJTNBJTIy' \
+       'JUQwJTkxJUQwJUJFJUQwJUIxJUQxJThCJUQwJUJCJUQwJUI1JUQwJUIyJTIyJTJDJTIydXNlcm5hbWUlMjIlM0ElMjJCb2J5bGV2RUElM' \
+       'jIlMkMlMjJsYW5ndWFnZV9jb2RlJTIyJTNBJTIyZW4lMjIlN0QmYXV0aF9kYXRlPTE2ODMxOTQzMzUmaGFzaD0yOTJhNzhiZmNhNjY1ZT' \
+       'EwNGQ5ZDRmMDEzN2QwNWQxMjU0NzE3Yzc4MjAxYWMzYmJkMzcwMWQwYWU3MzFhZWQz'
 
 
 # *************************************
@@ -45,11 +57,18 @@ def test_api_bot_send_me():
 
 
 def test_answer_web_app_query():
+    '''
+    Тест на отправку боту данных из WebApp
+    перед выполнение,каждый раз, требуется обновлять web_query_id
+    т.к. он может быть использован только единожды
+    :return:
+    '''
+    web_query_id = 'AAHHSWsHAAAAAMdJawcBvcwJ'
     headers = {
         'Content-Type': 'application/json'
     }
     data = {
-        'web_app_query_id': 'AAHHSWsHAAAAAMdJawcBvcwJ',
+        'web_app_query_id': web_query_id,
         'result': {
             'type': 'article',
             'id': '123',
