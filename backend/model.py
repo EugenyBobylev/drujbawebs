@@ -25,9 +25,6 @@ class WebAppInitData:
     auth_date: datetime
     hash: str
 
-    def check(self) -> bool:
-        return False
-
     def __repr__(self):
         return f'query_id="{self.query_id}" user={self.user.username}; auth_date={self.auth_date}'
 
@@ -52,7 +49,7 @@ class WebAppInitData:
 
         _hash = re_search('hash=(.*)$', decoded_str)
         if hash is None:
-            return  None
+            return None
         return cls(query_id=query_id, user=user, auth_date=auth_date, hash=_hash)
 
     @staticmethod
