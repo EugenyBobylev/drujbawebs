@@ -12,6 +12,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 
+from telegram_api import send_answer_web_app_query
 from model import WebAppInitData
 from config import BotConfig
 from utils import check_webapp_signature, decode_base64_str
@@ -89,10 +90,12 @@ async def get_query_id(query_id: str, response: Response):
 @auth
 def create_new_user(user: User, authorization: str | None = Header(convert_underscores=True)):
     web_init = WebAppInitData.form_auth_header(authorization)
-    return {
-        'code': 200,
-        'message': 'User successful created',
-    }
+    r = send_answer_web_app_query(web_init.query_id, user.dict())
+    assert 200 == r.status_code
+    # return {
+    #     'code': 200,
+    #     'message': 'User successful created',
+    # }
 
 
 if __name__ == '__main__':
