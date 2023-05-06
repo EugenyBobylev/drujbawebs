@@ -12,7 +12,7 @@ def create_user(user, query_id: str, user_id):
 
 
 def create_new_keyboard():
-    url1 = f'{bot_config.base_url}content/userRegistration'
+    url1 = f'{bot_config.base_url}UserRegistration'
     url2 = f'{bot_config.base_url}/webapp/templates/index'
     url3 = f'{bot_config.base_url}/webapp/templates/bot'
     buttons = [

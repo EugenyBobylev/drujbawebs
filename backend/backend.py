@@ -1,15 +1,18 @@
 import urllib
 import urllib.parse
+from collections.abc import Mapping
 from functools import wraps
 
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
+
 from starlette.middleware.cors import CORSMiddleware
-
+from starlette.requests import Request
 from starlette.responses import Response
+from starlette.templating import Jinja2Templates
 
-from backend.model import WebAppInitData
+from model import WebAppInitData
 from config import BotConfig
 from utils import check_webapp_signature, decode_base64_str
 
@@ -23,6 +26,8 @@ class User(BaseModel):
 
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 origins = ["*"]
 app.add_middleware(
@@ -54,6 +59,17 @@ def auth(func):
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.get('/UserRegistration')
+async def get_user_registration_html(request: Request,  response: Response):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    host = BotConfig.instance().base_url
+    return templates.TemplateResponse('userRegistration.html',
+                                      context={'request': request, 'host': host}, headers=headers)
 
 
 @app.get('/query/{query_id}')

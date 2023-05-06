@@ -6,17 +6,12 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ContentType
 from dotenv import load_dotenv, dotenv_values
 
+from config import BotConfig
 from handlers.common import register_handlers_common
 from handlers.company import register_handlers_company
 from handlers.new import register_handlers_new
 from handlers.private import register_handlers_private
 from handlers.referal import register_handlers_referal
-
-
-def load_config(env_path: str) -> dict:
-    load_dotenv()
-    config = dotenv_values(env_path)
-    return config
 
 
 async def webapp_answer(message: types.Message):
@@ -32,11 +27,9 @@ async def main():
     # Настройка логирования в stdout
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', )
 
-    # Парсинг файла конфигурации
-    config = load_config(".env")
-
     # Объявление и инициализация объектов бота и диспетчера
-    bot = Bot(token=config['TOKEN'])
+    token = BotConfig.instance().token
+    bot = Bot(token=token)
     dp = Dispatcher(bot, storage=MemoryStorage())
 
     # Регистрация хэндлеров

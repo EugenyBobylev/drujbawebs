@@ -14,3 +14,4 @@ pip install alembic
 pip install pytest
 pip install pytest-asyncio
 pip install requests
+pip install jinja2
