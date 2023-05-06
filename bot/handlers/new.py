@@ -1,7 +1,4 @@
-import os
-
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import BotConfig

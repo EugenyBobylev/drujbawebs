@@ -1,7 +1,5 @@
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from aiogram.utils.callback_data import CallbackData
 
 from config import BotConfig
 from db.bl import get_session, get_msg
