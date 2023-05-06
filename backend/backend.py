@@ -9,8 +9,8 @@ from starlette.middleware.cors import CORSMiddleware
 
 from starlette.responses import Response
 
+from backend.model import WebAppInitData
 from config import BotConfig
-from model import WebAppInitData
 from utils import check_webapp_signature, decode_base64_str
 
 
