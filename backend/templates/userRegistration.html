@@ -22,7 +22,7 @@
             <input type="date" id="birthday" name="birthday"/>
             <label for="birthday">Дата рождения</label>
         </div>
-        <select class="timezone" name="timezone" id="timezone">
+        <select class="timezone" name="timezone" id="timezone" >
             <option value="-12.0"> (GMT -12:00) Эниветок, Кваджалейн </option>
             <option value="-11.0"> (GMT -11:00) Остров Мидуэй, Самоа </option>
             <option value="-10.0"> (GMT -10:00) Гавайи </option>
@@ -39,7 +39,7 @@
             <option value="0.0"> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
             <option value="1.0"> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
             <option value="2.0"> (GMT +2:00) Киев, Калининград, Южная Африка </option>
-            <option value="3.0"> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
+            <option value="3.0" selected> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
             <option value="3.5"> (GMT +3:30) Тегеран </option>
             <option value="4.0"> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
             <option value="4.5"> (GMT +4:30) Кабул </option>
@@ -80,7 +80,8 @@
             // создать пользователя
             let user = {
                 name: document.getElementById("uname").value,
-                timezone: -1,
+                birthdate: document.getElementById("birthday").value,
+                timezone: document.getElementById("timezone").value,
             };
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(user);

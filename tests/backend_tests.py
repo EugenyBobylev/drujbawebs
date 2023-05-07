@@ -2,8 +2,8 @@ import json
 
 import requests
 
-from backend.backend import User
-from backend.telegram_api import send_message
+from backend import User
+from backend import send_message
 from config import BotConfig
 
 auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0ExMjQ0NzE3NTElMkMlMjJmaXJzdF9uYW1' \

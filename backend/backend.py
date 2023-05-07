@@ -1,29 +1,19 @@
 import urllib
 import urllib.parse
-from collections.abc import Mapping
 from functools import wraps
 
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
 
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 
-from backend.telegram_api import send_answer_web_app_query
-from backend.model import WebAppInitData
+from telegram_api import send_answer_web_app_query
+from model import WebAppInitData, User
 from config import BotConfig
 from utils import check_webapp_signature, decode_base64_str
-
-
-class User(BaseModel):
-    name: str
-    timezone: int
-
-    def __repr__(self):
-        return f'name={self.name}; timezone={self.timezone}'
 
 
 app = FastAPI()

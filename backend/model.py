@@ -1,7 +1,9 @@
 import json
 import urllib.parse
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
+
+from pydantic import BaseModel
 
 from utils import re_search, decode_base64_str
 
@@ -57,3 +59,12 @@ class WebAppInitData:
         decoded_str = decode_base64_str(authorization)
         init_data = urllib.parse.unquote(decoded_str)
         return WebAppInitData.from_init_str(init_data)
+
+
+class User(BaseModel):
+    name: str
+    birthdate: date
+    timezone: str
+
+    def __repr__(self):
+        return f'name={self.name}; timezone={self.timezone}'
