@@ -10,6 +10,8 @@ bot_config = BotConfig.instance()
 def create_start_keyboard():
     buttons = [
         InlineKeyboardButton(text="Новый", callback_data='new_user'),
+        InlineKeyboardButton(text="Инвайт приват", callback_data='invite_private'),
+        InlineKeyboardButton(text="Инвайт компания", callback_data='invite_company'),
         InlineKeyboardButton(text="Приват", callback_data='private_user'),
         InlineKeyboardButton(text="Компания", callback_data="company_user")
     ]

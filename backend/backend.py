@@ -80,6 +80,12 @@ async def get_query_id(query_id: str, response: Response):
 @app.post('/user/')
 @auth
 def create_new_user(user: User, authorization: str | None = Header(convert_underscores=True)):
+    """
+    Create new user
+    :param user:
+    :param authorization:
+    :return:
+    """
     web_init = WebAppInitData.form_auth_header(authorization)
     db_user = create_user(user)
     assert db_user is not None
