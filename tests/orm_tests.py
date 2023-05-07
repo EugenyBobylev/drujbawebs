@@ -1,6 +1,9 @@
 from sqlalchemy import create_engine, Connection
+
+from backend import User as apiUser
 from config import BotConfig
-from db.bl import get_session, insert_user, get_user, update_user, delete_user
+from db.bl import get_session, insert_user, get_user, update_user, delete_user, create_user
+from db.models import User
 
 
 def test_connect_to_postgres():
@@ -14,7 +17,7 @@ def test_connect_to_postgres():
         assert not conn.closed
 
 
-def test_create_user():
+def test_insert_user():
     session = get_session()
     tgid = 124471751
     user_data = {
@@ -71,3 +74,13 @@ def test_delete_user():
 
     user = get_user(tgid, session)
     assert user is None
+
+
+def test_create_user():
+    api_user = apiUser(id=123, name='Popov', birthdate='1980-02-10', timezone=1)
+    assert api_user is not None
+
+    user: User = create_user(api_user)
+    assert user is not None
+    assert 123 == user.id
+    assert 'Popov' == user.name
