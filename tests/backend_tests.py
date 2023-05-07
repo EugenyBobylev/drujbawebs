@@ -3,6 +3,7 @@ import json
 import requests
 
 from backend.backend import User
+from backend.telegram_api import send_message
 from config import BotConfig
 
 auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0ExMjQ0NzE3NTElMkMlMjJmaXJzdF9uYW1' \
@@ -85,4 +86,12 @@ def test_answer_web_app_query():
     url = f'https://api.telegram.org/bot{token}/answerWebAppQuery'
 
     r = requests.post(url, headers=headers, data=body)
+    assert 200 == r.status_code
+
+
+def test_send_message():
+    chat_id = 124471751
+    text = 'Текстовое сообщение для примера'
+
+    r = send_message(chat_id, text)
     assert 200 == r.status_code
