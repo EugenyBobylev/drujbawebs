@@ -66,7 +66,7 @@ def delete_msg(text_name: str, session: Session):
 def get_user(user_id: int, session: Session) -> User | None:
     if session is None:
         raise ValueError("session can't be None")
-    query = select(User).where(User.tgid == user_id)
+    query = select(User).where(User.id == user_id)
     result = session.execute(query).scalars().first()
     return result
 
@@ -78,7 +78,7 @@ def insert_user(user_id: int, session: Session, **kvargs) -> User:
     if user:
         user = update_user(user_id, session)
     else:
-        user = User(tgid=user_id)
+        user = User(id=user_id)
         for field in User.get_fields():
             if field in kvargs:
                 setattr(user, field, kvargs[field])
