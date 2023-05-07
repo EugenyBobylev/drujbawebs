@@ -20,7 +20,7 @@ class User(Base):
 
     id = mapped_column(BigInteger, primary_key=True, autoincrement=False)
     name = mapped_column(String)
-    dob = mapped_column(Date)
+    birthdate = mapped_column(Date)
     timezone = mapped_column(Integer)
     payed_events = mapped_column(Integer, default=1)
     companies = relationship('Company', back_populates='owner')
