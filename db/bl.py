@@ -1,4 +1,3 @@
-import os
 from sqlalchemy import create_engine, Engine, select
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -71,12 +70,22 @@ def get_user(user_id: int, session: Session) -> User | None:
     return result
 
 
+def create_user(user) -> User:
+    session = get_session()
+    session.expire_on_commit = False
+    tgid = user.id
+    user_data: dict = user.dict()
+    user_data.pop('id')
+    user = insert_user(tgid, session, **user_data)
+    return user
+
+
 def insert_user(user_id: int, session: Session, **kvargs) -> User:
     if session is None:
         raise ValueError("session can't be None")
     user = get_user(user_id, session)
     if user:
-        user = update_user(user_id, session)
+        user = update_user(user_id, session, **kvargs)
     else:
         user = User(id=user_id)
         for field in User.get_fields():
