@@ -15,3 +15,17 @@ pip install pytest
 pip install pytest-asyncio
 pip install requests
 pip install jinja2
+```
+
+** Create new Revision
+```shell
+alembic revision -m "..."
+```
+** Running migration
+```shell
+alembic upgrade head
+```
+
+
+    
+    

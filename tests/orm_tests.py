@@ -11,3 +11,9 @@ def test_connect_to_postgres():
     with engine.connect() as conn:
         assert conn is not None
         assert not conn.closed
+
+
+def test_create_user():
+    config = BotConfig.instance()
+    url = config.get_postgres_url()
+    print(url)

@@ -83,11 +83,6 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     r = send_answer_web_app_query(web_init.query_id, user.dict())
     assert 200 == r.status_code
 
-    return {
-        'code': 200,
-        'message': 'User successful created',
-    }
-
 
 if __name__ == '__main__':
     config = BotConfig.instance()
