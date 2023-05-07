@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+import aiohttp
 from aiogram import Dispatcher, Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ContentType
@@ -21,6 +22,7 @@ async def webapp_answer(message: types.Message):
 
 async def cmd_delete_msg(message: types.Message):
     await message.delete()
+    await message.answer(f'message_id = {message.message_id}')
 
 
 async def main():
@@ -39,7 +41,8 @@ async def main():
     register_handlers_private(dp)
     register_handlers_referal(dp)
     dp.register_message_handler(webapp_answer, content_types=[ContentType.WEB_APP_DATA])
-    dp.register_message_handler(cmd_delete_msg)
+    # dp.register_message_handler(answer_webapp)
+    dp.register_message_handler(cmd_delete_msg, )
 
     # Запуск
     await dp.start_polling()

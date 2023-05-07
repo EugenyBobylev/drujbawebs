@@ -40,4 +40,3 @@ def register_handlers_new(dp: Dispatcher):
     dp.register_callback_query_handler(query_new_user, lambda c: c.data == 'new_user', state="*")
     # dp.register_message_handler(cmd_cancel, commands="cancel", state="*")
     # dp.register_message_handler(cmd_cancel, Text(equals="отмена", ignore_case=True), state="*")
-    pass
