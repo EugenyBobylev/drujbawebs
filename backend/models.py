@@ -65,7 +65,7 @@ class User(BaseModel):
     id: int
     name: str
     birthdate: date = None
-    timezone: str
+    timezone: int
 
     def __repr__(self):
         return f'id={self.id}; name={self.name}; timezone={self.timezone}; birthdate={self.birthdate}'

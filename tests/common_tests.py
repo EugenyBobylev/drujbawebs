@@ -2,7 +2,7 @@ import urllib
 from datetime import datetime
 import json
 
-from backend.model import WebAppInitData
+from backend.models import WebAppInitData
 from config import BotConfig
 from utils import re_search, check_webapp_signature, decode_base64_str
 import urllib.parse

@@ -11,7 +11,7 @@ from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 
 from telegram_api import send_answer_web_app_query
-from model import WebAppInitData, User
+from models import WebAppInitData, User
 from config import BotConfig
 from utils import check_webapp_signature, decode_base64_str
 
