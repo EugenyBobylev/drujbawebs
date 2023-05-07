@@ -62,9 +62,10 @@ class WebAppInitData:
 
 
 class User(BaseModel):
+    id: int
     name: str
-    birthdate: date
+    birthdate: date = None
     timezone: str
 
     def __repr__(self):
-        return f'name={self.name}; timezone={self.timezone}'
+        return f'id={self.id}; name={self.name}; timezone={self.timezone}; birthdate={self.birthdate}'

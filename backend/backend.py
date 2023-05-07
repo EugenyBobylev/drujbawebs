@@ -82,10 +82,11 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     web_init = WebAppInitData.form_auth_header(authorization)
     r = send_answer_web_app_query(web_init.query_id, user.dict())
     assert 200 == r.status_code
-    # return {
-    #     'code': 200,
-    #     'message': 'User successful created',
-    # }
+
+    return {
+        'code': 200,
+        'message': 'User successful created',
+    }
 
 
 if __name__ == '__main__':

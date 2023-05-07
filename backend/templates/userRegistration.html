@@ -73,12 +73,13 @@
             let url = `${api_url}user/`;
 
             // вывести отладочное сообещние
-            // msg = `query_id=${tg.initDataUnsafe.query_id}`
+            // msg = `user_id=${tg.initDataUnsafe.user.id}`
             // if(tg.initData !== '')
-            //     Telegram.WebApp.showAlert(msg);
+            //      Telegram.WebApp.showAlert(msg);
 
             // создать пользователя
             let user = {
+                id: tg.initDataUnsafe.user.id,
                 name: document.getElementById("uname").value,
                 birthdate: document.getElementById("birthday").value,
                 timezone: document.getElementById("timezone").value,
@@ -97,7 +98,7 @@
                 },
                 body: body,
             });
-            let result = await response.json();
+            console.info(response.status)
         }
     </script>
 </body>
