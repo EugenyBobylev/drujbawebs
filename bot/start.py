@@ -15,14 +15,8 @@ from handlers.private import register_handlers_private
 from handlers.referal import register_handlers_referal
 
 
-async def webapp_answer(message: types.Message):
-    await message.answer(message.web_app_data.data)
-    await message.answer('Красивенько 😍')
-
-
 async def cmd_delete_msg(message: types.Message):
     await message.delete()
-    await message.answer(f'message_id = {message.message_id}')
 
 
 async def main():
@@ -40,8 +34,6 @@ async def main():
     register_handlers_company(dp)
     register_handlers_private(dp)
     register_handlers_referal(dp)
-    dp.register_message_handler(webapp_answer, content_types=[ContentType.WEB_APP_DATA])
-    # dp.register_message_handler(answer_webapp)
     dp.register_message_handler(cmd_delete_msg, )
 
     # Запуск

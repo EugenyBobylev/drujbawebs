@@ -19,7 +19,7 @@ def send_answer_web_app_query(web_query_id: str, bot_obj: dict, title: str = '',
             'id': 112244,
             'title': 'Result',
             'input_message_content': {
-                'message_text': 'Hi monkey!'
+                'message_text': 'webapp UserRegistration'
             }
         }
     }

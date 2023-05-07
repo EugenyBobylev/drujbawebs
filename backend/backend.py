@@ -10,6 +10,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 
+from db.bl import create_user
 from telegram_api import send_answer_web_app_query
 from models import WebAppInitData, User
 from config import BotConfig
@@ -80,6 +81,8 @@ async def get_query_id(query_id: str, response: Response):
 @auth
 def create_new_user(user: User, authorization: str | None = Header(convert_underscores=True)):
     web_init = WebAppInitData.form_auth_header(authorization)
+    db_user = create_user(user)
+    assert db_user is not None
     r = send_answer_web_app_query(web_init.query_id, user.dict())
     assert 200 == r.status_code
 
