@@ -19,7 +19,7 @@ pip install jinja2
 
 ** Create new Revision
 ```shell
-alembic revision -m "..."
+alembic revision --autogenerate -m "..."
 ```
 ** Running migration
 ```shell
