@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Engine, select
 from sqlalchemy.orm import sessionmaker, Session
 
 from config import BotConfig
-from db.models import Msg, User, Company, Event
+from db.models import Msg, User, Company
 
 
 def get_engine() -> Engine:
@@ -170,56 +170,6 @@ def delete_company(company_id: int, session: Session):
         session.delete(company)
         session.commit()
 
-
-def get_event(event_id: int, session: Session) -> Event | None:
-    if session is None:
-        raise ValueError("session can't be None")
-    query = select(Event).where(Event.id == event_id)
-    result = session.execute(query).scalars().first()
-    return result
-
-
-def get_events_by_owner(owner_id: int, session: Session) -> [Event]:
-    if session is None:
-        raise ValueError("session can't be None")
-    query = select(Event).where(Event.owner_id == owner_id)
-    result = session.execute(query).scalars().all()
-    return result
-
-
-def insert_event(owner_id: int, session: Session, **kvargs) -> Event:
-    if session is None:
-        raise ValueError("session can't be None")
-    event = Event()
-    event.owner_id = owner_id
-    for field in Event.get_fields():
-        if field in kvargs:
-            setattr(event, field, kvargs[field])
-    session.add(event)
-    session.commit()
-    return event
-
-
-def update_event(event_id: int, session: Session, **kvargs) -> Event:
-    if session is None:
-        raise ValueError("session can't be None")
-    event = get_event(event_id, session)
-    if event is None:
-        raise ValueError("event_id not found")
-    for field in Event.get_fields():
-        if field in kvargs:
-            setattr(event, field, kvargs[field])
-    session.commit()
-    return event
-
-
-def delete_event(event_id: int, session: Session):
-    if session is None:
-        raise ValueError("session can't be None")
-    event = get_event(event_id, session)
-    if event:
-        session.delete(event)
-        session.commit()
 
 
 def init_texts_tbl(session: Session = None):

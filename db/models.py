@@ -25,10 +25,6 @@ class User(Base):
 
     accounts = relationship('Account', back_populates='owner')
 
-    owner_companies = relationship('Company', back_populates='owner')      # компании в которых я админ
-    member_companies = relationship('UserCompany', back_populates='user')  # компании в которых я сотрудник
-    fundraisings = relationship('Fundraising', back_populates='owner')  # сборы где я ответственное лицо
-
     def __repr__(self) -> str:
         return f'tgid={self.id}; name="{self.name}"; timezone={self.timezone}'
 
@@ -41,22 +37,7 @@ class Account(Base):
     company_id = mapped_column(ForeignKey('companies.id'))
 
     owner = relationship('User', back_populates='accounts')
-    company = relationship('Company', back_populates='accounts')
-
-
-class UserCompany(Base):
-    """
-    Additional information about the company employee
-    """
-    __tablename__: str = 'usercompany'
-    user_id = mapped_column(BigInteger, ForeignKey("users.id"), primary_key=True)
-    company_id = mapped_column(Integer, ForeignKey("companies.id"), primary_key=True)
-    job = mapped_column(String, default='')     # должность
-    phone = mapped_column(String, default='')   # телефон
-    email = mapped_column(String, default='')   # электронная почта
-
-    user = relationship('User', back_populates='user_companies')
-    company = relationship('Company', back_populates='company_users')
+    # company = relationship('Company', back_populates='accounts')
 
 
 class Company(Base):
@@ -70,7 +51,7 @@ class Company(Base):
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
     admin_id = mapped_column(Integer, ForeignKey("users.id"))
-    admin = relationship("Account", back_populates="company")
+    # admin = relationship("Account", back_populates="company")
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"; barnch="{self.branch}"; ' \

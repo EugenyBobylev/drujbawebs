@@ -24,14 +24,12 @@ def test_insert_user():
         'name': 'Егор Летов',
         'timezone': 3,
         'birthdate': '1966-12-15',
-        'payed_events': 1
     }
 
     user = insert_user(user_id=tgid, session=session, **user_data)
     assert tgid == user.id
     assert 'Егор Летов' == user.name
     assert 3 == user.timezone
-    assert 1 == user.payed_events
     assert '1966-12-15' == user.birthdate.strftime('%Y-%m-%d')
 
 
@@ -57,13 +55,11 @@ def test_update_user():
         'name': 'Мария Лютова',
         'timezone': 1,
         'birthdate': '1967-12-15',
-        'payed_events': 0
     }
 
     user = update_user(tgid, session, **user_data)
     assert 'Мария Лютова' == user.name
     assert 1 == user.timezone
-    assert 0 == user.payed_events
     assert '1967-12-15' == user.birthdate.strftime('%Y-%m-%d')
 
 
