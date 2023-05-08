@@ -119,6 +119,9 @@ def delete_user(user_id: int, session: Session):
         session.commit()
 
 
+# **********************************************************************
+# Эту херню надо еще протестить
+# **********************************************************************
 def get_company(company_id: int, session: Session) -> Company | None:
     if session is None:
         raise ValueError("session can't be None")

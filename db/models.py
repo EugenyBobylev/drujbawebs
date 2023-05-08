@@ -33,11 +33,11 @@ class Account(Base):
     __tablename__: str = 'accounts'
     id = mapped_column(Integer, primary_key=True)
     payed_events = mapped_column(Integer, default=1)
-    user_id = mapped_column(ForeignKey('users.id'))
+    user_id = mapped_column(ForeignKey('users.id'), nullable=False)
     company_id = mapped_column(ForeignKey('companies.id'))
 
-    owner = relationship('User', back_populates='accounts')
-    # company = relationship('Company', back_populates='accounts')
+    owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
+    company = relationship('Company', foreign_keys=[company_id], back_populates='admin', uselist=False)
 
 
 class Company(Base):
@@ -50,12 +50,11 @@ class Company(Base):
     name = mapped_column(String, nullable=False)        # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
-    admin_id = mapped_column(Integer, ForeignKey("users.id"))
-    # admin = relationship("Account", back_populates="company")
+    admin_id = mapped_column(Integer, ForeignKey("accounts.id"))
+    admin = relationship("Account", foreign_keys=[admin_id])
 
     def __repr__(self) -> str:
-        return f'id={self.id}; name="{self.name}"; barnch="{self.branch}"; ' \
-               f'payed_events={self.payed_events}; owner_id={self.owner_id}'
+        return f'id={self.id}; name="{self.name}"'
 
 
 # class Fundraising(Base):

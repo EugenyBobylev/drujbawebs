@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Connection
+from sqlalchemy import create_engine, Connection, select
 
 from backend import User as apiUser
 from config import BotConfig
