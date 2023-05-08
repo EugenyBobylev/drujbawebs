@@ -50,8 +50,6 @@ class Company(Base):
     name = mapped_column(String, nullable=False, unique=True)        # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
-    # admin_id = mapped_column(Integer, ForeignKey("accounts.id"))
-    # admin = relationship("Account", foreign_keys=[admin_id])
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"'
