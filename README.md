@@ -4,6 +4,8 @@
 #### requirements
 ```bash
 pip install --upgrade pip
+python.exe -m pip install --upgrade pip
+
 pip install aiogram
 pip install python-dotenv
 pip install fastapi
@@ -15,3 +17,15 @@ pip install pytest
 pip install pytest-asyncio
 pip install requests
 pip install jinja2
+```
+#### alembic commands
+
+**инициализия**:
+`
+alembic init
+`
+
+**Создать миграцию:**
+`
+alembic revision --autogenerate -m "..."
+`
