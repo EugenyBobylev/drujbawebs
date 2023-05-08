@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from config import BotConfig
 from db import EntityNotExistsException
-from db.models import Msg, User, Company, Account
+from db.models import Msg, User, Company, Account, CompanyAccount
 
 
 def get_engine() -> Engine:
@@ -206,7 +206,7 @@ def delete_account(account_id: int, session: Session):
 
 
 # **********************************************************************
-# Эту херню надо еще протестить
+# Company
 # **********************************************************************
 def get_company(company_id: int, session: Session) -> Company | None:
     if session is None:
@@ -257,6 +257,26 @@ def delete_company(company_id: int, session: Session):
     if company:
         session.delete(company)
         session.commit()
+
+
+# **********************************************************************
+# CompanyAccount
+# **********************************************************************
+def get_employee_account(company_id: int, account_id: int, session: Session) -> CompanyAccount | None:
+    """
+    get employee's account
+    :param company_id: company id
+    :param account_id: account id of company employee
+    :param session:
+    :return:
+    """
+    if session is None:
+        raise ValueError("session can't be None")
+    query = select(CompanyAccount)\
+        .where(CompanyAccount.company_id == company_id)\
+        .where(CompanyAccount.account_id == account_id)
+    result = session.execute(query).scalars().first()
+    return result
 
 
 def init_texts_tbl(session: Session = None):

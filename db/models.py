@@ -55,6 +55,19 @@ class Company(Base):
         return f'id={self.id}; name="{self.name}"'
 
 
+class CompanyAccount(Base):
+    __tablename__: str = 'company_accounts'
+
+    company_id = mapped_column(Integer, ForeignKey('companies.id'), primary_key=True)
+    account_id = mapped_column(Integer, ForeignKey('accounts.id'), primary_key=True)
+    job_title = mapped_column(String, default='')
+    phone = mapped_column(String, default='')
+    email = mapped_column(String, default='')
+
+    company = relationship('Company', foreign_keys=[company_id], uselist=False)
+    accounts = relationship('Account', foreign_keys=[account_id], uselist=False)
+
+
 # class Fundraising(Base):
 #     """
 #     Сбор средств (на подарок, на ресторан и т.д.)
