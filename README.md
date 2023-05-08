@@ -20,12 +20,17 @@ pip install jinja2
 ```
 #### alembic commands
 
-**инициализия**:
-`
+**Init alembic**:
+```bash
 alembic init
-`
+```
 
-**Создать миграцию:**
-`
+**Create a Migration Script:**
+```bash
 alembic revision --autogenerate -m "..."
-`
+```
+**Список шаблонов**
+```bash
+alembic list_templates
+```
+
