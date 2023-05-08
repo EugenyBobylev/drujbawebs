@@ -33,11 +33,11 @@ class Account(Base):
     __tablename__: str = 'accounts'
     id = mapped_column(Integer, primary_key=True)
     payed_events = mapped_column(Integer, default=1)
-    user_id = mapped_column(ForeignKey('users.id'), nullable=False)
-    company_id = mapped_column(ForeignKey('companies.id'))
+    user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
+    company_id = mapped_column(Integer, ForeignKey('companies.id'))
 
     owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
-    company = relationship('Company', foreign_keys=[company_id], back_populates='admin', uselist=False)
+    company = relationship('Company', foreign_keys=[company_id], uselist=False)
 
 
 class Company(Base):
@@ -47,11 +47,11 @@ class Company(Base):
     __tablename__: str = 'companies'
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name = mapped_column(String, nullable=False)        # название компании
+    name = mapped_column(String, nullable=False, unique=True)        # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
-    admin_id = mapped_column(Integer, ForeignKey("accounts.id"))
-    admin = relationship("Account", foreign_keys=[admin_id])
+    # admin_id = mapped_column(Integer, ForeignKey("accounts.id"))
+    # admin = relationship("Account", foreign_keys=[admin_id])
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"'

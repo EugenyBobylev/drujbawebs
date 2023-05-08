@@ -1,8 +1,9 @@
-from sqlalchemy import create_engine, Engine, select
+from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
 
 from config import BotConfig
-from db.models import Msg, User, Company
+from db import EntityNotExistsException
+from db.models import Msg, User, Company, Account
 
 
 def get_engine() -> Engine:
@@ -17,6 +18,7 @@ def get_session(eng: Engine = None) -> Session:
         eng = get_engine()
     _Session = sessionmaker(bind=eng)
     session = _Session()
+    session.expire_on_commit = False
     return session
 
 
@@ -62,6 +64,9 @@ def delete_msg(text_name: str, session: Session):
         session.commit()
 
 
+# **********************************************************************
+#  User
+# **********************************************************************
 def get_user(user_id: int, session: Session) -> User | None:
     if session is None:
         raise ValueError("session can't be None")
@@ -120,6 +125,87 @@ def delete_user(user_id: int, session: Session):
 
 
 # **********************************************************************
+# Account
+# **********************************************************************
+def get_account(account_id: int, session: Session = None) -> Account | None:
+    if session is None:
+        session = get_session()
+    query = select(Account).where(Account.id == account_id)
+    result = session.execute(query).scalars().first()
+    return result
+
+
+def get_company_account(company_id: int, session: Session = None) -> Account | None:
+    if session is None:
+        session = get_session()
+    query = select(Account).where(Account.company_id == company_id)
+    result = session.execute(query).scalars().first()
+    return result
+
+
+def get_private_account(user_id: int, session: Session = None) -> Account | None:
+    if session is None:
+        session = get_session()
+    query = select(Account).where(Account.user_id == user_id).where(Account.company_id == None)
+    result = session.execute(query).scalars().first()
+    return result
+
+
+def insert_account(user_id: int, company_id: int | None, session: Session = None, **kvargs) -> Account:
+    if session is None:
+        session = get_session()
+    if company_id is not None:
+        exist_account = get_company_account(company_id, session)
+        if exist_account:
+            if exist_account.user_id == user_id:
+                update_account(exist_account.id, session)
+                return exist_account
+            exist_account.company_id = None
+
+    if company_id is None:
+        exist_account = get_private_account(user_id)
+        if exist_account:
+            exist_account = update_account(exist_account.id, session, **kvargs)
+            return exist_account
+
+    account = Account(user_id=user_id, company_id=company_id)
+    for field in Account.get_fields():
+        if field in kvargs:
+            setattr(account, field, kvargs[field])
+    session.add(account)
+    session.commit()
+    return account
+
+
+def update_account(account_id: int, session: Session, **kvargs) -> Account:
+    if session is None:
+        session = get_session()
+    account = get_account(account_id, session)
+    if account is None:
+        raise EntityNotExistsException
+
+    for field in Account.get_fields():
+        if field in kvargs:
+            setattr(account, field, kvargs[field])
+    session.commit()
+    return account
+
+
+def delete_account(account_id: int, session: Session):
+    if session is None:
+        session = get_session()
+    account = get_account(account_id, session)
+    if account is None:
+        return
+    # user_id: int = account.user_id
+    # accounts_count: int = session.scalar(
+    #     select(func.count()).select_from(Account).where(Account.user_id == user_id)
+    # )
+    session.delete(account)
+    session.commit()
+
+
+# **********************************************************************
 # Эту херню надо еще протестить
 # **********************************************************************
 def get_company(company_id: int, session: Session) -> Company | None:
@@ -138,11 +224,10 @@ def get_company_by_name(name: str, session: Session) -> Company | None:
     return result
 
 
-def insert_company(owner_id: int, session: Session, **kvargs) -> Company:
+def insert_company(session: Session, **kvargs) -> Company:
     if session is None:
         raise ValueError("session can't be None")
     company = Company()
-    company.owner_id = owner_id
     for field in Company.get_fields():
         if field in kvargs:
             setattr(company, field, kvargs[field])
@@ -174,13 +259,12 @@ def delete_company(company_id: int, session: Session):
         session.commit()
 
 
-
 def init_texts_tbl(session: Session = None):
     data = [
-        ('welcome_invited',	'Приветствую вас! \n Я создан для сбора на подарки для вас и ваших коллег из компании {}. '
+        ('welcome_invited', 'Приветствую вас! \n Я создан для сбора на подарки для вас и ваших коллег из компании {}. '
                             'Для завершения регистрации, пожалуйста, заполните анкету, '
                             'чтобы коллеги могли поздравить вас.'),
-        ('open_events',	'Открытые сборы: {open_events_len}'),
+        ('open_events', 'Открытые сборы: {open_events_len}'),
         ('closed_events', 'Закрытые сборы: {closed_events_len}'),
         ('shareEvent', 'Здравствуйте! У {} скоро день рождения.\\nЭто ссылка для сбор на подарок. Присоединяйтесь!'),
         ('participant_menu', 'Здравствуйте, {name}!\nЗдесь вы можете оценить свою активность\n\nУчастие в сборах:'
@@ -196,7 +280,7 @@ def init_texts_tbl(session: Session = None):
                                  'отмечает свой праздник {dob}.\n\nК сожалению, я не могу организовать сбор '
                                  'на подарки, так как у вас нет оплаченных событий.\n\nПожалуйста, '
                                  'оплатите сбор сейчас, чтобы я помог вам поздравить друга.'),
-        ('payment',	'Сейчас у вас подключен тариф:\n\nДоступные сборы:'),
+        ('payment', 'Сейчас у вас подключен тариф:\n\nДоступные сборы:'),
         ('welcome', 'Вы можете зарегистрироваться только для одного сбора или сразу зарегистрировать вашу компанию, '
                     'если планируете и дальше использовать Дружбу.'),
         ('event_invite', 'Здравствуйте! Я - Дружба.\nПомогаю организовать сбор денег для любого праздника.\n'
