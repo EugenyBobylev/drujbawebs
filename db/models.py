@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Boolean, SmallInteger, BigInteger, DateTime, Double, Text, \
-    ForeignKey, Float, Time, Numeric
+from sqlalchemy import Integer, String, Date, BigInteger, Text, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, relationship, mapped_column
 
 
@@ -38,7 +37,7 @@ class Account(Base):
     """
     __tablename__: str = 'accounts'
     id = mapped_column(Integer, primary_key=True)
-    payed_events = mapped_column(Integer, default=1)
+    payed_events = mapped_column(Integer, default=0)
     user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
     company_id = mapped_column(Integer, ForeignKey('companies.id'))
     company_member_id = mapped_column(Integer, ForeignKey('company_members.company_id'))
@@ -46,6 +45,10 @@ class Account(Base):
     owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
     member = relationship('CompanyMember', foreign_keys=[company_member_id])
+
+    def __repr__(self) -> str:
+        return f'id={self.id}; user_id={self.user_id}; company_id={self.company_id}, ' \
+               f'company_member_id={self.company_member_id}'
 
 
 class Company(Base):
@@ -76,7 +79,10 @@ class CompanyMember(Base):
     email = mapped_column(String, default='')
 
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
-    accounts = relationship('Account', foreign_keys=[account_id], uselist=False)
+    account = relationship('Account', foreign_keys=[account_id], uselist=False)
+
+    def __repr__(self) -> str:
+        return f'company_id={self.company_id}; account_id={self.account_id}'
 
 
 # class Fundraising(Base):

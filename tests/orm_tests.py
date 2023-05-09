@@ -90,12 +90,18 @@ def test_get_not_exists_account():
     assert account is None
 
 
+def test_get_not_exists_member_account():
+    session = get_session()
+    account = db.get_member_account(123, 4, session)
+    assert account is None
+
+
 def test_insert_private_account():
     session = get_session()
     user = get_user()
     account = db.get_private_account(user.id, session)
     if account is None:
-        account = db.insert_account(user.id, None, session, payed_events=1)
+        account = db.insert_company_account(user.id, None, session, payed_events=1)
 
     assert account is not None
     assert 1 == account.payed_events
@@ -109,7 +115,7 @@ def test_insert_company_account():
     company = get_company_by_name()
     account = db.get_company_account(company.id, session)
     if account is None:
-        account = db.insert_account(user.id, company.id, session, payed_events=0)
+        account = db.insert_company_account(user.id, company.id, session, payed_events=0)
 
     assert account is not None
     assert 0 == account.payed_events
@@ -117,6 +123,22 @@ def test_insert_company_account():
     assert user.name == account.owner.name
     assert company.id == account.company.id
     assert company.name == account.company.name
+
+
+def test_insert_member_account():
+    session = get_session()
+    user = get_user(123)
+    company = get_company_by_name()
+    account = db.get_member_account(user.id, company.id, True, session)
+    if account is None:
+        account = db.insert_member_account(user.id, company.id, session, payed_events=0)
+
+    assert account is not None
+    assert 0 == account.payed_events
+    assert user.id == account.owner.id
+    assert user.name == account.owner.name
+    assert company.id == account.member.company.id
+    assert company.name == account.member.company.name
 
 
 def test_get_private_account():
@@ -214,7 +236,7 @@ def test_change_company_account_admin():
     session.commit()
     account = db.get_company_account(company.id, session)
 
-    assert  account.user_id == admin.id
+    assert account.user_id == admin.id
 
 
 # Эту херню надо протестить
@@ -235,9 +257,18 @@ def test_get_not_exist_company_member():
     session = get_session()
     account_id = -100
     company_id = -22
-    cm = db.get_company_member(company_id, account_id, session)
+    cm = db.get_cm(company_id, account_id, session)
 
     assert cm is None
+
+
+def test_insert_company_member():
+    session = get_session()
+    company = get_company_by_name()
+    user = get_user(456, 'Семенов')
+    user_account = db.insert_company_account(user.id, company.id, session, payed_events=5)
+
+    assert user_account is not None
 
 
 def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
@@ -265,4 +296,3 @@ def get_company_by_name(name: str = 'ProfiTeam'):
         }
         company = db.insert_company(session, **data)
     return company
-
