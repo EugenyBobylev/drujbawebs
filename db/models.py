@@ -39,8 +39,8 @@ class Account(Base):
     id = mapped_column(Integer, primary_key=True)
     payed_events = mapped_column(Integer, default=0)
     user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
-    company_id = mapped_column(Integer, ForeignKey('companies.id'), unique=True)
-    company_member_id = mapped_column(Integer, ForeignKey('companies.id'))
+    company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='cascade'), unique=True)
+    company_member_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='cascade'))
 
     owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
