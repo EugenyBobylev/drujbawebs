@@ -92,7 +92,7 @@ def test_get_not_exists_account():
 
 def test_get_not_exists_member_account():
     session = get_session()
-    account = db.get_member_account(123, 4, session)
+    account = db.get_member_account(123, 4, False, session)
     assert account is None
 
 

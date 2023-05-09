@@ -162,7 +162,7 @@ def get_member_account(user_id: int, company_id: int, check_cm: bool = True, ses
 
     account = session.execute(query).scalars().first()
     # check exists CompanyMembers for this account
-    if check_cm:
+    if account and check_cm:
         cm = get_cm(company_id, account.id, session)
         if cm is None:
             cm = _insert_cm(company_id, account.id, session)
@@ -238,7 +238,7 @@ def insert_member_account(user_id: int, company_id: int, session: Session = None
     kvargs['company_id'] = None
     kvargs['company_member_id'] = company_id
 
-    exist_account = get_member_account(user_id, company_id)
+    exist_account = get_member_account(user_id, company_id, True, session)
     if exist_account:
         if exist_account.user_id == user_id:
             update_account(exist_account.id, session, **kvargs)
