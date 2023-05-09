@@ -3,7 +3,7 @@ import json
 import requests
 from fastapi.encoders import jsonable_encoder
 
-from backend import User
+from backend import User, Fundraising
 from backend import send_message
 from config import BotConfig
 
@@ -38,5 +38,37 @@ def check_create_user():
     assert r.status_code == 200
 
 
+def check_create_event():
+    url = 'http://127.0.0.1:8000/event/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+
+    event_data = {
+        'account_id': 30,
+        'reason': 'ДР',
+        'target': 'юбилей',
+        'start': '2023-01-15',
+        'end': '2023-05-10',
+        'event_date': '2023-05-15',
+        'transfer_info': 'на карту Мир сбербанка 000-1111-2222-4444',
+        'gift_info': 'ящик коньяка',
+        'congratulation_date': '2023-05-16',
+        'congratulation_time': '19:00',
+        'event_place': 'Дача юбиляра на Щукинке',
+        'event_dresscode': 'чтобы комары на сожрали',
+        'invite_url': r'tme:/drujba/pe_0012'
+    }
+    event = Fundraising(**event_data)
+    event_json = jsonable_encoder(event)
+
+    r = requests.post(url, headers=headers, json=event_json)
+    assert r.status_code == 200
+    answer = r.json()
+    print(answer)
+
+
 if __name__ == '__main__':
-    check_create_user()
+    # check_create_user()
+    check_create_event()

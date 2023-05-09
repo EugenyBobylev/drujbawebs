@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
 
 from backend import User as ApiUser
+from backend import Fundraising as ApiFundraising
 from config import BotConfig
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, CompanyMember, Fundraising
@@ -76,17 +77,6 @@ def get_user(user_id: int, session: Session) -> User | None:
     query = select(User).where(User.id == user_id)
     result = session.execute(query).scalars().first()
     return result
-
-
-def create_user(user: ApiUser) -> User:
-    session = get_session()
-    session.expire_on_commit = False
-    tgid = user.id
-    user_data: dict = user.dict()
-    user_data.pop('id')
-    user = insert_user(tgid, session, **user_data)
-    account = insert_private_account(user.id, session, payed_events=1)
-    return user, account
 
 
 def insert_user(user_id: int, session: Session, **kvargs) -> User:
@@ -481,6 +471,7 @@ def get_all_closed_fundraising(account_id: int, session: Session) -> [Fundraisin
     result = session.execute(query).scalars().all()
     return result
 
+
 def insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraising:
     if account_id is None:
         raise ValueError('account_id can not be None')
@@ -575,3 +566,29 @@ def init_texts_tbl(session: Session = None):
         session = get_session()
     for name, value in data:
         insert_msg(name, value, session)
+
+
+# **********************************************************************
+# Call from backend
+# **********************************************************************
+def create_user(user: ApiUser) -> (User, Account):
+    session = get_session()
+    session.expire_on_commit = False
+    tgid = user.id
+    user_data: dict = user.dict()
+    user_data.pop('id')
+    user = insert_user(tgid, session, **user_data)
+    account = insert_private_account(user.id, session, payed_events=1)
+    return user, account
+
+
+def create_private_fundraising(event: ApiFundraising) -> Fundraising:
+    session = get_session()
+    account_id = event.account_id
+    account = get_account(account_id, session)
+    assert account is not None
+
+    event_data = event.dict()
+    event_data.pop('account_id')
+    event = insert_fundraising(account.id, session, **event_data)
+    return event

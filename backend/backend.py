@@ -12,7 +12,7 @@ from starlette.templating import Jinja2Templates
 
 import db
 from telegram_api import send_answer_web_app_query
-from models import WebAppInitData, User
+from models import WebAppInitData, User, Fundraising
 from config import BotConfig
 from utils import check_webapp_signature, decode_base64_str
 
@@ -93,6 +93,18 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     # web_init = WebAppInitData.form_auth_header(authorization)
     # r = send_answer_web_app_query(web_init.query_id, user.dict())
     # assert 200 == r.status_code
+    return {'account_id': account.id }
+
+
+@app.post('/event/')
+# @auth
+def create_private_event(event: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+    """
+    Create new fundraising (event)
+    """
+    event = db.create_private_fundraising(event)
+    assert event is not None
+    return{'event_id': event.id}
 
 
 if __name__ == '__main__':
