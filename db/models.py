@@ -44,7 +44,7 @@ class Account(Base):
 
     owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
-    member = relationship('CompanyMember', foreign_keys=[company_member_id])
+    member = relationship('CompanyMember', foreign_keys=[company_member_id], cascade="all, delete",)
 
     def __repr__(self) -> str:
         return f'id={self.id}; user_id={self.user_id}; company_id={self.company_id}, ' \
@@ -73,7 +73,7 @@ class CompanyMember(Base):
     __tablename__: str = 'company_members'
 
     company_id = mapped_column(Integer, ForeignKey('companies.id'), primary_key=True)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id'), primary_key=True)
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), primary_key=True)
     job_title = mapped_column(String, default='')
     phone = mapped_column(String, default='')
     email = mapped_column(String, default='')
