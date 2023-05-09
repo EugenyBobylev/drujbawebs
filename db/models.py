@@ -93,14 +93,14 @@ class Fundraising(Base):
     __tablename__: str = 'fundrasing'
 
     id = mapped_column(Integer, primary_key=True)
-    reason = mapped_column(String, default='')          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+    reason = mapped_column(String, nullable=False)      # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target = mapped_column(String, nullable=False)      # кому собираем
     account_id = mapped_column(ForeignKey("accounts.id", ondelete='cascade'), nullable=False)
     owner = relationship('Account', back_populates='fundraisings')  # лицо ответственное за сбор
-    start = mapped_column(Date, nullable=False)         # дата регистрации сбора
-    end = mapped_column(Date, nullable=False)           # дата окончания сбора
+    start = mapped_column(Date)                         # дата регистрации сбора
+    end = mapped_column(Date)                           # дата окончания сбора
     event_date = mapped_column(Date, nullable=False)    # дата события
-    transfer_info = mapped_column(String, default='')   # реквизиты перевода (номер карты или телефон)
+    transfer_info = mapped_column(String, nullable=False)   # реквизиты перевода (номер карты или телефон)
     gift_info = mapped_column(Text, default='')         # варианты подарков
     congratulation_date = mapped_column(Date)           # дата праздничного мероприятия
     congratulation_time = mapped_column(Time)           # время праздничного мероприятия

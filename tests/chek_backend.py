@@ -32,7 +32,7 @@ def check_create_user():
         'Content-Type': 'application/json',
         'Authorization': auth
     }
-    user = User(id=123, name='test_user', timezone=1, birthdate='1966-12-15')
+    user = User(id=1234, name='test_user', timezone=1, birthdate='1966-12-15')
     user_json = jsonable_encoder(user)
     r = requests.post(url, headers=headers, json=user_json)
     assert r.status_code == 200

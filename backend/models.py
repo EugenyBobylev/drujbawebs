@@ -1,7 +1,7 @@
 import json
 import urllib.parse
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime, date, time
 
 from pydantic import BaseModel
 
@@ -69,3 +69,20 @@ class User(BaseModel):
 
     def __repr__(self):
         return f'id={self.id}; name={self.name}; timezone={self.timezone}; birthdate={self.birthdate}'
+
+
+class Fundraising(BaseModel):
+    id: int = None
+    reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+    target: str               # кому собираем
+    account_id: int = None
+    start: date = None        # дата регистрации сбора
+    end: date = None          # дата окончания сбора
+    event_date: date          # дата события
+    transfer_info: str        # реквизиты перевода (номер карты или телефон)
+    gift_info: str = ''       # варианты подарков
+    congratulation_date: date = None  # дата праздничного мероприятия
+    congratulation_time: time = None  # время праздничного мероприятия
+    event_place: str = None           # место проведения мероприятия
+    event_dresscode: str = ''  # дресс-код
+    invite_url: str            # ссылка приглашения для участия в сборе
