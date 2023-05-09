@@ -271,6 +271,13 @@ def test_insert_company_member():
     assert user_account is not None
 
 
+def test_get_members():
+    session = get_session()
+    company = get_company_by_name()
+    result = db.get_members(company.id, session)
+    assert len(result) > 0
+
+
 def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
     session = get_session()
 

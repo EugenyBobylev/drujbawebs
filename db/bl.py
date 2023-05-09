@@ -362,14 +362,14 @@ def get_cm(company_id: int, account_id: int, session: Session) -> CompanyMember 
     return result
 
 
-def get_cm_by_company(company_id: int, session: Session) -> [CompanyMember]:
+def get_members(company_id: int, session: Session) -> [CompanyMember]:
     if company_id is None:
         raise ValueError('company_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
 
     query = select(CompanyMember).where(CompanyMember.company_id == company_id)
-    result = session.execute(query).scalars()
+    result = session.execute(query).scalars().all()
     return result
 
 
