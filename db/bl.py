@@ -180,7 +180,7 @@ def get_private_account(user_id: int, session: Session = None) -> Account | None
     return result
 
 
-def insert_private_account(user_id: int, session: Session = None, **kvargs) -> Account:
+def insert_private_account(user_id: int, session: Session, **kvargs) -> Account:
     if user_id is None:
         raise ValueError('user_id can not be None')
     if session is None:
@@ -202,20 +202,36 @@ def insert_private_account(user_id: int, session: Session = None, **kvargs) -> A
     return account
 
 
-def insert_company_account(user_id: int, company_id: int, session: Session = None, **kvargs) -> Account:
+def change_company_account_user(user_id: int, company_id: int, session: Session) -> bool:
     if company_id is None:
         raise ValueError('company_id can not be None')
     if session is None:
-        session = get_session()
-    kvargs['company_id'] = company_id
-    kvargs['company_member_id'] = company_id
+        raise ValueError('session can not be None')
 
-    exist_account = get_company_account(company_id, session)
-    if exist_account:
-        if exist_account.user_id == user_id:
-            update_account(exist_account.id, session, **kvargs)
-            return exist_account
-        exist_account.company_id = None
+    company_account = get_company_account(company_id, session)
+    if company_account is None:
+        return False
+    member_account = get_member_account(user_id, company_id, True, session)
+    if member_account is None:
+        member_account = insert_member_account(user_id, company_id, session)
+        assert member_account is not None
+    company_account.user_id = member_account.user_id
+    session.commit()
+    return True
+
+
+def insert_company_account(user_id: int, company_id: int, session: Session, **kvargs) -> Account:
+    if company_id is None:
+        raise ValueError('company_id can not be None')
+    if session is None:
+        raise ValueError('session can not be None')
+    kvargs['company_id'] = company_id
+    kvargs.pop('company_member_id', None)
+
+    company_account = get_company_account(company_id, session)
+    if company_account:
+        change_company_account_user(user_id, company_id, session)
+        return company_account
 
     # create account
     account = Account(user_id=user_id)
@@ -225,16 +241,17 @@ def insert_company_account(user_id: int, company_id: int, session: Session = Non
 
     session.add(account)
     session.commit()
-    cm = _insert_cm(company_id, account.id, session)
-    assert cm is not None
+
+    member_account = insert_member_account(user_id, company_id, session)
+    assert member_account is not None
     return account
 
 
-def insert_member_account(user_id: int, company_id: int, session: Session = None, **kvargs) -> Account:
+def insert_member_account(user_id: int, company_id: int, session: Session, **kvargs) -> Account:
     if company_id is None:
         raise ValueError('company_id can not be None')
     if session is None:
-        session = get_session()
+        raise ValueError('session can not be None')
     kvargs['company_id'] = None
     kvargs['company_member_id'] = company_id
 

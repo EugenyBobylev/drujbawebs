@@ -127,7 +127,7 @@ def test_insert_company_account():
 
 def test_insert_member_account():
     session = get_session()
-    user = get_user(123)
+    user = get_user(124471751)
     company = get_company_by_name()
     account = db.get_member_account(user.id, company.id, True, session)
     if account is None:
@@ -137,8 +137,9 @@ def test_insert_member_account():
     assert 0 == account.payed_events
     assert user.id == account.owner.id
     assert user.name == account.owner.name
-    assert company.id == account.member.company.id
-    assert company.name == account.member.company.name
+    if company is not None:
+        assert company.id == account.member.id
+        assert company.name == account.member.name
 
 
 def test_get_private_account():
@@ -229,13 +230,8 @@ def test_change_company_account_admin():
     admin_id = 123 if old_admin.id == 124471751 else 124471751
     admin = get_user(admin_id)
 
-    assert account is not None
-    assert admin is not None
-
-    account.user_id = admin.id
-    session.commit()
-    account = db.get_company_account(company.id, session)
-
+    ok = db.change_company_account_user(admin_id, company.id, session)
+    assert ok
     assert account.user_id == admin.id
 
 
