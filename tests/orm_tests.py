@@ -299,3 +299,44 @@ def get_company_by_name(name: str = 'ProfiTeam'):
         }
         company = db.insert_company(session, **data)
     return company
+
+
+# *********************************************
+# Fundraising
+# *********************************************
+def test_get_not_exist_fundraising():
+    session = get_session()
+    event_id = -100
+    event = db.get_fundraising(event_id, session)
+
+    assert event is None
+
+
+def test_insert_private_fundraising():
+    session = get_session()
+    user = get_user(124471751)
+    account = db.get_private_account(user.id, session)
+    assert account is not None
+
+    event_data = {
+        'reason': 'ДР',
+        'target': 'юбилей',
+        'start': '2023-01-15',
+        'end': '2023-05-10',
+        'event_date': '2023-05-15',
+        'transfer_info': 'на карту Мир сбербанка 000-1111-2222-4444',
+        'gift_info': 'ящик коньяка',
+        'congratulation_date': '2023-05-16',
+        'congratulation_time': '19:00',
+        'event_place': 'Дача юбиляра на Щукинке',
+        'event_dresscode': 'чтобы комары на сожрали',
+        'invite_url': r'tme:/drujba/pe_0012'
+    }
+
+    event = db.insert_fundraising(account.id, session, **event_data)
+    assert event is not None
+
+
+def test_insert_company_fundraising():
+    session = get_session()
+    assert False

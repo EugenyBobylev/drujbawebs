@@ -1,9 +1,11 @@
+from datetime import date, timedelta
+
 from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
 
 from config import BotConfig
 from db import EntityNotExistsException
-from db.models import Msg, User, Company, Account, CompanyMember
+from db.models import Msg, User, Company, Account, CompanyMember, Fundraising
 
 
 def get_engine() -> Engine:
@@ -322,6 +324,7 @@ def get_company_by_name(name: str, session: Session) -> Company | None:
 def insert_company(session: Session, **kvargs) -> Company:
     if session is None:
         raise ValueError("session can't be None")
+
     company = Company()
     for field in Company.get_fields():
         if field in kvargs:
@@ -414,6 +417,99 @@ def _insert_cm(company_id: int, account_id: int, session: Session, **kvargs) -> 
         session.add(cm)
         session.commit()
     return cm
+
+
+# **********************************************************************
+# Fundraising
+# **********************************************************************
+def get_fundraising(event_id: int, session: Session) -> Fundraising | None:
+    """
+    get account of the company member (employee)
+    :param company_id: company id
+    :param account_id: account id of company member (employee)
+    :param session:
+    :return:
+    """
+    if event_id is None:
+        raise ValueError('event_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    query = select(Fundraising).where(Fundraising.id == event_id)
+    result = session.execute(query).scalars().first()
+    return result
+
+
+def get_all_fundraisings(account_id: int, session: Session) -> [Fundraising]:
+    if account_id is None:
+        raise ValueError('account_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    query = select(Fundraising).where(Fundraising.account_id == account_id)
+    result = session.execute(query).scalars().all()
+    return result
+
+
+def get_all_open_fundraising(account_id: int, session: Session) -> [Fundraising]:
+    if account_id is None:
+        raise ValueError('account_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    query = select(Fundraising)\
+        .where(Fundraising.account_id == account_id)\
+        .where(date.today() + timedelta(days=7) <= Fundraising.event_date)  # через 7 дней после даты события
+
+    result = session.execute(query).scalars().all()
+    return result
+
+
+def get_all_closed_fundraising(account_id: int, session: Session) -> [Fundraising]:
+    if account_id is None:
+        raise ValueError('account_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    query = select(Fundraising)\
+        .where(Fundraising.account_id == account_id)\
+        .where(date.today() + timedelta(days=7) > Fundraising.event_date)  # через 7 дней после даты события
+
+    result = session.execute(query).scalars().all()
+    return result
+
+def insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraising:
+    if account_id is None:
+        raise ValueError('account_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+    kvargs['account_id'] = account_id
+
+    event = Fundraising()
+    for field in Fundraising.get_fields():
+        if field in kvargs:
+            setattr(event, field, kvargs[field])
+    session.add(event)
+    session.commit()
+    return event
+
+
+def update_fundraising(event_id: int, session: Session, **kvargs) -> Fundraising | None:
+    if event_id is None:
+        raise ValueError('event_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+    kvargs.pop('account_id')
+
+    event = get_fundraising(event_id, session)
+    if event is None:
+        return None
+
+    for field in Fundraising.get_fields():
+        if field in kvargs:
+            setattr(event, field, kvargs[field])
+    session.commit()
+    return event
 
 
 def init_texts_tbl(session: Session = None):
