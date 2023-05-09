@@ -274,33 +274,6 @@ def test_get_members():
     assert len(result) > 0
 
 
-def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
-    session = get_session()
-
-    user = db.get_user(user_id, session)
-    if not user:
-        user_data = {
-            'name': name,
-            'timezone': 3,
-            'birthdate': '1966-12-15',
-        }
-        user = db.insert_user(user_id=user_id, session=session, **user_data)
-    return user
-
-
-def get_company_by_name(name: str = 'ProfiTeam'):
-    session = get_session()
-    company = db.get_company_by_name(name, session)
-    if company is None:
-        data = {
-            'name': name,
-            'industry': 'Software engineering',
-            'person_count': 1,
-        }
-        company = db.insert_company(session, **data)
-    return company
-
-
 # *********************************************
 # Fundraising
 # *********************************************
@@ -340,3 +313,30 @@ def test_insert_private_fundraising():
 def test_insert_company_fundraising():
     session = get_session()
     assert False
+
+
+def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
+    session = get_session()
+
+    user = db.get_user(user_id, session)
+    if not user:
+        user_data = {
+            'name': name,
+            'timezone': 3,
+            'birthdate': '1966-12-15',
+        }
+        user = db.insert_user(user_id=user_id, session=session, **user_data)
+    return user
+
+
+def get_company_by_name(name: str = 'ProfiTeam'):
+    session = get_session()
+    company = db.get_company_by_name(name, session)
+    if company is None:
+        data = {
+            'name': name,
+            'industry': 'Software engineering',
+            'person_count': 1,
+        }
+        company = db.insert_company(session, **data)
+    return company
