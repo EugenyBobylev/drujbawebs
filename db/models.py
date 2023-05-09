@@ -16,9 +16,12 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
+    """
+    Telegram user in the bot
+    """
     __tablename__: str = 'users'
 
-    id = mapped_column(BigInteger, primary_key=True, autoincrement=False)
+    id = mapped_column(BigInteger, primary_key=True, autoincrement=False)  # this is the telegram id
     name = mapped_column(String)
     birthdate = mapped_column(Date)
     timezone = mapped_column(Integer)
@@ -30,14 +33,19 @@ class User(Base):
 
 
 class Account(Base):
+    """
+    Account of the telegram user in the bot
+    """
     __tablename__: str = 'accounts'
     id = mapped_column(Integer, primary_key=True)
     payed_events = mapped_column(Integer, default=1)
     user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
     company_id = mapped_column(Integer, ForeignKey('companies.id'))
+    company_member_id = mapped_column(Integer, ForeignKey('company_members.company_id'))
 
     owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
+    member = relationship('CompanyMember', foreign_keys=[company_member_id])
 
 
 class Company(Base):
@@ -55,8 +63,11 @@ class Company(Base):
         return f'id={self.id}; name="{self.name}"'
 
 
-class CompanyAccount(Base):
-    __tablename__: str = 'company_accounts'
+class CompanyMember(Base):
+    """
+    Employee ar member of the company
+    """
+    __tablename__: str = 'company_members'
 
     company_id = mapped_column(Integer, ForeignKey('companies.id'), primary_key=True)
     account_id = mapped_column(Integer, ForeignKey('accounts.id'), primary_key=True)

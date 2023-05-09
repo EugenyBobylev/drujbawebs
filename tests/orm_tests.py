@@ -82,20 +82,6 @@ def test_delete_user():
     assert user is None
 
 
-def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
-    session = get_session()
-
-    user = db.get_user(user_id, session)
-    if not user:
-        user_data = {
-            'name': name,
-            'timezone': 3,
-            'birthdate': '1966-12-15',
-        }
-        user = db.insert_user(user_id=user_id, session=session, **user_data)
-    return user
-
-
 # *********************************************
 # Account
 # *********************************************
@@ -210,6 +196,9 @@ def test_insert_company():
 
 
 def test_change_company_account_admin():
+    """
+    Change an admin of teh company_account
+    """
     session = get_session()
     company = get_company_by_name()
     account = db.get_company_account(company.id, session)
@@ -228,6 +217,43 @@ def test_change_company_account_admin():
     assert  account.user_id == admin.id
 
 
+# Эту херню надо протестить
+def test_create_user():
+    api_user = apiUser(id=123, name='Popov', birthdate='1980-02-10', timezone=1)
+    assert api_user is not None
+
+    user: User = db.create_user(api_user)
+    assert user is not None
+    assert 123 == user.id
+    assert 'Popov' == user.name
+
+
+# *********************************************
+# CompanyMember
+# *********************************************
+def test_get_not_exist_company_member():
+    session = get_session()
+    account_id = -100
+    company_id = -22
+    cm = db.get_company_member(company_id, account_id, session)
+
+    assert cm is None
+
+
+def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
+    session = get_session()
+
+    user = db.get_user(user_id, session)
+    if not user:
+        user_data = {
+            'name': name,
+            'timezone': 3,
+            'birthdate': '1966-12-15',
+        }
+        user = db.insert_user(user_id=user_id, session=session, **user_data)
+    return user
+
+
 def get_company_by_name(name: str = 'ProfiTeam'):
     session = get_session()
     company = db.get_company_by_name(name, session)
@@ -240,13 +266,3 @@ def get_company_by_name(name: str = 'ProfiTeam'):
         company = db.insert_company(session, **data)
     return company
 
-
-# Эту херню надо протестить
-def test_create_user():
-    api_user = apiUser(id=123, name='Popov', birthdate='1980-02-10', timezone=1)
-    assert api_user is not None
-
-    user: User = db.create_user(api_user)
-    assert user is not None
-    assert 123 == user.id
-    assert 'Popov' == user.name
