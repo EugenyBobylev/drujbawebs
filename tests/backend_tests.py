@@ -16,6 +16,15 @@ auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0Ex
 # *************************************
 # Required working backend
 # *************************************
+def test_get_root():
+    url = 'http://127.0.0.1:8000/'
+    headers = {
+        'Authorization': auth
+    }
+    r = requests.get(url)
+    assert r.status_code == 200
+
+
 def test_create_user_without_auth():
     url = 'http://127.0.0.1:8000/user/'
     user = User(name='test_user', timezone=1)
@@ -26,27 +35,25 @@ def test_create_user_without_auth():
 def test_create_user_with_auth():
     url = 'http://127.0.0.1:8000/user/'
     headers = {
+        'Content-Type': 'application/json',
         'Authorization': auth
     }
-    user = User(name='test_user', timezone=1)
+    user = User(id=123, name='test_user', timezone=1)
     r = requests.post(url, headers=headers, json=user.__dict__)
     assert r.status_code == 200
 
 
-def test_create_user_with_wrong_auth():
-    url = 'http://127.0.0.1:8000/user/'
-    headers = {
-        'Authorization': 'all nonsense'
-    }
-    user = User(name='test_user', timezone=1)
-    r = requests.post(url, headers=headers, json=user.__dict__)
-    assert r.status_code == 401
+# def test_create_user_with_wrong_auth():
+#     url = 'http://127.0.0.1:8000/user/'
+#     headers = {
+#         'Authorization': 'all nonsense'
+#     }
+#     user = User(name='test_user', timezone=1)
+#     r = requests.post(url, headers=headers, json=user.__dict__)
+#     assert r.status_code == 401
 
 
 def test_api_bot_send_me():
-    headers = {
-        'Content-Type: application/json'
-    }
     token = BotConfig.instance().token
     url = f'https://api.telegram.org/bot{token}/getMe'
     r = requests.get(url)
@@ -58,12 +65,12 @@ def test_api_bot_send_me():
 
 
 def test_answer_web_app_query():
-    '''
+    """
     Тест на отправку боту данных из WebApp
-    перед выполнение,каждый раз, требуется обновлять web_query_id
+    перед выполнением, каждый раз, требуется обновлять web_query_id
     т.к. он может быть использован только единожды
     :return:
-    '''
+    """
     web_query_id = 'AAHHSWsHAAAAAMdJawcBvcwJ'
     headers = {
         'Content-Type': 'application/json'

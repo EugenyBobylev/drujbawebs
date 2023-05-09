@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
 
+from backend import User as ApiUser
 from config import BotConfig
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, CompanyMember, Fundraising
@@ -77,14 +78,15 @@ def get_user(user_id: int, session: Session) -> User | None:
     return result
 
 
-def create_user(user) -> User:
+def create_user(user: ApiUser) -> User:
     session = get_session()
     session.expire_on_commit = False
     tgid = user.id
     user_data: dict = user.dict()
     user_data.pop('id')
     user = insert_user(tgid, session, **user_data)
-    return user
+    account = insert_private_account(user.id, session, payed_events=1)
+    return user, account
 
 
 def insert_user(user_id: int, session: Session, **kvargs) -> User:
@@ -177,7 +179,8 @@ def get_private_account(user_id: int, session: Session = None) -> Account | None
         raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    query = select(Account).where(Account.user_id == user_id).where(Account.company_id == None)
+    query = select(Account).where(Account.user_id == user_id)\
+        .where(Account.company_id == None).where(Account.company_member_id == None)
     result = session.execute(query).scalars().first()
     return result
 
@@ -190,7 +193,7 @@ def insert_private_account(user_id: int, session: Session, **kvargs) -> Account:
     kvargs['company_id'] = None
     kvargs['company_member_id'] = None
 
-    exist_account = get_private_account(user_id)
+    exist_account = get_private_account(user_id, session)
     if exist_account:
         exist_account = update_account(exist_account.id, session, **kvargs)
         return exist_account
