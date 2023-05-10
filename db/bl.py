@@ -1,13 +1,13 @@
 from datetime import date, timedelta
 
-from sqlalchemy import create_engine, Engine, select, func
+from sqlalchemy import create_engine, Engine, select
 from sqlalchemy.orm import sessionmaker, Session
 
 from backend import User as ApiUser
 from backend import Fundraising as ApiFundraising
 from config import BotConfig
 from db import EntityNotExistsException
-from db.models import Msg, User, Company, Account, CompanyMember, Fundraising
+from db.models import Msg, User, Company, Account, Fundraising
 
 
 def get_engine() -> Engine:
@@ -141,36 +141,12 @@ def get_company_account(company_id: int, session: Session = None) -> Account | N
     return result
 
 
-def get_member_account(user_id: int, company_id: int, check_cm: bool = True, session: Session = None) -> Account | None:
-    if user_id is None:
-        raise ValueError('user_id can not be None')
-    if company_id is None:
-        raise ValueError('company_id can not be None')
-    if check_cm is None:
-        raise ValueError('check_cm can not be None')
-    if session is None:
-        raise ValueError('session can not be None')
-    query = select(Account)\
-        .where(Account.user_id == user_id)\
-        .where(Account.company_member_id == company_id)
-
-    account = session.execute(query).scalars().first()
-    # check exists CompanyMembers for this account
-    if account and check_cm:
-        cm = get_cm(company_id, account.id, session)
-        if cm is None:
-            cm = _insert_cm(company_id, account.id, session)
-            assert cm is not None
-    return account
-
-
 def get_private_account(user_id: int, session: Session = None) -> Account | None:
     if user_id is None:
         raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    query = select(Account).where(Account.user_id == user_id)\
-        .where(Account.company_id == None).where(Account.company_member_id == None)
+    query = select(Account).where(Account.user_id == user_id).where(Account.company_id == None)
     result = session.execute(query).scalars().first()
     return result
 
@@ -197,24 +173,6 @@ def insert_private_account(user_id: int, session: Session, **kvargs) -> Account:
     return account
 
 
-def change_company_account_user(user_id: int, company_id: int, session: Session) -> bool:
-    if company_id is None:
-        raise ValueError('company_id can not be None')
-    if session is None:
-        raise ValueError('session can not be None')
-
-    company_account = get_company_account(company_id, session)
-    if company_account is None:
-        return False
-    member_account = get_member_account(user_id, company_id, True, session)
-    if member_account is None:
-        member_account = insert_member_account(user_id, company_id, session)
-        assert member_account is not None
-    company_account.user_id = member_account.user_id
-    session.commit()
-    return True
-
-
 def insert_company_account(user_id: int, company_id: int, session: Session, **kvargs) -> Account:
     if company_id is None:
         raise ValueError('company_id can not be None')
@@ -225,7 +183,8 @@ def insert_company_account(user_id: int, company_id: int, session: Session, **kv
 
     company_account = get_company_account(company_id, session)
     if company_account:
-        change_company_account_user(user_id, company_id, session)
+        company_account.user_id = user_id
+        session.commit()
         return company_account
 
     # create account
@@ -250,20 +209,12 @@ def insert_member_account(user_id: int, company_id: int, session: Session, **kva
     kvargs['company_id'] = None
     kvargs['company_member_id'] = company_id
 
-    exist_account = get_member_account(user_id, company_id, True, session)
-    if exist_account:
-        if exist_account.user_id == user_id:
-            update_account(exist_account.id, session, **kvargs)
-            return exist_account
-
     account = Account(user_id=user_id)
     for field in Account.get_fields():
         if field in kvargs:
             setattr(account, field, kvargs[field])
     session.add(account)
     session.commit()
-    cm = _insert_cm(company_id, account.id, session)
-    assert cm is not None
     return account
 
 
@@ -353,63 +304,6 @@ def delete_company(company_id: int, session: Session):
 # **********************************************************************
 # CompanyMember
 # **********************************************************************
-def get_cm(company_id: int, account_id: int, session: Session) -> CompanyMember | None:
-    """
-    get account of the company member (employee)
-    :param company_id: company id
-    :param account_id: account id of company member (employee)
-    :param session:
-    :return:
-    """
-    if company_id is None:
-        raise ValueError('company_id can not be None')
-    if account_id is None:
-        raise ValueError('account_id can not be None')
-    if session is None:
-        raise ValueError("session can't be None")
-
-    query = select(CompanyMember)\
-        .where(CompanyMember.company_id == company_id)\
-        .where(CompanyMember.account_id == account_id)
-    result = session.execute(query).scalars().first()
-    return result
-
-
-def get_members(company_id: int, session: Session) -> [CompanyMember]:
-    if company_id is None:
-        raise ValueError('company_id can not be None')
-    if session is None:
-        raise ValueError("session can't be None")
-
-    query = select(CompanyMember).where(CompanyMember.company_id == company_id)
-    result = session.execute(query).scalars().all()
-    return result
-
-
-def get_cm_by_member(account_id: int, session: Session) -> [CompanyMember]:
-    if account_id is None:
-        raise ValueError('account_id can not be None')
-    if session is None:
-        raise ValueError("session can't be None")
-
-    query = select(CompanyMember).where(CompanyMember.account_id == account_id)
-    result = session.execute(query).scalars()
-    return result
-
-
-def _insert_cm(company_id: int, account_id: int, session: Session, **kvargs) -> CompanyMember | None:
-    if company_id is None:
-        raise ValueError('company_id can not be None')
-    if account_id is None:
-        raise ValueError('account_id can not be None')
-    if session is None:
-        raise ValueError("session can not be None")
-    cm = get_cm(company_id, account_id, session)
-    if cm is None:
-        cm = CompanyMember(company_id=company_id, account_id=account_id, **kvargs)
-        session.add(cm)
-        session.commit()
-    return cm
 
 
 # **********************************************************************
@@ -418,9 +312,6 @@ def _insert_cm(company_id: int, account_id: int, session: Session, **kvargs) -> 
 def get_fundraising(event_id: int, session: Session) -> Fundraising | None:
     """
     get account of the company member (employee)
-    :param company_id: company id
-    :param account_id: account id of company member (employee)
-    :param session:
     :return:
     """
     if event_id is None:

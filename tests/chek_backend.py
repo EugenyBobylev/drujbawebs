@@ -17,8 +17,8 @@ auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0Ex
 # *************************************
 # Required working backend
 # *************************************
-# base_url = 'http://127.0.0.1:8000'
-base_url = 'http://89.223.121.3:8000'
+base_url = 'http://127.0.0.1:8000'
+# base_url = 'http://89.223.121.3:8000'
 
 
 def check_get_root():
@@ -74,6 +74,6 @@ def check_create_event():
 
 
 if __name__ == '__main__':
-    # check_get_root()
-    # check_create_user()
+    check_get_root()
+    check_create_user()
     check_create_event()

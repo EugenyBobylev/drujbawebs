@@ -31,27 +31,6 @@ class User(Base):
         return f'tgid={self.id}; name="{self.name}"; timezone={self.timezone}'
 
 
-class Account(Base):
-    """
-    Account of the telegram user in the bot
-    """
-    __tablename__: str = 'accounts'
-    id = mapped_column(Integer, primary_key=True)
-    payed_events = mapped_column(Integer, default=0)
-    user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
-    company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='cascade'), unique=True)
-    company_member_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='cascade'))
-
-    owner = relationship('User', foreign_keys=[user_id], back_populates='accounts')
-    company = relationship('Company', foreign_keys=[company_id], uselist=False)
-    member = relationship('Company', foreign_keys=[company_member_id], uselist=False)
-    fundraisings = relationship('Fundraising')
-
-    def __repr__(self) -> str:
-        return f'id={self.id}; user_id={self.user_id}; company_id={self.company_id}, ' \
-               f'company_member_id={self.company_member_id}'
-
-
 class Company(Base):
     """
     Company
@@ -62,41 +41,56 @@ class Company(Base):
     name = mapped_column(String, nullable=False, unique=True)        # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)  # администратор
+    admin = relationship('Account', uselist=False)
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"'
 
 
-class CompanyMember(Base):
+class Account(Base):
     """
-    Employee ar member of the company
+    Account of the telegram user in the bot
     """
-    __tablename__: str = 'company_members'
+    __tablename__: str = 'accounts'
 
-    company_id = mapped_column(Integer, ForeignKey('companies.id'), primary_key=True)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), primary_key=True)
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
+    company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), unique=True)
+    payed_events = mapped_column(Integer, default=0)
     job_title = mapped_column(String, default='')
     phone = mapped_column(String, default='')
     email = mapped_column(String, default='')
 
+    owner = relationship('User', foreign_keys=[user_id], back_populates='accounts', uselist=False)
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
-    account = relationship('Account', foreign_keys=[account_id], uselist=False)
+    fundraisings = relationship('Fundraising')
+    donors = relationship('Donor')
 
     def __repr__(self) -> str:
-        return f'company_id={self.company_id}; account_id={self.account_id}'
+        return f'id={self.id}; user_id={self.user_id}; company_id={self.company_id}'
+
+
+class Donor(Base):
+    __tablename__: str = 'donors'
+    event_id = mapped_column(Integer, ForeignKey('fundraising.id', ondelete='CASCADE'), primary_key=True)
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), primary_key=True)
+    payed = mapped_column(Integer, nullable=False, default=0)
+
+    account = relationship('Account', foreign_keys=[account_id], back_populates='donors')
+    fundraising = relationship('Fundraising', foreign_keys=[event_id], back_populates='donors')
 
 
 class Fundraising(Base):
     """
     Сбор средств (на подарок, на ресторан и т.д.)
     """
-    __tablename__: str = 'fundrasing'
+    __tablename__: str = 'fundraising'
 
     id = mapped_column(Integer, primary_key=True)
     reason = mapped_column(String, nullable=False)      # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target = mapped_column(String, nullable=False)      # кому собираем
     account_id = mapped_column(ForeignKey("accounts.id", ondelete='cascade'), nullable=False)
-    owner = relationship('Account', back_populates='fundraisings')  # лицо ответственное за сбор
     start = mapped_column(Date)                         # дата регистрации сбора
     end = mapped_column(Date)                           # дата окончания сбора
     event_date = mapped_column(Date, nullable=False)    # дата события
@@ -107,6 +101,9 @@ class Fundraising(Base):
     event_place = mapped_column(String, default='')     # место проведения мероприятия
     event_dresscode = mapped_column(String, default='')  # дресс-код
     invite_url = mapped_column(String, nullable=False, default='')  # ссылка приглашения для участия в сборе
+
+    owner = relationship('Account', back_populates='fundraisings')  # лицо ответственное за сбор
+    donors = relationship('Donor')
 
     def __repr__(self) -> str:
         return f'id={self.id}; reason="{self.reason}"; target="{self.target}"; ' \
