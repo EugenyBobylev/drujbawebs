@@ -38,11 +38,12 @@ class Company(Base):
     __tablename__: str = 'companies'
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)  # администратор
     name = mapped_column(String, nullable=False, unique=True)        # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
-    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)  # администратор
-    admin = relationship('Account', uselist=False)
+
+    admin = relationship('Account', foreign_keys=[account_id], uselist=False)
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"'
@@ -55,7 +56,7 @@ class Account(Base):
     __tablename__: str = 'accounts'
 
     id = mapped_column(Integer, primary_key=True)
-    user_id = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), unique=True)
     payed_events = mapped_column(Integer, default=0)
     job_title = mapped_column(String, default='')
