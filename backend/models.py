@@ -72,10 +72,11 @@ class User(BaseModel):
 
 
 class Fundraising(BaseModel):
-    id: int = None
+    user_id: int
+    account_id: int = None
+    event_id: int = None
     reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target: str               # кому собираем
-    account_id: int = None
     start: date = None        # дата регистрации сбора
     end: date = None          # дата окончания сбора
     event_date: date          # дата события

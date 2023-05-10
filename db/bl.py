@@ -584,8 +584,8 @@ def create_user(user: ApiUser) -> (User, Account):
 
 def create_private_fundraising(event: ApiFundraising) -> Fundraising:
     session = get_session()
-    account_id = event.account_id
-    account = get_account(account_id, session)
+    user_id = event.user_id
+    account = get_private_account(user_id, session)
     assert account is not None
 
     event_data = event.dict()

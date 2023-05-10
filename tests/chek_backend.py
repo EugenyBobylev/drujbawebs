@@ -17,8 +17,12 @@ auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0Ex
 # *************************************
 # Required working backend
 # *************************************
+# base_url = 'http://127.0.0.1:8000'
+base_url = 'http://89.223.121.3:8000'
+
+
 def check_get_root():
-    url = 'http://127.0.0.1:8000/'
+    url = f'{base_url}/'
     headers = {
         'Authorization': auth
     }
@@ -27,7 +31,7 @@ def check_get_root():
 
 
 def check_create_user():
-    url = 'http://127.0.0.1:8000/user/'
+    url = f'{base_url}/user/'
     headers = {
         'Content-Type': 'application/json',
         'Authorization': auth
@@ -39,14 +43,14 @@ def check_create_user():
 
 
 def check_create_event():
-    url = 'http://127.0.0.1:8000/event/'
+    url = f'{base_url}/event/'
     headers = {
         'Content-Type': 'application/json',
         'Authorization': auth
     }
 
     event_data = {
-        'account_id': 30,
+        'user_id': 1234,
         'reason': 'ДР',
         'target': 'юбилей',
         'start': '2023-01-15',
@@ -70,5 +74,6 @@ def check_create_event():
 
 
 if __name__ == '__main__':
+    # check_get_root()
     # check_create_user()
     check_create_event()
