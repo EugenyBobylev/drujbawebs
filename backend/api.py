@@ -2,21 +2,18 @@ import urllib
 import urllib.parse
 from functools import wraps
 
-import uvicorn
 from fastapi import FastAPI, Header, HTTPException
-
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
 
 import db
-from telegram_api import send_answer_web_app_query
-from models import WebAppInitData, User, Fundraising
+from backend.models import User, Fundraising
 from config import BotConfig
 from utils import check_webapp_signature, decode_base64_str
 
-
+config = BotConfig.instance()
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
@@ -105,8 +102,3 @@ def create_private_event(event: Fundraising, authorization: str | None = Header(
     event = db.create_private_fundraising(event)
     assert event is not None
     return{'event_id': event.id}
-
-
-if __name__ == '__main__':
-    config = BotConfig.instance()
-    uvicorn.run(app, host="localhost", port=8000)

@@ -1,25 +1,22 @@
 import asyncio
 import logging
 
-import aiohttp
 from aiogram import Dispatcher, Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import ContentType
-from dotenv import load_dotenv, dotenv_values
 
 from config import BotConfig
-from handlers.common import register_handlers_common
-from handlers.company import register_handlers_company
-from handlers.new import register_handlers_new
-from handlers.private import register_handlers_private
-from handlers.referal import register_handlers_referal
+from bot.handlers.common import register_handlers_common
+from bot.handlers.company import register_handlers_company
+from bot.handlers.new import register_handlers_new
+from bot.handlers.private import register_handlers_private
+from bot.handlers.referal import register_handlers_referal
 
 
 async def cmd_delete_msg(message: types.Message):
     await message.delete()
 
 
-async def main():
+async def start():
     # Настройка логирования в stdout
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', )
 
@@ -42,4 +39,4 @@ async def main():
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
-    asyncio.run(main())
+    asyncio.run(start())

@@ -35,6 +35,8 @@ class BotConfig:
                 cls._instance.token = env_config['TOKEN']
                 cls._instance.payment_username = env_config['PAYMENT_USERNAME']
                 cls._instance.payment_password = env_config['PAYMENT_PASSWORD']
+                cls._instance.db_host = env_config.get('DB_HOST', '127.0.0.1')
+                cls._instance.db_port = env_config.get('DB_PORT', 5432)
                 cls._instance.db = env_config['DB']
                 cls._instance.db_user = env_config['DB_USER']
                 cls._instance.db_password = env_config['DB_PASSWORD']
