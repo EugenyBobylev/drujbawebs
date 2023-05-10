@@ -75,7 +75,7 @@ async def get_query_id(query_id: str, response: Response):
 
 
 @app.post('/user/')
-# @auth
+@auth
 def create_new_user(user: User, authorization: str | None = Header(convert_underscores=True)):
     """
     Create new user
@@ -94,7 +94,7 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
 
 
 @app.post('/event/')
-# @auth
+@auth
 def create_private_event(event: Fundraising, authorization: str | None = Header(convert_underscores=True)):
     """
     Create new fundraising (event)
