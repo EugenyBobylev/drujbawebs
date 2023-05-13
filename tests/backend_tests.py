@@ -1,6 +1,7 @@
 import json
 
 import requests
+from fastapi.encoders import jsonable_encoder
 
 from backend import User
 from backend import send_message
@@ -28,7 +29,8 @@ def test_get_root():
 def test_create_user_without_auth():
     url = 'http://127.0.0.1:8000/user/'
     user = User(id=1234, name='test_user', timezone=1, birthdate='1980-01-23')
-    r = requests.post(url, json=user.__dict__)
+    user_json = jsonable_encoder(user)
+    r = requests.post(url, json=user_json)
     assert r.status_code == 422
 
 
@@ -38,8 +40,9 @@ def test_create_user_with_auth():
         'Content-Type': 'application/json',
         'Authorization': auth
     }
-    user = User(id=123, name='test_user', timezone=1)
-    r = requests.post(url, headers=headers, json=user.__dict__)
+    user = User(id=1234, name='Kent Beck', timezone=1, birthdate='1960-01-23')
+    user_json = jsonable_encoder(user)
+    r = requests.post(url, headers=headers, json=user_json)
     assert r.status_code == 200
 
 

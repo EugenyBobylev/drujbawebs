@@ -126,7 +126,7 @@ def register_user(user_id: int, session: Session, **kvargs) -> User:
     user = session.get(User, user_id)
     if user:
         user = update_user(user_id, session, **kvargs)
-        account = session.scalars(select(Account).where(User.id == user_id)).first()
+        account = get_user_account(user_id, session)
         if account is None:
             insert_user_account(user.id, session)
         session.refresh(user)
@@ -174,14 +174,22 @@ def get_account(account_id: int, session: Session = None) -> Account | None:
     return account
 
 
+def get_user_account(user_id: int, session: Session = None) -> Account | None:
+    if user_id is None:
+        raise ValueError('user_id can not be None')
+    if session is None:
+        raise ValueError('session can not be None')
+    account = session.scalars(select(Account).where(Account.user_id == user_id)).first()
+    return account
+
+
 def get_company_account(company_id: int, session: Session = None) -> Account | None:
     if company_id is None:
         raise ValueError('company_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    query = select(Account).where(Account.company_id == company_id)
-    result = session.execute(query).scalars().first()
-    return result
+    account = session.scalars(select(Account).where(Account.company_id == company_id)).first()
+    return account
 
 
 def insert_user_account(user_id: int, session: Session) -> Account:
@@ -189,7 +197,7 @@ def insert_user_account(user_id: int, session: Session) -> Account:
         raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    account = session.scalars(select(User).where(Account.user_id == user_id)).first()
+    account = session.scalars(select(Account).where(Account.user_id == user_id)).first()
     if account is not None:
         return account
 
@@ -580,14 +588,14 @@ def init_texts_tbl(session: Session = None):
 # **********************************************************************
 # Call from backend
 # **********************************************************************
-def create_user(user: ApiUser) -> User | None:
+def create_user(user: ApiUser) -> (User, Account):
     session = get_session()
     session.expire_on_commit = False
     user_id = user.id
     user_data: dict = user.dict()
     user_data.pop('id')
     user = register_user(user_id, session, **user_data)
-    return user
+    return user, user.account
 
 
 def create_private_fundraising(event: ApiFundraising) -> Fundraising:

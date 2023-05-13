@@ -11,6 +11,7 @@ from starlette.templating import Jinja2Templates
 import db
 from backend.models import User, Fundraising
 from config import BotConfig
+from db import Account
 from utils import check_webapp_signature, decode_base64_str
 
 config = BotConfig.instance()
@@ -92,14 +93,14 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     :param authorization:
     :return:
     """
-    db_user, account = db.create_user(user)
+    db_user, db_account = db.create_user(user)
     assert db_user is not None
-    assert account is not None
+    assert db_account is not None
 
     # web_init = WebAppInitData.form_auth_header(authorization)
     # r = send_answer_web_app_query(web_init.query_id, user.dict())
     # assert 200 == r.status_code
-    return {'account_id': account.id }
+    return {'account_id': db_account.id }
 
 
 @app.get('/user/card/{user_id}')
