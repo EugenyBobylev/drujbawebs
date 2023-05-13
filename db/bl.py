@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from backend import User as ApiUser
 from backend import Fundraising as ApiFundraising
+from backend import Account as ApiAccount
 from config import BotConfig
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, MC
@@ -597,6 +598,15 @@ def create_user(user: ApiUser) -> (User, Account):
     user = register_user(user_id, session, **user_data)
     return user, user.account
 
+
+def get_api_user_account(user_id: int) -> ApiAccount | None:
+    session = get_session()
+    account: Account = get_user_account(user_id, session)
+    api_account = None
+    if account is not None:
+        api_account = ApiAccount(id=account.id, user_id=account.user_id, company_id=account.company_id,
+                                 payed_events = account.payed_events)
+    return api_account
 
 def create_private_fundraising(event: ApiFundraising) -> Fundraising:
     session = get_session()

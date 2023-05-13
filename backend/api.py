@@ -3,9 +3,11 @@ import urllib.parse
 from functools import wraps
 
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.encoders import jsonable_encoder
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
+from starlette.status import HTTP_204_NO_CONTENT
 from starlette.templating import Jinja2Templates
 
 import db
@@ -103,6 +105,22 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     return {'account_id': db_account.id }
 
 
+@app.get('/user/account/{user_id}/')
+@auth
+def get_user_account(user_id: int, authorization: str | None = Header(convert_underscores=True)):
+    """
+    Get user's account
+    :param user_id:
+    :param authorization:
+    :return:
+    """
+    account: Account = db.get_api_user_account(user_id)
+    if account is not None:
+        account_json = jsonable_encoder(account)
+        return JSONResponse(content=account_json, status_code=200)
+    return Response(status_code=HTTP_204_NO_CONTENT)
+
+
 @app.get('/user/card/{user_id}')
 @auth
 def get_user_card_info(user_id: int, authorization: str | None = Header(convert_underscores=True)):
@@ -110,7 +128,6 @@ def get_user_card_info(user_id: int, authorization: str | None = Header(convert_
     Get statistic info about all his fundraisings
     :return:
     """
-    
 
 
 @app.post('/event/')

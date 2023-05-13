@@ -71,6 +71,13 @@ class User(BaseModel):
         return f'id={self.id}; name={self.name}; timezone={self.timezone}; birthdate={self.birthdate}'
 
 
+class Account(BaseModel):
+    id: int
+    user_id: int = None
+    company_id: int = None
+    payed_events: int
+
+
 class Fundraising(BaseModel):
     user_id: int
     account_id: int = None

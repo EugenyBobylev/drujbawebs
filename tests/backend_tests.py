@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from backend import User
 from backend import send_message
 from config import BotConfig
+from db import Account
 
 auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0ExMjQ0NzE3NTElMkMlMjJmaXJzdF9uYW1' \
        'lJTIyJTNBJTIyJUQwJTk1JUQwJUIyJUQwJUIzJUQwJUI1JUQwJUJEJUQwJUI4JUQwJUI5JTIyJTJDJTIybGFzdF9uYW1lJTIyJTNBJTIy' \
@@ -44,6 +45,27 @@ def test_create_user_with_auth():
     user_json = jsonable_encoder(user)
     r = requests.post(url, headers=headers, json=user_json)
     assert r.status_code == 200
+
+
+def test_get_user_account():
+    url = 'http://127.0.0.1:8000/user/account/1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    api_model: Account = r.json()
+    assert r.status_code == 200
+
+
+def test_get_wrong_user_account():
+    url = 'http://127.0.0.1:8000/user/account/-1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    assert r.status_code == 204
 
 
 # def test_create_user_with_wrong_auth():
