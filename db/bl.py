@@ -7,7 +7,7 @@ from backend import User as ApiUser
 from backend import Fundraising as ApiFundraising
 from config import BotConfig
 from db import EntityNotExistsException
-from db.models import Msg, User, Company, Account, Fundraising, Donor
+from db.models import Msg, User, Company, Account, Fundraising, Donor, MC
 
 
 def get_engine() -> Engine:
@@ -74,15 +74,14 @@ def delete_msg(text_name: str, session: Session):
 def get_user(user_id: int, session: Session) -> User | None:
     if session is None:
         raise ValueError("session can't be None")
-    query = select(User).where(User.id == user_id)
-    result = session.execute(query).scalars().first()
-    return result
+    user = session.get(User, user_id)
+    return user
 
 
 def insert_user(user_id: int, session: Session, **kvargs) -> User:
     if session is None:
         raise ValueError("session can't be None")
-    user = get_user(user_id, session)
+    user = session.get(User, user_id)
     if user:
         user = update_user(user_id, session, **kvargs)
     else:
@@ -98,7 +97,7 @@ def insert_user(user_id: int, session: Session, **kvargs) -> User:
 def update_user(user_id: int, session: Session, **kvargs) -> User:
     if session is None:
         raise ValueError("session can't be None")
-    user = get_user(user_id, session)
+    user = session.get(User, user_id)
     if user is None:
         user = insert_user(user_id, session, **kvargs)
     else:
@@ -112,10 +111,55 @@ def update_user(user_id: int, session: Session, **kvargs) -> User:
 def delete_user(user_id: int, session: Session):
     if session is None:
         raise ValueError("session can't be None")
-    user = get_user(user_id, session)
+    user = session.get(User, user_id)
     if user:
         session.delete(user)
         session.commit()
+
+
+def register_user(user_id: int, session: Session, **kvargs) -> User:
+    if user_id is None:
+        raise ValueError("user_id can't be None")
+    if session is None:
+        raise ValueError("session can't be None")
+
+    user = session.get(User, user_id)
+    if user:
+        user = update_user(user_id, session, **kvargs)
+        account = session.scalars(select(Account).where(User.id == user_id)).first()
+        if account is None:
+            insert_user_account(user.id, session)
+        session.refresh(user)
+        return user
+
+    user = insert_user(user_id, session, **kvargs)
+    account = insert_user_account(user.id, session)
+    assert account is not None
+    return user
+
+
+def is_user_registered(user_id: int, session: Session) -> bool:
+    if user_id is None:
+        raise ValueError("user_id can't be None")
+    if session is None:
+        raise ValueError("session can't be None")
+    user = session.get(User, user_id)
+    if user is not None:
+        return user.account is not None
+    return False
+
+
+def get_user_companies(user_id: int, session: Session) -> [Company]:
+    if user_id is None:
+        raise ValueError("user_id can't be None")
+    if session is None:
+        raise ValueError("session can't be None")
+
+    user_companies = []
+    user = session.get(User, user_id)
+    if user is not None:
+        user_companies = [mc.company for mc in user.members]
+    return user_companies
 
 
 # **********************************************************************
@@ -126,9 +170,8 @@ def get_account(account_id: int, session: Session = None) -> Account | None:
         raise ValueError('account_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    query = select(Account).where(Account.id == account_id)
-    result = session.execute(query).scalars().first()
-    return result
+    account = session.get(Account, account_id)
+    return account
 
 
 def get_company_account(company_id: int, session: Session = None) -> Account | None:
@@ -141,27 +184,31 @@ def get_company_account(company_id: int, session: Session = None) -> Account | N
     return result
 
 
-def get_private_account(user_id: int, session: Session = None) -> Account | None:
+def insert_user_account(user_id: int, session: Session) -> Account:
     if user_id is None:
         raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    query = select(Account).where(Account.user_id == user_id).where(Account.company_id == None)
-    result = session.execute(query).scalars().first()
-    return result
+    account = session.scalars(select(User).where(Account.user_id == user_id)).first()
+    if account is not None:
+        return account
+
+    account = Account(user_id=user_id, payed_events=1)
+    session.add(account)
+    session.commit()
+    return account
 
 
-def insert_account(user_id: int, session: Session, **kvargs) -> Account:
-    if user_id is None:
-        raise ValueError('user_id can not be None')
+def insert_company_account(company_id: int, session: Session) -> Account:
+    if company_id is None:
+        raise ValueError('company_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    kvargs['company_id'] = None
+    account = session.scalars(select(User).where(Account.company_id == company_id)).first()
+    if account is not None:
+        return account
 
-    account = Account(user_id=user_id)
-    for field in Account.get_fields():
-        if field in kvargs:
-            setattr(account, field, kvargs[field])
+    account = Account(company_id=company_id, payed_events=0)
     session.add(account)
     session.commit()
     return account
@@ -171,10 +218,8 @@ def update_account(account_id: int, session: Session, **kvargs) -> Account:
     if session is None:
         session = get_session()
     account = get_account(account_id, session)
-    if account is None:
-        raise EntityNotExistsException
-    if account.company_id is None:
-        kvargs['job_title'] = ''
+    kvargs.pop('user_id', None)
+    kvargs.pop('company_id', None)
 
     for field in Account.get_fields():
         if field in kvargs:
@@ -186,13 +231,9 @@ def update_account(account_id: int, session: Session, **kvargs) -> Account:
 def delete_account(account_id: int, session: Session):
     if session is None:
         session = get_session()
-    account = get_account(account_id, session)
+    account = session.get(Account, account_id)
     if account is None:
         return
-    # user_id: int = account.user_id
-    # accounts_count: int = session.scalar(
-    #     select(func.count()).select_from(Account).where(Account.user_id == user_id)
-    # )
     session.delete(account)
     session.commit()
 
@@ -203,38 +244,38 @@ def delete_account(account_id: int, session: Session):
 def get_company(company_id: int, session: Session) -> Company | None:
     if session is None:
         raise ValueError("session can't be None")
-    query = select(Company).where(Company.id == company_id)
-    result = session.execute(query).scalars().first()
-    return result
+    company = session.get(Company, company_id)
+    return company
 
 
 def get_company_by_name(name: str, session: Session) -> Company | None:
     if session is None:
         raise ValueError("session can't be None")
-    query = select(Company).where(Company.name == name)
-    result = session.execute(query).scalars().first()
-    return result
+    company = session.scalars(select(Company).where(Company.name == name)).first()
+    return company
 
 
-def insert_company(name: str, user_id: int, session: Session, **kvargs) -> Company:
+def insert_company(name: str, admin_id: int, session: Session, **kvargs) -> Company:
     if name is None:
         raise ValueError("name can't be None")
-    if user_id is None:
-        raise ValueError("user_id can't be None")
+    if admin_id is None:
+        raise ValueError("admin_id can't be None")
     if session is None:
         raise ValueError("session can't be None")
+    company = get_company_by_name(name, session)
+    if company:
+        company.admin_id = admin_id
+        update_company(company.id, session, **kvargs)
 
-    account = insert_account(user_id, session, **kvargs)
-    assert account is not None
-
-    company = Company(name=name, account_id=account.id)
+    company = Company(name=name, admin_id=admin_id)
     for field in Company.get_fields():
         if field in kvargs:
             setattr(company, field, kvargs[field])
     session.add(company)
     session.commit()
 
-    account.company_id = company.id
+    # сразу создать account
+    insert_company_account(company.id, session)
     session.commit()
     return company
 
@@ -245,7 +286,7 @@ def update_company(company_id: int, session: Session, **kvargs) -> Company:
     if session is None:
         raise ValueError("session can't be None")
 
-    company = get_company(company_id, session)
+    company = session.get(Company, company_id)
     if company is None:
         raise ValueError("company_id not found")
 
@@ -260,21 +301,23 @@ def update_company(company_id: int, session: Session, **kvargs) -> Company:
 def delete_company(company_id: int, session: Session):
     if session is None:
         raise ValueError("session can't be None")
-    company = get_company(company_id, session)
+    company = session.get(Company, company_id)
     if company:
         session.delete(company)
         session.commit()
 
 
-def get_members(company_id: str, session: Session) -> [Account]:
+def get_company_users(company_id: str, session: Session) -> [User]:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if session is None:
         raise ValueError("session can't be None")
 
-    query = select(Account).where(Account.company_id == company_id)
-    result = session.execute(query).scalars().all()
-    return result
+    company_users = []
+    company = session.get(Company, company_id)
+    if company is not None:
+        company_users = [mc.user for mc in company.members]
+    return company_users
 
 
 def get_member(company_id: str, user_id: int, session: Session) -> [Account]:
@@ -303,7 +346,7 @@ def add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Acc
         update_account(account.id, session, **kvargs)
         return account
 
-    account = insert_account(user_id, session, **kvargs)
+    account = insert_user_account(user_id, session)
     account.company_id = company_id
     session.commit()
     return account
@@ -379,8 +422,14 @@ def insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraisi
             setattr(event, field, kvargs[field])
     session.add(event)
     session.commit()
+
     # включить создателя сбора в список доноров
-    insert_donor(event.id, account_id, session)
+    account = get_account(account_id, session)
+    if account.user_id is not None:
+        insert_donor(event.id, account.user_id, session)
+    if account.company_id is not None:
+        user_id = account.company.admin.id
+        insert_donor(event.id, user_id, session)
     return event
 
 
@@ -405,63 +454,62 @@ def update_fundraising(event_id: int, session: Session, **kvargs) -> Fundraising
 # **********************************************************************
 # Donor
 # **********************************************************************
-def get_donor(event_id: int, account_id: int, session: Session) -> Donor | None:
-    if event_id is None:
+def get_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
+    if fund_id is None:
         raise ValueError('event_id can not be None')
-    if account_id is None:
+    if user_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
 
-    query = select(Donor).where(Donor.event_id == event_id).where(Donor.account_id == account_id)
-    result = session.execute(query).scalars().first()
-    return result
+    donor: Donor = session.get(Donor, (fund_id, user_id))
+    return donor
 
 
-def insert_donor(event_id: int, account_id: int, session: Session) -> Donor | None:
-    if event_id is None:
-        raise ValueError('event_id can not be None')
-    if account_id is None:
-        raise ValueError('account_id can not be None')
+def insert_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    if user_id is None:
+        raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
 
-    donor = get_donor(event_id, account_id, session)
+    donor = get_donor(fund_id, user_id, session)
     if donor is not None:
         return donor
 
-    donor = Donor(event_id=event_id, account_id=account_id)
+    donor = Donor(fund_id=fund_id, user_id=user_id)
     session.add(donor)
     session.commit()
     return donor
 
 
-def update_donor(event_id: int, account_id: int, session: Session, pay_sum: int) -> Donor:
-    if event_id is None:
-        raise ValueError('event_id can not be None')
-    if account_id is None:
-        raise ValueError('account_id can not be None')
+def update_donor(fund_id: int, user_id: int, session: Session, pay_sum: int) -> Donor:
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    if user_id is None:
+        raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
 
-    donor = get_donor(event_id, account_id, session)
+    donor = get_donor(fund_id, user_id, session)
     if donor is None:
-        donor = insert_donor(event_id, account_id, session)
+        donor = insert_donor(fund_id, user_id, session)
 
     donor.payed = pay_sum
     session.commit()
     return donor
 
 
-def delete_donor(event_id: int, account_id: int, session: Session):
-    if event_id is None:
-        raise ValueError('event_id can not be None')
-    if account_id is None:
-        raise ValueError('account_id can not be None')
+def delete_donor(fund_id: int, user_id: int, session: Session):
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    if user_id is None:
+        raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
 
-    donor = get_donor(event_id, account_id, session)
+    donor = get_donor(fund_id, user_id, session)
     if donor:
         session.delete(donor)
         session.commit()
@@ -532,21 +580,20 @@ def init_texts_tbl(session: Session = None):
 # **********************************************************************
 # Call from backend
 # **********************************************************************
-def create_user(user: ApiUser) -> (User, Account):
+def create_user(user: ApiUser) -> User | None:
     session = get_session()
     session.expire_on_commit = False
-    tgid = user.id
+    user_id = user.id
     user_data: dict = user.dict()
     user_data.pop('id')
-    user = insert_user(tgid, session, **user_data)
-    account = insert_account(user.id, session, payed_events=1)
-    return user, account
+    user = register_user(user_id, session, **user_data)
+    return user
 
 
 def create_private_fundraising(event: ApiFundraising) -> Fundraising:
     session = get_session()
     user_id = event.user_id
-    account = get_private_account(user_id, session)
+    account = get_account(user_id, session)
     assert account is not None
 
     event_data = event.dict()

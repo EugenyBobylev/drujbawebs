@@ -24,9 +24,8 @@ class User(Base):
     name = mapped_column(String, default='')
     birthdate = mapped_column(Date, default=None)
     timezone = mapped_column(Integer, default=3)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=True)
 
-    account = relationship('Account', foreign_keys=[account_id], uselist=False)
+    account = relationship('Account', back_populates='user', cascade="all, delete-orphan", uselist=False)
     companies_admin = relationship('Company')
     members = relationship('MC')
     donors = relationship('Donor')
@@ -42,14 +41,13 @@ class Company(Base):
     __tablename__: str = 'companies'
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name = mapped_column(String, nullable=False, unique=True)        # название компании
+    name = mapped_column(String, nullable=False, unique=True)  # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
-    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)
     admin_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     admin = relationship('User', foreign_keys=[admin_id], back_populates='companies_admin', uselist=False)
-    account = relationship('Account', foreign_keys=[account_id], uselist=False)
+    account = relationship('Account', back_populates='company', cascade="all, delete-orphan", uselist=False)
     members = relationship('MC')  # companies' members
 
     def __repr__(self) -> str:
@@ -67,10 +65,9 @@ class Account(Base):
     company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), unique=True)
     payed_events = mapped_column(Integer, default=0)
 
-    owner = relationship('User', foreign_keys=[user_id], back_populates='accounts', uselist=False)
+    user = relationship('User', foreign_keys=[user_id], back_populates='account', uselist=False)
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
     fundraisings = relationship('Fundraising')
-    donors = relationship('Donor')
     payments = relationship('Payment')
 
     def __repr__(self) -> str:
@@ -127,7 +124,7 @@ class Donor(Base):
     payed = mapped_column(Integer, nullable=False, default=0)
 
     fundraising = relationship('Fundraising', foreign_keys=[fund_id], back_populates='donors')
-    user = relationship('Account', foreign_keys=[user_id], back_populates='donors')
+    user = relationship('User', foreign_keys=[user_id], back_populates='donors')
 
 
 class Payment(Base):
