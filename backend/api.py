@@ -105,6 +105,22 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     return {'account_id': db_account.id }
 
 
+@app.get('/user/{user_id}')
+@auth
+def get_user(user_id: int, authorization: str | None = Header(convert_underscores=True)):
+    """
+    get user info
+    :param user_id:
+    :param authorization:
+    :return:
+    """
+    user: User = db.get_api_user(user_id)
+    if user is not None:
+        user_json = jsonable_encoder(user)
+        return JSONResponse(content=user_json, status_code=200)
+    return Response(status_code=HTTP_204_NO_CONTENT)
+
+
 @app.get('/user/account/{user_id}/')
 @auth
 def get_user_account(user_id: int, authorization: str | None = Header(convert_underscores=True)):

@@ -47,6 +47,28 @@ def test_create_user_with_auth():
     assert r.status_code == 200
 
 
+def test_get_user():
+    url = 'http://127.0.0.1:8000/user/1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    api_user: Account = r.json()
+    assert r.status_code == 200
+    assert api_user is not None
+
+
+def test_get_wrong_user():
+    url = 'http://127.0.0.1:8000/user/-1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    assert r.status_code == 204
+
+
 def test_get_user_account():
     url = 'http://127.0.0.1:8000/user/account/1234/'
     headers = {

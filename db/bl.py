@@ -599,14 +599,24 @@ def create_user(user: ApiUser) -> (User, Account):
     return user, user.account
 
 
+def get_api_user(user_id: int) -> User | None:
+    session = get_session()
+    user: User = get_user(user_id, session)
+    api_user: ApiUser = None
+    if user is not None:
+        api_user = ApiUser(id=user.id, name=user.name, timezone=user.timezone, birthdate=user.birthdate)
+    return api_user
+
+
 def get_api_user_account(user_id: int) -> ApiAccount | None:
     session = get_session()
     account: Account = get_user_account(user_id, session)
     api_account = None
     if account is not None:
         api_account = ApiAccount(id=account.id, user_id=account.user_id, company_id=account.company_id,
-                                 payed_events = account.payed_events)
+                                 payed_events=account.payed_events)
     return api_account
+
 
 def create_private_fundraising(event: ApiFundraising) -> Fundraising:
     session = get_session()
