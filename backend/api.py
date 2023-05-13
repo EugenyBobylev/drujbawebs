@@ -45,20 +45,12 @@ def auth(func):
     return wrapper
 
 
+# ****************************************
+# Тестовый мусор
+# ****************************************
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-
-@app.get('/UserRegistration')
-async def get_user_registration_html(request: Request,  response: Response):
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
-    }
-    host = BotConfig.instance().base_url
-    return templates.TemplateResponse('userRegistration.html',
-                                      context={'request': request, 'host': host}, headers=headers)
 
 
 @app.get('/query/{query_id}')
@@ -74,6 +66,23 @@ async def get_query_id(query_id: str, response: Response):
     }
 
 
+# ****************************************
+# Вызов WebApps
+# ****************************************
+@app.get('/UserRegistration')
+async def get_user_registration_html(request: Request,  response: Response):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    host = BotConfig.instance().base_url
+    return templates.TemplateResponse('userRegistration.html',
+                                      context={'request': request, 'host': host}, headers=headers)
+
+
+# ****************************************
+# API for PrivateUser
+# ****************************************
 @app.post('/user/')
 @auth
 def create_new_user(user: User, authorization: str | None = Header(convert_underscores=True)):
@@ -91,6 +100,16 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     # r = send_answer_web_app_query(web_init.query_id, user.dict())
     # assert 200 == r.status_code
     return {'account_id': account.id }
+
+
+@app.get('/user/card/{user_id}')
+@auth
+def get_user_card_info(user_id: int, authorization: str | None = Header(convert_underscores=True)):
+    """
+    Get statistic info about all his fundraisings
+    :return:
+    """
+    
 
 
 @app.post('/event/')
