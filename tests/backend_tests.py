@@ -27,7 +27,7 @@ def test_get_root():
 
 def test_create_user_without_auth():
     url = 'http://127.0.0.1:8000/user/'
-    user = User(name='test_user', timezone=1)
+    user = User(id=1234, name='test_user', timezone=1, birthdate='1980-01-23')
     r = requests.post(url, json=user.__dict__)
     assert r.status_code == 422
 
