@@ -21,11 +21,15 @@ class User(Base):
     __tablename__: str = 'users'
 
     id = mapped_column(BigInteger, primary_key=True, autoincrement=False)  # this is the telegram id
-    name = mapped_column(String)
-    birthdate = mapped_column(Date)
-    timezone = mapped_column(Integer)
+    name = mapped_column(String, default='')
+    birthdate = mapped_column(Date, default=None)
+    timezone = mapped_column(Integer, default=3)
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=True)
 
-    accounts = relationship('Account', back_populates='owner')
+    account = relationship('Account', foreign_keys=[account_id], uselist=False)
+    companies_admin = relationship('Company')
+    members = relationship('MC')
+    donors = relationship('Donor')
 
     def __repr__(self) -> str:
         return f'tgid={self.id}; name="{self.name}"; timezone={self.timezone}'
@@ -38,12 +42,15 @@ class Company(Base):
     __tablename__: str = 'companies'
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)  # администратор
     name = mapped_column(String, nullable=False, unique=True)        # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)
+    admin_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
-    admin = relationship('Account', foreign_keys=[account_id], uselist=False)
+    admin = relationship('User', foreign_keys=[admin_id], back_populates='companies_admin', uselist=False)
+    account = relationship('Account', foreign_keys=[account_id], uselist=False)
+    members = relationship('MC')  # companies' members
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"'
@@ -56,30 +63,30 @@ class Account(Base):
     __tablename__: str = 'accounts'
 
     id = mapped_column(Integer, primary_key=True)
-    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), unique=True)
     company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), unique=True)
     payed_events = mapped_column(Integer, default=0)
-    job_title = mapped_column(String, default='')
-    phone = mapped_column(String, default='')
-    email = mapped_column(String, default='')
 
     owner = relationship('User', foreign_keys=[user_id], back_populates='accounts', uselist=False)
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
     fundraisings = relationship('Fundraising')
     donors = relationship('Donor')
+    payments = relationship('Payment')
 
     def __repr__(self) -> str:
         return f'id={self.id}; user_id={self.user_id}; company_id={self.company_id}'
 
 
-class Donor(Base):
-    __tablename__: str = 'donors'
-    event_id = mapped_column(Integer, ForeignKey('fundraising.id', ondelete='CASCADE'), primary_key=True)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), primary_key=True)
-    payed = mapped_column(Integer, nullable=False, default=0)
+class MC(Base):
+    __tablename__ = 'mc'
+    user_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), primary_key=True)
+    phone = mapped_column(String, default='')
+    email = mapped_column(String, default='')
+    title = mapped_column(String, default='')
 
-    account = relationship('Account', foreign_keys=[account_id], back_populates='donors')
-    fundraising = relationship('Fundraising', foreign_keys=[event_id], back_populates='donors')
+    company = relationship('Company', back_populates='members')
+    user = relationship('User', back_populates='members')
 
 
 class Fundraising(Base):
@@ -111,6 +118,27 @@ class Fundraising(Base):
                f'campaign_start={self.start.strftime("%d.%m.%Y")}; ' \
                f'campaign_end={self.end.strftime("%d.%m.%Y")};' \
                f'account_id={self.account_id}'
+
+
+class Donor(Base):
+    __tablename__: str = 'donors'
+    fund_id = mapped_column(Integer, ForeignKey('fundraising.id', ondelete='CASCADE'), primary_key=True)
+    user_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    payed = mapped_column(Integer, nullable=False, default=0)
+
+    fundraising = relationship('Fundraising', foreign_keys=[fund_id], back_populates='donors')
+    user = relationship('Account', foreign_keys=[user_id], back_populates='donors')
+
+
+class Payment(Base):
+    __tablename__ = 'payments'
+    id = mapped_column(Integer, primary_key=True)
+    account_id = mapped_column(Integer, ForeignKey('accounts.id'))
+    payment_date = mapped_column(Date)
+    payment_sum = mapped_column(Integer)
+    payed_events = mapped_column(Integer)
+
+    relationship('Account', back_populates='payments')
 
 
 class Msg(Base):
