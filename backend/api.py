@@ -137,7 +137,7 @@ def get_user_account(user_id: int, authorization: str | None = Header(convert_un
     return Response(status_code=HTTP_204_NO_CONTENT)
 
 
-@app.get('/user/card/{user_id}')
+@app.get('/user/card/{user_id}/')
 @auth
 def get_user_card_info(user_id: int, authorization: str | None = Header(convert_underscores=True)):
     """
@@ -146,12 +146,12 @@ def get_user_card_info(user_id: int, authorization: str | None = Header(convert_
     """
 
 
-@app.post('/event/')
+@app.post('/user/fundraising/{user_id}/')
 @auth
-def create_private_event(event: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+def create_private_event(user_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
     """
-    Create new fundraising (event)
+    Create new user's fundraising (event)
     """
-    event = db.create_private_fundraising(event)
+    event: Fundraising = db.create_private_fundraising(user_id, fund)
     assert event is not None
     return{'event_id': event.id}

@@ -79,11 +79,10 @@ class Account(BaseModel):
 
 
 class Fundraising(BaseModel):
-    user_id: int
-    account_id: int = None
-    event_id: int = None
+    id: int = None
     reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target: str               # кому собираем
+    account_id: int = None    # с какого аккаунта был создан сбор
     start: date = None        # дата регистрации сбора
     end: date = None          # дата окончания сбора
     event_date: date          # дата события
@@ -93,4 +92,4 @@ class Fundraising(BaseModel):
     congratulation_time: time = None  # время праздничного мероприятия
     event_place: str = None           # место проведения мероприятия
     event_dresscode: str = ''  # дресс-код
-    invite_url: str            # ссылка приглашения для участия в сборе
+    invite_url: str = ''       # ссылка приглашения для участия в сборе

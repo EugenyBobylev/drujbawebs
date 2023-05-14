@@ -90,6 +90,32 @@ def test_get_wrong_user_account():
     assert r.status_code == 204
 
 
+def test_create_user_fundraising():
+    user_id = 1234
+    url = f'http://127.0.0.1:8000/user/fundraising/{user_id}/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    fund = {
+        'reason': 'ДР',
+        'target': 'юбилей',
+        'start': '2023-01-15',
+        'end': '2023-05-10',
+        'event_date': '2023-05-15',
+        'transfer_info': 'на карту Мир сбербанка 000-1111-2222-4444',
+        'gift_info': 'ящик коньяка',
+        'congratulation_date': '2023-05-16',
+        'congratulation_time': '19:00',
+        'event_place': 'Дача юбиляра на Щукинке',
+        'event_dresscode': 'чтобы комары на сожрали',
+    }
+
+    fund_json = jsonable_encoder(fund)
+    r = requests.post(url, headers=headers, json=fund_json)
+    assert r.status_code == 200
+
+
 # def test_create_user_with_wrong_auth():
 #     url = 'http://127.0.0.1:8000/user/'
 #     headers = {

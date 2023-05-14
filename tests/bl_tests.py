@@ -275,3 +275,9 @@ def get_company_by_name(name: str = 'ProfiTeam'):
         }
         company = db.insert_company(name, user.id, session, **data)
     return company
+
+
+def test_init_texts_tbl():
+    session = get_session()
+    db.init_texts_tbl(session)
+    assert True
