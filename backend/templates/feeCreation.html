@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <h3>Создание сбора</h3>
+    <p>Пожалуйста, заполните данные о сборе</p>
+    <form action="" name="feeCreationForm" >
+        <label for="reason">На что собираем:</label>
+        <input type="text" id='reason' placeholder="Тип события" value="День рождения">
+        <label for="target">Кому собираем:</label>
+        <input type="text" id="target" placeholder="Кому собираем" value="Сереге толстому">
+        <label for="eventDate">Дата события</label>
+        <input id="eventDate" type="date" value="2023-06-16">
+
+        <label for="transferInfo">Дата события</label>
+        <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="Кидаем на телефон Юры (8-921-345-8890)">
+        <label for="transferInfo">Варианты подарков:</label>
+        <input type="text" id="giftInfo" placeholder="" value="Хотел крутой спиннинг, если много соберем,то можно подарить палатку">
+
+        <div class="formFooter">
+            <div class="formAdding">
+                <label for="addingCheckbox">Добавить данные о праздновании</label>
+                <div class="addingOptions">
+                    <input type="text" id="congratulationDate" placeholder="Дата события" value="2023-06-17">
+                    <input type="text" id="congratulationTime" placeholder="Время" value="10:30">
+                    <input type="text" id="eventPace" placeholder="место празднования" value="Ресторан Сабантуй">
+                    <input type="text" id="dresscode" placeholder="Дресс-код" value="быть прилично одетыми">
+                </div>
+            </div>
+            <div class="formButtons">
+                <button type="button">Отмена</button>
+                <button class="middleBtn">Запустить</button>
+            </div>
+        </div>
+    </form>
+    <script>
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
+        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
+        tg.MainButton.show();
+        tg.MainButton.enable();
+        Telegram.WebApp.onEvent("mainButtonClicked", postFund);
+
+        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+        let api_url = "{{host}}";
+        async function postFund(){
+            let user_id = tg.initDataUnsafe.user.id;
+            let url = `${api_url}/user/fundraising/${user_id}/`;
+            // создать сбор (fundraising)
+            let fund = {
+                reason: document.getElementById("reason").value,
+                target: document.getElementById("target").value,
+                event_date: document.getElementById("eventDate").value,
+                transfer_info: document.getElementById("transferInfo").value,
+                gift_info: document.getElementById("giftInfo").value,
+                congratulation_date: document.getElementById("congratulationDate").value,
+                congratulation_time: document.getElementById("congratulationTime").value,
+                event_place: document.getElementById("eventPlace").value,
+                event_dresscode: document.getElementById("dresscode").value,
+            };
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(fund);
+
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+                body: body,
+            });
+            console.info(response.status)
+        }
+    </script>
+</body>
+</html>

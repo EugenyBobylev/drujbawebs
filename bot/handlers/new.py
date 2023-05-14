@@ -38,13 +38,16 @@ async def query_new_user(call: types.CallbackQuery):
 
 async def user_registration_msg(message: types.Message):
     await message.delete()
-    await message.answer(f'message_id = {message.message_id}')
+    items = message.text.split('=')
+    if len(items) == 2:
+        user_id = items[1]
+        await message.answer(f'created user_id = {user_id}')
 
 
 def register_handlers_new(dp: Dispatcher):
     # dp.register_message_handler(cmd_new_user, commands="new_user", state="*")
     dp.register_callback_query_handler(query_new_user, lambda c: c.data == 'new_user', state="*")
-    dp.register_message_handler(user_registration_msg, filters.Text(equals='webapp UserRegistration'))
+    # dp.register_message_handler(user_registration_msg, filters.Text(startswith='webapp UserRegistration'))
 
     # dp.register_message_handler(cmd_cancel, commands="cancel", state="*")
     # dp.register_message_handler(cmd_cancel, Text(equals="отмена", ignore_case=True), state="*")

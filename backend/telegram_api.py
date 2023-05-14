@@ -6,7 +6,7 @@ from requests import Response
 from config import BotConfig
 
 
-def send_answer_web_app_query(web_query_id: str, bot_obj: dict, title: str = '', message: str = '') -> Response:
+def send_answer_web_app_query(web_query_id: str, user_id: int) -> Response:
     token = BotConfig.instance().token
     headers = {
         'Content-Type': 'application/json'
@@ -19,7 +19,7 @@ def send_answer_web_app_query(web_query_id: str, bot_obj: dict, title: str = '',
             'id': 112244,
             'title': 'Result',
             'input_message_content': {
-                'message_text': 'webapp UserRegistration'
+                'message_text': f'webapp UserRegistration user_id={user_id}'
             }
         }
     }

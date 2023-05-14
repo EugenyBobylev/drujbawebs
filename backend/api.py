@@ -11,7 +11,8 @@ from starlette.status import HTTP_204_NO_CONTENT
 from starlette.templating import Jinja2Templates
 
 import db
-from backend.models import User, Fundraising
+from backend import send_answer_web_app_query
+from backend.models import User, Fundraising, WebAppInitData
 from config import BotConfig
 from db import Account
 from utils import check_webapp_signature, decode_base64_str
@@ -19,7 +20,7 @@ from utils import check_webapp_signature, decode_base64_str
 config = BotConfig.instance()
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="backend/templates")
 
 origins = ["*"]
 app.add_middleware(
@@ -99,9 +100,9 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     assert db_user is not None
     assert db_account is not None
 
-    # web_init = WebAppInitData.form_auth_header(authorization)
-    # r = send_answer_web_app_query(web_init.query_id, user.dict())
-    # assert 200 == r.status_code
+    web_init = WebAppInitData.form_auth_header(authorization)
+    r = send_answer_web_app_query(web_init.query_id, web_init.user.id)
+    assert 200 == r.status_code
     return {'account_id': db_account.id }
 
 
