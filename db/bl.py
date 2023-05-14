@@ -627,12 +627,14 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
     fund_data.pop('account_id', None)
     event: Fundraising = insert_fundraising(account.id, session, **fund_data)
 
-    link = f'https://t.me/bot_druzhba_bot?start=fund_{event.id}'
+    invite_url = f'https://t.me/bot_druzhba_bot?start=fund_{event.id}'
+    event.invite_url = invite_url
+    session.commit()
 
-    fund = ApiFundraising(id=event.id, reaon=event.reason, taget=event.target, account_id=event.account_id,
-                          start=event.start, end=event.end, event_date=event.event_date,
-                          transfer_info=event.transfer_info, gift_info=event.gift_info,
-                          congratulation_date=event.congratulation_date, congratulation_time=event.congratulation_time,
-                          event_place=event.event_place, event_dresscode=event.event_dresscode,
-                          invite_url=link)
+    fund: ApiFundraising = ApiFundraising(id=event.id, reason=event.reason, target=event.target,
+                                          account_id=event.account_id, start=event.start, end=event.end,
+                                          event_date=event.event_date, transfer_info=event.transfer_info,
+                                          gift_info=event.gift_info, congratulation_date=event.congratulation_date,
+                                          congratulation_time=event.congratulation_time, event_place=event.event_place,
+                                          event_dresscode=event.event_dresscode, invite_url=invite_url)
     return fund

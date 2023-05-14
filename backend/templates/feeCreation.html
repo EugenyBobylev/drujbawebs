@@ -31,13 +31,13 @@
                 <div class="addingOptions">
                     <input type="text" id="congratulationDate" placeholder="Дата события" value="2023-06-17">
                     <input type="text" id="congratulationTime" placeholder="Время" value="10:30">
-                    <input type="text" id="eventPace" placeholder="место празднования" value="Ресторан Сабантуй">
+                    <input type="text" id="eventPlace" placeholder="место празднования" value="Ресторан Сабантуй">
                     <input type="text" id="dresscode" placeholder="Дресс-код" value="быть прилично одетыми">
                 </div>
             </div>
             <div class="formButtons">
                 <button type="button">Отмена</button>
-                <button class="middleBtn">Запустить</button>
+                <button class="middleBtn" onclick="postFund()">Запустить</button>
             </div>
         </div>
     </form>
@@ -53,7 +53,7 @@
         let api_url = "{{host}}";
         async function postFund(){
             let user_id = tg.initDataUnsafe.user.id;
-            let url = `${api_url}/user/fundraising/${user_id}/`;
+            let url = `${api_url}user/fundraising/${user_id}/`;
             // создать сбор (fundraising)
             let fund = {
                 reason: document.getElementById("reason").value,
@@ -66,6 +66,9 @@
                 event_place: document.getElementById("eventPlace").value,
                 event_dresscode: document.getElementById("dresscode").value,
             };
+            // Отладочное сообщение
+            // tg.showAlert(url);
+
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(fund);
 

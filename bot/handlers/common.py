@@ -33,16 +33,15 @@ def new_user_start_keyboard():
     return keyboard
 
 
-def create_app_keyboard():
-    url1 = f'{bot_config.base_url}content/userRegistration'
+def new_private_fund_keyboard():
+    url1 = f'{bot_config.base_url}FeeCreation'
     url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
-        types.KeyboardButton(text='Новый', web_app=types.WebAppInfo(url=url1)),
-        types.KeyboardButton(text='Старый', web_app=types.WebAppInfo(url=url2)),
+        InlineKeyboardButton(text="Создать сбор", web_app=types.WebAppInfo(url=url1)),
+        InlineKeyboardButton(text="Оплатить", web_app=types.WebAppInfo(url=url2)),
     ]
-    keyboard = types.ReplyKeyboardMarkup()
-    for btn in buttons:
-        keyboard.add(btn)
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
     return keyboard
 
 
@@ -80,7 +79,9 @@ async def user_registration_msg(message: types.Message):
     items = message.text.split('=')
     if len(items) == 2:
         user_id = items[1]
-        await message.answer(f'created user_id = {user_id}')
+        keyboard = new_private_fund_keyboard()
+        msg = 'Вы успешно зарегистрировались. Давайте продолжим.'
+        await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 
 def register_handlers_common(dp: Dispatcher):

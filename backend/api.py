@@ -84,6 +84,17 @@ async def get_user_registration_html(request: Request,  response: Response):
                                       context={'request': request, 'host': host}, headers=headers)
 
 
+@app.get('/FeeCreation')
+async def get_private_fundraising_html(request: Request,  response: Response):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    host = BotConfig.instance().base_url
+    return templates.TemplateResponse('feeCreation.html',
+                                      context={'request': request, 'host': host}, headers=headers)
+
+
 # ****************************************
 # API for PrivateUser
 # ****************************************
@@ -155,4 +166,7 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
     """
     event: Fundraising = db.create_private_fundraising(user_id, fund)
     assert event is not None
-    return{'event_id': event.id}
+    return{
+        'event_id': event.id,
+        'invite_url': event.invite_url
+    }
