@@ -1,3 +1,5 @@
+import json
+
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import filters
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
@@ -7,6 +9,8 @@ from config import BotConfig
 from db.bl import get_session, get_msg
 
 bot_config = BotConfig.instance()
+
+msgs: [types.Message] = []  #
 
 
 def start_registered_user(message: types.Message):
@@ -50,8 +54,6 @@ async def cmd_start(message: types.Message):
 
     user_id = message.from_user.id
     is_registered: bool = db.is_user_registered(user_id, session)
-    if is_registered:    # go to main menu
-        start_registered_user(message)
     await start_new_user(message)
     await message.delete()
 
@@ -74,14 +76,25 @@ async def query_register_company(call: types.CallbackQuery):
     await call.answer('Зарегистрировать компанию!')
 
 
-async def user_registration_msg(message: types.Message):
+async def webapp_answer_msg(message: types.Message):
     await message.delete()
-    items = message.text.split('=')
-    if len(items) == 2:
-        user_id = items[1]
+    items = message.text.split('&')
+    operation = items[1]
+    data = json.loads(items[2])
+    if operation == 'UserRegistration':
+        for m in msgs:
+            await m.delete()
         keyboard = new_private_fund_keyboard()
         msg = 'Вы успешно зарегистрировались. Давайте продолжим.'
-        await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+        _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+        msgs.append(_msg)
+
+    if operation == 'CreatePrivateFundraising':
+        for m in msgs:
+            await m.delete()
+        msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
+              f'что бы пригласить их участвовать\n\nСсылка: {data["invite_url"]}'
+        await message.answer(msg)
 
 
 def register_handlers_common(dp: Dispatcher):
@@ -89,5 +102,5 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_new_fundraising, lambda c: c.data == 'new_fundraising', state="*")
     dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'register_company', state="*")
-    dp.register_message_handler(user_registration_msg, filters.Text(startswith='webapp UserRegistration'))
+    dp.register_message_handler(webapp_answer_msg, filters.Text(startswith='webapp'))
 

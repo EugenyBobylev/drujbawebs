@@ -1,3 +1,4 @@
+import json
 import urllib
 import urllib.parse
 from functools import wraps
@@ -112,7 +113,12 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     assert db_account is not None
 
     web_init = WebAppInitData.form_auth_header(authorization)
-    r = send_answer_web_app_query(web_init.query_id, web_init.user.id)
+    data = {
+        'user_id': db_user.id,
+        'account_id': db_account.id
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, 'UserRegistration', data_json)
     assert 200 == r.status_code
     return {'account_id': db_account.id }
 
@@ -166,7 +172,18 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
     """
     event: Fundraising = db.create_private_fundraising(user_id, fund)
     assert event is not None
-    return{
+
+    web_init = WebAppInitData.form_auth_header(authorization)
+    data = {
+        'user_id': user_id,
+        'account_id': event.account_id,
+        'fundrasing_id': event.id,
+        'invite_url': event.invite_url,
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, 'CreatePrivateFundraising', data_json)
+    assert 200 == r.status_code
+    return {
         'event_id': event.id,
         'invite_url': event.invite_url
     }
