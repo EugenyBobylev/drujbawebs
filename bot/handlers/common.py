@@ -6,36 +6,13 @@ from aiogram.dispatcher import filters
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 import db
+from backend import FundraisingInfo
 from config import BotConfig
 from db.bl import get_session, get_msg
 
 bot_config = BotConfig.instance()
 
 msgs = Queue()  #
-
-
-def start_registered_user(message: types.Message):
-    pass
-
-
-async def start_new_user(message: types.Message):
-    session = get_session()
-    msg = get_msg('start_message', session).text_value.replace("\\n", "\n")
-
-    keyboard = new_user_start_keyboard()
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    msgs.put(_msg)
-
-
-async def start_trial_user(message):
-    session = get_session()
-    user_id = message.from_user.id
-    user = db.get_user(user_id, session)
-    name = user.name
-    msg = get_msg('trial_menu', session).text_value.replace("\\n", "\n").format(name=name)
-    keyboard = trial_user_start_keyboard()
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML)
-    msgs.put(_msg)
 
 
 def new_user_start_keyboard():
@@ -51,11 +28,10 @@ def new_user_start_keyboard():
 
 
 def trial_user_start_keyboard():
-    url1 = f'{bot_config.base_url}UserRegistration'
-    url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
-        InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
-        InlineKeyboardButton(text="Зарегистрировать компанию", web_app=types.WebAppInfo(url=url2)),
+        InlineKeyboardButton(text="Перейти к сбору", callback_data='trial_fund_info'),
+        InlineKeyboardButton(text="Чаты", callback_data='chat'),
+        InlineKeyboardButton(text="Оплатить тариф и создать новый сбор", callback_data='pay'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -72,6 +48,30 @@ def new_private_fund_keyboard():
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
     return keyboard
+
+
+def start_registered_user(message: types.Message):
+    pass
+
+
+async def start_new_user(message: types.Message):
+    session = get_session()
+    msg = get_msg('start_message', session).text_value.replace("\\n", "\n")
+
+    keyboard = new_user_start_keyboard()
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def start_trial_user(message: types.Message):
+    session = get_session()
+    user_id = message.from_user.id
+    user = db.get_user(user_id, session)
+    name = user.name
+    msg = get_msg('trial_menu', session).text_value.replace("\\n", "\n").format(name=name)
+    keyboard = trial_user_start_keyboard()
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
 
 
 async def cmd_start(message: types.Message):
@@ -114,12 +114,22 @@ async def query_new_user(call: types.CallbackQuery):
     # await call.answer('переход к действиям нового пользователя', c)
 
 
-async def query_new_fundraising(call: types.CallbackQuery):
-    await call.answer('переход к действиям частного пользователя')
+async def fund_info(message: types.Message, fund_id: int) -> types.Message:
+    """
+    Показать информацию по сбору
+    """
+    fi: FundraisingInfo = db.get_fund_info(fund_id)
+    msg = fi.msg()
+    return await message.answer(msg)
 
 
-async def query_register_company(call: types.CallbackQuery):
-    await call.answer('Зарегистрировать компанию!')
+async def query_trial_fund_info(call: types.CallbackQuery) -> types.Message:
+    user_id = call.from_user.id
+    fund_id = db.get_trial_fundraising(user_id)
+    if fund_id is None:
+        await call.message.delete()
+        return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
+    return await fund_info(call.message, fund_id)
 
 
 async def webapp_answer_msg(message: types.Message):
@@ -166,7 +176,10 @@ async def webapp_answer_msg(message: types.Message):
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
-    dp.register_callback_query_handler(query_new_fundraising, lambda c: c.data == 'new_fundraising', state="*")
-    dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'register_company', state="*")
-    dp.register_message_handler(webapp_answer_msg, filters.Text(startswith='webapp'))
 
+    # start_trial_user
+    dp.register_callback_query_handler(query_trial_fund_info, lambda c: c.data == 'trial_fund_info', state="*")
+    # dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'chat', state="*")
+    # dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'pay', state="*")
+
+    dp.register_message_handler(webapp_answer_msg, filters.Text(startswith='webapp'))

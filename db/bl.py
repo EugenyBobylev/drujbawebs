@@ -711,6 +711,21 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
     return fund
 
 
+def get_trial_fundraising(user_id) -> int | None:
+    """
+    Найти id пробного (бесплатного) сбора
+    """
+    session = get_session()
+    account = get_user_account(user_id, session)
+    if account is None:
+        return None
+
+    trial_account_id = session.scalar(
+        select(func.min(Fundraising.id)).select_from(Fundraising).where(Fundraising.account_id == account.id)
+    )
+    return trial_account_id
+
+
 def get_fund_info(fund_id: int) -> FundraisingInfo:
     """
     Вернуть статистику по
@@ -720,26 +735,17 @@ def get_fund_info(fund_id: int) -> FundraisingInfo:
     session = get_session()
     fund = get_fundraising(fund_id, session)
 
-    is_open = reason = target = event_date = days_left = donor_count = total_sum = avg_sum = ''
+    fund_info = FundraisingInfo()
     if fund is not None:
-        is_open = is_fundraising_open(fund_id, session)
-        reason = fund.reason
-        target = fund.target
-        event_date = fund.event_date.strftime("%m.%d.%Y")
-        days_left = str(get_days_left(fund.event_date))
-        donor_count = str(get_all_donor_count(fund_id, session))
-        total_sum = str(get_fund_total_sum(fund_id, session))
-        avg_sum = str(get_fund_avg_sum(fund_id, session))
-    fund_data = {
-        'id': fund_id,
-        'is_open': is_open,          # сбор открыт
-        'reason': reason,            # тип события
-        'target': target,            # на кого
-        'event_date': event_date,    # дата события
-        'days_left': days_left,      # осталось дней
-        'donor_count': donor_count,  # сдали деньги (кол чел)
-        'total_sum': total_sum,      # сумма сбора
-        'avg_sum': avg_sum,          # средний чек
-    }
-    fund_info = FundraisingInfo(**fund_data)
+        fund_info.is_open = is_fundraising_open(fund_id, session)
+        fund_info.reason = fund.reason
+        fund_info.target = fund.target
+        fund_info.event_date = fund.event_date.strftime("%m.%d.%Y")
+        fund_info.days_left = get_days_left(fund.event_date)
+        fund_info.donor_count = get_all_donor_count(fund_id, session)
+        fund_info.payed_count = get_payed_donor_count(fund_id, session)
+        fund_info.total_sum = get_fund_total_sum(fund_id, session)
+        fund_info.avg_sum = get_fund_avg_sum(fund_id, session)
+        fund_info.is_ok = fund_info.total_sum > 0
+
     return fund_info

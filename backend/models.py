@@ -97,11 +97,27 @@ class Fundraising(BaseModel):
 
 class FundraisingInfo(BaseModel):
     id: int = None
-    is_open: str = ''
+    is_open: bool = None
+    is_ok: bool = None
     reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target: str = ''          # кому собираем
-    event_date: str = ''      # дата события
-    days_left: str = ''       # осталось дней до даты события (если < 0), то прошло дней
-    donor_count: str = ''     # количество людей присоединившихся к событию
-    total_sum: str = ''       # всего собрано денег
-    avg_sum: str = ''         # средний чек
+    event_date: date = None      # дата события
+    days_left: int = None       # осталось дней до даты события (если < 0), то прошло дней
+    donor_count: int = None     # количество людей присоединившихся к событию
+    payed_count: int = None     # кол. людей сдавших деньги
+    total_sum: int = None       # всего собрано денег
+    avg_sum: float = None         # средний чек
+
+    def __repr__(self):
+        return f'id={self.id}; is_open={self.is_open}; reason="{self.reason}"; target="{self.target}"; ' \
+               f'event_date={self.event_date}; days_left={self.days_left}; donor_count={self.donor_count}; ' \
+               f'total_sum={self.total_sum}; avg_sum={self.avg_sum}'
+
+    def msg(self):
+        is_open = 'ДА' if self.is_open else 'НЕТ'
+        is_ok = 'да' if self.is_ok else 'нет'
+
+        return f'Сбор открыт: {is_open}\n\nТип события: {self.reason}\nНа кого: {self.target}\n' \
+               f'Дата: {self.event_date}\nОсталось дней: {self.days_left}\n\nСбор успешен: {is_ok}\n ' \
+               f'Участники сбора: {self.donor_count} чел.\n\nСдали деньги: {self.payed_count} чел.\n' \
+               f'Сумма сбора: {self.total_sum} руб.\nСредний чек: {self.avg_sum} руб.'
