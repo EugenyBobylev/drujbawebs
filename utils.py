@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import re
+from datetime import date
 from operator import itemgetter
 from urllib.parse import parse_qsl
 
@@ -52,3 +53,13 @@ def re_search(pattern: str, txt: str) -> str | None:
         return _match[1]
     return None
 
+
+def get_days_left(date_event: date) -> int:
+    """
+    Осталось дней от заданной даты до сегодня
+    :param date_event:
+    :return: число дней
+    """
+    today = date.today()
+    days_left = (date_event - today).days
+    return days_left

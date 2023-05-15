@@ -25,7 +25,7 @@ def test_count():
     count: int = session.scalar(
         select(func.count()).select_from(Account).where(Account.user_id == 15)
     )
-    assert 0 == count
+    assert count == 0
 
 
 def test_get_not_exist_user():
@@ -128,3 +128,22 @@ def test_get_member():
     company_users = [mc.user for mc in company.members]
     assert len(company_users) == 2
     assert type(company_users[0]) == User
+
+
+def test_users_count():
+    session = get_session()
+    count = session.scalar(
+        select(func.count()).select_from(User).where(User.id < 10000)
+    )
+    # count = session.query(User).count()
+    assert count == 3
+
+
+def test_users_timezone_sum():
+    session = get_session()
+    total_sum = session.scalar(
+        select(func.sum(User.timezone)).select_from(User).where(User.id < 10000)
+    )
+
+    assert total_sum == 6
+

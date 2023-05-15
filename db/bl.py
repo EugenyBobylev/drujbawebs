@@ -1,14 +1,15 @@
 from datetime import date, timedelta
 
-from sqlalchemy import create_engine, Engine, select
+from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
 
-from backend import User as ApiUser
+from backend import User as ApiUser, FundraisingInfo
 from backend import Fundraising as ApiFundraising
 from backend import Account as ApiAccount
 from config import BotConfig
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, MC
+from utils import get_days_left
 
 
 def get_engine() -> Engine:
@@ -364,17 +365,17 @@ def add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Acc
 # **********************************************************************
 # Fundraising
 # **********************************************************************
-def get_fundraising(event_id: int, session: Session) -> Fundraising | None:
+def get_fundraising(fund_id: int, session: Session) -> Fundraising | None:
     """
     get account of the company member (employee)
     :return:
     """
-    if event_id is None:
+    if fund_id is None:
         raise ValueError('event_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
 
-    query = select(Fundraising).where(Fundraising.id == event_id)
+    query = select(Fundraising).where(Fundraising.id == fund_id)
     result = session.execute(query).scalars().first()
     return result
 
@@ -524,6 +525,76 @@ def delete_donor(fund_id: int, user_id: int, session: Session):
         session.commit()
 
 
+def is_fundraising_open(fund_id: int, session: Session) -> bool | None:
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    fund = get_fundraising(fund_id, session)
+    if fund is None:
+        return None
+    days_left = get_days_left(fund.event_date)
+    is_open = True if days_left > -7 else False
+    return is_open
+
+
+def get_fund_avg_sum(fund_id: int, session: Session) -> float:
+    """
+    Average check of a donor in a fundraising
+    """
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    total_sum = get_fund_total_sum(fund_id, session)
+    if total_sum == 0:
+        return 0.0
+
+    donor_count = get_payed_donor_count(fund_id, session)
+    if donor_count == 0:
+        return 0.0
+    avg_sum = round(total_sum / donor_count, 2)
+    return avg_sum
+
+
+def get_fund_total_sum(fund_id: int, session: Session) -> int:
+    """
+    Sum of all money raised by fundraising donors
+    """
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    total_sum = session.scalar(
+        select(func.sum(Donor.payed)).select_from(Donor).where(Donor.fund_id == fund_id)
+    )
+    if total_sum is None:
+        total_sum = 0
+    return total_sum
+
+
+def get_all_donor_count(fund_id: int, session: Session) -> int:
+    """
+    Get number of fundraising donors
+    """
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    count = session.scalar(
+        select(func.count()).select_from(Donor).where(Donor.fund_id == fund_id)
+    )
+    if count is None:
+        count = 0
+    return count
+
+
+def get_payed_donor_count(fund_id, session) -> int:
+    """
+    Get number of fundraising donors
+    """
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+    count = session.scalar(
+        select(func.count()).select_from(Donor).where(Donor.fund_id == fund_id).where(Donor.payed > 0)
+    )
+    if count is None:
+        count = 0
+    return count
+
+
 def init_texts_tbl(session: Session = None):
     data = [
         ('welcome_invited', 'Приветствую вас! \n Я создан для сбора на подарки для вас и ваших коллег из компании {}. '
@@ -638,3 +709,37 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
                                           congratulation_time=event.congratulation_time, event_place=event.event_place,
                                           event_dresscode=event.event_dresscode, invite_url=invite_url)
     return fund
+
+
+def get_fund_info(fund_id: int) -> FundraisingInfo:
+    """
+    Вернуть статистику по
+    :param fund_id:
+    :return:
+    """
+    session = get_session()
+    fund = get_fundraising(fund_id, session)
+
+    is_open = reason = target = event_date = days_left = donor_count = total_sum = avg_sum = ''
+    if fund is not None:
+        is_open = is_fundraising_open(fund_id, session)
+        reason = fund.reason
+        target = fund.target
+        event_date = fund.event_date.strftime("%m.%d.%Y")
+        days_left = str(get_days_left(fund.event_date))
+        donor_count = str(get_all_donor_count(fund_id, session))
+        total_sum = str(get_fund_total_sum(fund_id, session))
+        avg_sum = str(get_fund_avg_sum(fund_id, session))
+    fund_data = {
+        'id': fund_id,
+        'is_open': is_open,          # сбор открыт
+        'reason': reason,            # тип события
+        'target': target,            # на кого
+        'event_date': event_date,    # дата события
+        'days_left': days_left,      # осталось дней
+        'donor_count': donor_count,  # сдали деньги (кол чел)
+        'total_sum': total_sum,      # сумма сбора
+        'avg_sum': avg_sum,          # средний чек
+    }
+    fund_info = FundraisingInfo(**fund_data)
+    return fund_info

@@ -1,5 +1,5 @@
 import urllib
-from datetime import datetime
+from datetime import datetime, date
 import json
 
 from backend.models import WebAppInitData
@@ -72,3 +72,11 @@ def test_check_init_data_hash():
     config = BotConfig.instance()
     ok = check_webapp_signature(config.token, init_data)
     assert ok
+
+
+def test_days_left():
+    date_event = date(2023, 12, 15)
+    today = date.today()
+    days_left = (date_event - today).days
+    print(f'\n{days_left=}')
+    assert days_left > 0

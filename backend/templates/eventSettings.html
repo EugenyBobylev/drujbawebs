@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <header>
+        <div class="headerContainer">
+            <p>Управление сбором: {{name}}</p>
+        </div>
+    </header>
+    <div id="fund" class="fundInfo">
+        <ul>
+            <li>Сбор открыт: {{is_open}}</li>
+            <li>Тип события: {{reason}}</li>
+            <li>На кого: {{target}}</li>
+            <li>Дата: {{event_date}}</li>
+            <li>Осталось дней: {{days_left}}</li>
+        </ul>
+        <ul>
+            <li>Сдали деньги: {{donor_count}}</li>
+            <li>Сумма сбора: {{total_sum}}</li>
+            <li>Средний чек: {{avg_sum}}</li>
+        </ul>
+    </div>
+
+    <div class="companyButtons">
+        <a href="#"><button>Ссылка на сбор</button></a>
+        <a href="#"><button>Изменить детали сбора</button></a>
+        <a href="#"><button>Редактировать список участников</button></a>
+    </div>
+
+    <footer>
+        <button>Закрыть</button>
+    </footer>
+    <script>
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
+        // tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
+        // tg.MainButton.show();
+        tg.MainButton.enable();
+        //Telegram.WebApp.onEvent("mainButtonClicked", postFund);
+
+        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+        let api_url = "{{host}}";
+
+        async function postFund() {
+            let user_id = tg.initDataUnsafe.user.id;
+            let url = `${api_url}user/fundraising/${user_id}/`;
+            // создать сбор (fundraising)
+            let fund = {
+                reason: document.getElementById("reason").value,
+                target: document.getElementById("target").value,
+                event_date: document.getElementById("eventDate").value,
+                transfer_info: document.getElementById("transferInfo").value,
+                gift_info: document.getElementById("giftInfo").value,
+                congratulation_date: document.getElementById("congratulationDate").value,
+                congratulation_time: document.getElementById("congratulationTime").value,
+                event_place: document.getElementById("eventPlace").value,
+                event_dresscode: document.getElementById("dresscode").value,
+            };
+            // Отладочное сообщение
+            // tg.showAlert(url);
+
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(fund);
+
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+                body: body,
+            });
+            console.info(response.status)
+        }
+    </script>
+</body>
+</html>

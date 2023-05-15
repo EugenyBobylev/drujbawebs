@@ -250,6 +250,20 @@ def test_insert_company_fundraising():
     assert event is not None
 
 
+def test_total_sum_not_exist_fundraising():
+    session = get_session()
+    fund_id = -1234
+    total_sum = db.get_fund_total_sum(fund_id, session)
+    assert total_sum == 0
+
+
+def test_donor_count_not_exist_fundraising():
+    session = get_session()
+    fund_id = -1234
+    total_sum = db.get_all_donor_count(fund_id, session)
+    assert total_sum == 0
+
+
 def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> User:
     session = get_session()
 

@@ -80,7 +80,7 @@ class Account(BaseModel):
 
 class Fundraising(BaseModel):
     id: int = None
-    reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+    reason: str              # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target: str               # кому собираем
     account_id: int = None    # с какого аккаунта был создан сбор
     start: date = None        # дата регистрации сбора
@@ -93,3 +93,15 @@ class Fundraising(BaseModel):
     event_place: str = None           # место проведения мероприятия
     event_dresscode: str = ''  # дресс-код
     invite_url: str = ''       # ссылка приглашения для участия в сборе
+
+
+class FundraisingInfo(BaseModel):
+    id: int = None
+    is_open: str = ''
+    reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+    target: str = ''          # кому собираем
+    event_date: str = ''      # дата события
+    days_left: str = ''       # осталось дней до даты события (если < 0), то прошло дней
+    donor_count: str = ''     # количество людей присоединившихся к событию
+    total_sum: str = ''       # всего собрано денег
+    avg_sum: str = ''         # средний чек

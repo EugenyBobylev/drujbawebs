@@ -1,4 +1,5 @@
 import json
+from queue import Queue
 
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import filters
@@ -10,7 +11,7 @@ from db.bl import get_session, get_msg
 
 bot_config = BotConfig.instance()
 
-msgs: [types.Message] = []  #
+msgs = Queue()  #
 
 
 def start_registered_user(message: types.Message):
@@ -22,10 +23,34 @@ async def start_new_user(message: types.Message):
     msg = get_msg('start_message', session).text_value.replace("\\n", "\n")
 
     keyboard = new_user_start_keyboard()
-    await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def start_trial_user(message):
+    session = get_session()
+    user_id = message.from_user.id
+    user = db.get_user(user_id, session)
+    name = user.name
+    msg = get_msg('trial_menu', session).text_value.replace("\\n", "\n").format(name=name)
+    keyboard = trial_user_start_keyboard()
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML)
+    msgs.put(_msg)
 
 
 def new_user_start_keyboard():
+    url1 = f'{bot_config.base_url}UserRegistration'
+    url2 = f'{bot_config.base_url}/webapp/templates/index'
+    buttons = [
+        InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
+        InlineKeyboardButton(text="Зарегистрировать компанию", web_app=types.WebAppInfo(url=url2)),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def trial_user_start_keyboard():
     url1 = f'{bot_config.base_url}UserRegistration'
     url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
@@ -50,12 +75,33 @@ def new_private_fund_keyboard():
 
 
 async def cmd_start(message: types.Message):
+    await message.delete()
     session = get_session()
 
     user_id = message.from_user.id
     is_registered: bool = db.is_user_registered(user_id, session)
-    await start_new_user(message)
-    await message.delete()
+    companies = db.get_user_companies(user_id, session)
+    if not is_registered:   # пользователь не зарегистрирован
+        await start_new_user(message)
+        return
+
+    # обычный пользователь
+    if len(companies) == 0:
+        account = db.get_user_account(user_id, session)
+        funds = db.get_all_fundraisings(account.id, session)
+        if len(funds) == 1:
+            # в меню управления бесплатным сбором
+            await start_trial_user(message)
+        if len(funds) > 0:
+            # в меню ЛК пользователя
+            pass
+        return
+
+    # админ компании
+    if len(companies) > 0:
+        company = companies[0]
+        # в меню ЛЛ админа компании
+        pass
 
 
 async def query_start(call: types.CallbackQuery):
@@ -82,16 +128,36 @@ async def webapp_answer_msg(message: types.Message):
     operation = items[1]
     data = json.loads(items[2])
     if operation == 'UserRegistration':
-        for m in msgs:
-            await m.delete()
+        while not msgs.empty():
+            m = msgs.get()
+            if type(m) == types.Message:
+                await m.delete()
+
+        session = get_session()
+        user_id = message.from_user.id
+        ok = db.is_user_registered(user_id, session)
+        if ok:
+            account = db.get_user_account(user_id, session)
+            if account is None or account.payed_events < 1:
+                await message.answer('Вы не можете создать сбор, так как у вас нет оплаченных сборов.')
+                return
+
         keyboard = new_private_fund_keyboard()
         msg = 'Вы успешно зарегистрировались. Давайте продолжим.'
         _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-        msgs.append(_msg)
+        msgs.put(_msg)
 
     if operation == 'CreatePrivateFundraising':
-        for m in msgs:
-            await m.delete()
+        while not msgs.empty():
+            m = msgs.get()
+            if type(m) == types.Message:
+                await m.delete()
+        session = get_session()
+        if 'fundrasing_id' in data and data['fundrasing_id']:
+            user_id = message.from_user.id
+            account = db.get_user_account(user_id, session)
+            account.payed_events -= 1
+            session.commit()
         msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
               f'что бы пригласить их участвовать\n\nСсылка: {data["invite_url"]}'
         await message.answer(msg)

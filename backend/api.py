@@ -96,6 +96,18 @@ async def get_private_fundraising_html(request: Request,  response: Response):
                                       context={'request': request, 'host': host}, headers=headers)
 
 
+@app.get('/EventSettings/{fund_id}')
+async def get_fund_info(fund_id: int, request: Request,  response: Response):
+    fund_info = db.get_fund_info(fund_id)
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    host = BotConfig.instance().base_url
+    return templates.TemplateResponse('eventSettings.html',
+                                      context={'request': request, 'host': host}, headers=headers)
+
+
 # ****************************************
 # API for PrivateUser
 # ****************************************
