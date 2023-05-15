@@ -50,6 +50,18 @@ def new_private_fund_keyboard():
     return keyboard
 
 
+def fund_info_keyboard():
+    buttons = [
+        InlineKeyboardButton(text="Ссылка на сбор", callback_data='show_fund_link'),
+        InlineKeyboardButton(text="Изменить детали сбора", callback_data='edit_fund'),
+        InlineKeyboardButton(text="Редактировать список участников", callback_data='edit_fund_members'),
+        InlineKeyboardButton(text="Закрыть", callback_data='return_menu'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def start_registered_user(message: types.Message):
     pass
 
@@ -118,9 +130,12 @@ async def fund_info(message: types.Message, fund_id: int) -> types.Message:
     """
     Показать информацию по сбору
     """
+    await message.delete()
     fi: FundraisingInfo = db.get_fund_info(fund_id)
     msg = fi.msg()
-    return await message.answer(msg)
+    keyboard = fund_info_keyboard()
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    return _msg
 
 
 async def query_trial_fund_info(call: types.CallbackQuery) -> types.Message:
@@ -130,6 +145,12 @@ async def query_trial_fund_info(call: types.CallbackQuery) -> types.Message:
         await call.message.delete()
         return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
     return await fund_info(call.message, fund_id)
+
+
+async def query_show_fund_link(call: types.CallbackQuery) -> types.Message:
+    msg = f'Скопируйте эту ссылку и отправьте друзьям, ' \
+          f'что бы пригласить их участвовать\n\nСсылка: '
+    await call.message.answer(msg)
 
 
 async def webapp_answer_msg(message: types.Message):
@@ -181,5 +202,10 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_trial_fund_info, lambda c: c.data == 'trial_fund_info', state="*")
     # dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'chat', state="*")
     # dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'pay', state="*")
+
+    # fund_info
+    dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
+    # dp.register_callback_query_handler(query_, lambda c: c.data == 'edit_fund', state="*")
+    # dp.register_callback_query_handler(query_, lambda c: c.data == 'edit_fund_members', state="*")
 
     dp.register_message_handler(webapp_answer_msg, filters.Text(startswith='webapp'))
