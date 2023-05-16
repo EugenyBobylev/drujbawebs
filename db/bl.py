@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from enum import Enum
 
 from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
@@ -8,7 +9,7 @@ from backend import Fundraising as ApiFundraising
 from backend import Account as ApiAccount
 from config import BotConfig
 from db import EntityNotExistsException
-from db.models import Msg, User, Company, Account, Fundraising, Donor, MC
+from db.models import Msg, User, Company, Account, Fundraising, Donor, MC, Payment
 from utils import get_days_left
 
 
@@ -658,8 +659,38 @@ def init_texts_tbl(session: Session = None):
 
 
 # **********************************************************************
+# Payment
+# **********************************************************************
+def get_payments_count(account_id: int, session: Session) -> int:
+    """
+    количество платежей с аккаунта
+    """
+    if account_id is None:
+        raise ValueError('account can not be None')
+    count = session.scalar(
+        select(func.count()).select_from(Payment).where(Payment.account_id == account_id)
+    )
+    if count is None:
+        count = 0
+    return count
+
+
+# **********************************************************************
 # Call from backend
 # **********************************************************************
+class UserStatus(Enum):
+    """
+    Статус пользователя
+    """
+    Visitor = 0         # новый посетитель
+    TrialUser = 1       # пользователь без оплаты
+    User = 2            # пользователь
+    Admin = 3           # админ компании, управляет аккаунтом компании
+    Donor = 5           # зарегистрированный донор (спонсор)
+    AnonymousDonor = 6  # анонимный донор (спонсор)
+    Unknown = 12        # фиг его знает, кто это такой
+
+
 def create_user(user: ApiUser) -> (User, Account):
     session = get_session()
     session.expire_on_commit = False
@@ -711,7 +742,7 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
     return fund
 
 
-def get_trial_fundraising(user_id) -> int | None:
+def get_trial_fund(user_id) -> int | None:
     """
     Найти id пробного (бесплатного) сбора
     """
@@ -720,10 +751,10 @@ def get_trial_fundraising(user_id) -> int | None:
     if account is None:
         return None
 
-    trial_account_id = session.scalar(
+    trial_fund_id = session.scalar(
         select(func.min(Fundraising.id)).select_from(Fundraising).where(Fundraising.account_id == account.id)
     )
-    return trial_account_id
+    return trial_fund_id
 
 
 def get_fund_info(fund_id: int) -> FundraisingInfo:
@@ -749,3 +780,60 @@ def get_fund_info(fund_id: int) -> FundraisingInfo:
         fund_info.is_ok = fund_info.total_sum > 0
 
     return fund_info
+
+
+def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool = False) -> UserStatus:
+    """
+    Определить статус пользователя
+    :param user_id: телеграм id
+    :param account_id: id аккаунта
+    :param has_invite_url: признак входа по приглашению
+    :return: статус пользователя телеграм (UserStatus)
+    """
+    session = get_session()
+    is_registered: bool = is_user_registered(user_id, session)
+
+    if not is_registered:
+        return UserStatus.Visitor if not has_invite_url else UserStatus.AnonymousDonor
+
+    user_account = get_user_account(user_id, session)
+    if user_account is not None:
+        payment_count = get_payments_count(user_account.id, session)
+        if payment_count > 0:
+            return UserStatus.User
+        trial_fund_id = get_trial_fund(user_id)
+        if trial_fund_id is None:
+            return UserStatus.Visitor
+        return UserStatus.TrialUser
+
+    companies = get_user_companies(user_id, session)
+
+    if account_id is None:
+        return UserStatus.Visitor
+
+    account = get_account(account_id, session)
+    assert account is not None
+
+    if has_invite_url:
+        return UserStatus.Donor
+
+    if account.user_id is not None and account.company_id is None:  # TrialUser or User
+        payments_count = get_payments_count(account_id, session)
+        return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
+
+    if account.user_id is None and account.company_id is not None:
+        return UserStatus.Admin
+
+    return UserStatus.Unknown
+
+
+def get_user_name(user_id) -> str:
+    session = get_session()
+    user = get_user(user_id, session)
+    return user.name if user is not None else ''
+
+
+def get_message_text(text_name: str) -> str:
+    session = get_session()
+    txt = get_msg(text_name, session).text_value.replace("\\n", "\n")
+    return txt

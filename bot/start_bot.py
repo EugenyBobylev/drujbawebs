@@ -19,14 +19,15 @@ async def start():
     # Объявление и инициализация объектов бота и диспетчера
     token = BotConfig.instance().token
     bot = Bot(token=token)
-    dp = Dispatcher(bot, storage=MemoryStorage())
+    storage: MemoryStorage = MemoryStorage()
+    dp = Dispatcher(bot, storage=storage)
 
     # Регистрация хэндлеров
     register_handlers_common(dp)
     dp.register_message_handler(cmd_delete_msg, )
 
     # Запуск
-    storage: MemoryStorage = MemoryStorage()
+    await dp.skip_updates()
     await dp.start_polling(storage)
 
 

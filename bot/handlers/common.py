@@ -2,20 +2,37 @@ import json
 from queue import Queue
 
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import filters
+from aiogram.dispatcher import filters, FSMContext
+from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 import db
-from backend import FundraisingInfo
+from backend import FundraisingInfo, User, Account
 from config import BotConfig
-from db.bl import get_session, get_msg
+from db.bl import get_session, get_msg, UserStatus
 
 bot_config = BotConfig.instance()
 
 msgs = Queue()  #
 
 
-def new_user_start_keyboard():
+class Steps(StatesGroup):
+    reg_visitor = State()
+    create_fund = State()
+    show_fund_link = State()
+    show_trial_user_menu = State()
+
+    reg_company = State()
+
+
+async def _remove_all_messages(chat_id: int):
+    while not msgs.empty():
+        m = msgs.get()
+        if type(m) == types.Message and m.chat.id == chat_id:
+            await m.delete()
+
+
+def visitor_keyboard():
     url1 = f'{bot_config.base_url}UserRegistration'
     url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
@@ -27,7 +44,16 @@ def new_user_start_keyboard():
     return keyboard
 
 
-def trial_user_start_keyboard():
+def show_invite_link_keyboard():
+    buttons = [
+        InlineKeyboardButton(text="Продолжить", callback_data='show_main_menu')
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def trial_user_menu_keyboard():
     buttons = [
         InlineKeyboardButton(text="Перейти к сбору", callback_data='trial_fund_info'),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
@@ -66,58 +92,68 @@ def start_registered_user(message: types.Message):
     pass
 
 
-async def start_new_user(message: types.Message):
-    session = get_session()
-    msg = get_msg('start_message', session).text_value.replace("\\n", "\n")
+async def start_visitor(message: types.Message, state: FSMContext):
+    # user_data = await state.get_data()
+    # user_status = user_data['user_status']
 
-    keyboard = new_user_start_keyboard()
+    msg = db.get_message_text('start_message')
+    keyboard = visitor_keyboard()
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+    await state.set_state(Steps.reg_visitor)
+
+
+async def start_trial_user(message: types.Message, state: FSMContext):
+    # await message.delete()
+    name = db.get_user_name(message.chat.id)
+    msg = db.get_message_text('trial_menu').format(name=name)
+    keyboard = trial_user_menu_keyboard()
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    await state.set_state(Steps.show_trial_user_menu)
     msgs.put(_msg)
 
 
-async def start_trial_user(message: types.Message):
-    session = get_session()
-    user_id = message.from_user.id
-    user = db.get_user(user_id, session)
-    name = user.name
-    msg = get_msg('trial_menu', session).text_value.replace("\\n", "\n").format(name=name)
-    keyboard = trial_user_start_keyboard()
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    msgs.put(_msg)
-
-
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, state: FSMContext):
+    """
+    Точка входа в бот
+    """
     await message.delete()
+    await state.finish()
     session = get_session()
 
     user_id = message.from_user.id
-    is_registered: bool = db.is_user_registered(user_id, session)
-    companies = db.get_user_companies(user_id, session)
-    if not is_registered:   # пользователь не зарегистрирован
-        await start_new_user(message)
+    user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=False)
+    await state.update_data(user_status=user_status)
+    if user_status == UserStatus.Visitor:
+        await start_visitor(message, state)
         return
 
-    # обычный пользователь
-    if len(companies) == 0:
-        account = db.get_user_account(user_id, session)
-        funds = db.get_all_fundraisings(account.id, session)
-        if len(funds) == 1:
-            # в меню управления бесплатным сбором
-            await start_trial_user(message)
-        if len(funds) > 0:
-            # в меню ЛК пользователя
-            pass
+    if user_status == UserStatus.TrialUser:
+        fund_id = db.get_trial_fund(user_id)
+        account: Account = db.get_api_user_account(user_id)
+        await state.update_data(account_id=account.id)
+        await state.update_data(fund_id=fund_id)
+        await start_trial_user(message, state)
         return
 
-    # админ компании
-    if len(companies) > 0:
-        company = companies[0]
-        # в меню ЛЛ админа компании
-        pass
+    if user_status == UserStatus.User:
+        await message.answer(f'user_status={user_status}, находится в разработке')
+        return
+    if user_status == UserStatus.Admin:
+        await message.answer(f'user_status={user_status}, находится в разработке')
+        return
+    if user_status == UserStatus.Donor:
+        await message.answer(f'user_status={user_status}, находится в разработке')
+        return
+    if user_status == UserStatus.AnonymousDonor:
+        await message.answer(f'user_status={user_status}, находится в разработке')
+        return
+    await message.answer(f'Ошибка, не удалось определить статус пользователя (user_status={user_status})')
+    return
 
 
 async def query_start(call: types.CallbackQuery):
-    await cmd_start(call.message)
+    await cmd_start(call.message, "*")
 
 
 async def query_new_user(call: types.CallbackQuery):
@@ -140,58 +176,70 @@ async def fund_info(message: types.Message, fund_id: int) -> types.Message:
 
 async def query_trial_fund_info(call: types.CallbackQuery) -> types.Message:
     user_id = call.from_user.id
-    fund_id = db.get_trial_fundraising(user_id)
+    fund_id = db.get_trial_fund(user_id)
     if fund_id is None:
         await call.message.delete()
         return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
     return await fund_info(call.message, fund_id)
 
 
-async def query_show_fund_link(call: types.CallbackQuery) -> types.Message:
-    msg = f'Скопируйте эту ссылку и отправьте друзьям, ' \
-          f'что бы пригласить их участвовать\n\nСсылка: '
-    await call.message.answer(msg)
-
-
-async def webapp_answer_msg(message: types.Message):
+async def webapp_create_user_account(message: types.Message, state: FSMContext):
+    # state == Steps.reg_visitor
     await message.delete()
-    items = message.text.split('&')
-    operation = items[1]
-    data = json.loads(items[2])
-    if operation == 'UserRegistration':
-        while not msgs.empty():
-            m = msgs.get()
-            if type(m) == types.Message:
-                await m.delete()
+    await _remove_all_messages(message.from_user.id)
 
-        session = get_session()
-        user_id = message.from_user.id
-        ok = db.is_user_registered(user_id, session)
-        if ok:
-            account = db.get_user_account(user_id, session)
-            if account is None or account.payed_events < 1:
-                await message.answer('Вы не можете создать сбор, так как у вас нет оплаченных сборов.')
-                return
+    items = message.text.split('&')
+    answer = json.loads(items[1])
+    if 'account_id' in answer:
+        account_id = answer['account_id']
+        await state.update_data(account_id=account_id)
 
         keyboard = new_private_fund_keyboard()
         msg = 'Вы успешно зарегистрировались. Давайте продолжим.'
         _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
         msgs.put(_msg)
+        await state.set_state(Steps.create_fund)
+        return
 
-    if operation == 'CreatePrivateFundraising':
-        while not msgs.empty():
-            m = msgs.get()
-            if type(m) == types.Message:
-                await m.delete()
-        session = get_session()
-        if 'fundrasing_id' in data and data['fundrasing_id']:
-            user_id = message.from_user.id
-            account = db.get_user_account(user_id, session)
-            account.payed_events -= 1
-            session.commit()
+    _msg = await message.answer("Не удалось зарегистрировать пользователя. Попробуйте снова")
+    msgs.put(_msg)
+
+
+async def webapp_create_user_fund(message: types.Message, state: FSMContext):
+    # state == Steps.create_fund
+    await message.delete()
+    await _remove_all_messages(message.from_user.id)
+
+    items = message.text.split('&')
+    answer = json.loads(items[1])
+    if 'fund_id' in answer:
+        fund_id = answer['fund_id']
+        invite_url = answer['invite_url']
+        await state.update_data(fund_id=fund_id)
+        await state.update_data(invite_url=invite_url)
+
+        keyboard = show_invite_link_keyboard()
         msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
-              f'что бы пригласить их участвовать\n\nСсылка: {data["invite_url"]}'
-        await message.answer(msg)
+              f'что бы пригласить их участвовать\n\nСсылка: {invite_url}'
+        await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+        await state.set_state(Steps.show_fund_link)
+        return
+
+    _msg = await message.answer("Не удалось зарегистрировать пробный сбор.")
+    msgs.put(_msg)
+
+
+async def query_show_main_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    await call.message.delete()
+    user_data = await state.get_data()
+    # все данные о пользователе
+    account_id = user_data['account_id']
+    fund_id = user_data['fund_id']
+    invite_url = user_data['invite_url']
+    user_status = db.get_user_status(call.from_user.id, account_id=account_id, has_invite_url=False)
+    await state.update_data(user_status=user_status)
+
+    await start_trial_user(call.message, state)
 
 
 def register_handlers_common(dp: Dispatcher):
@@ -200,12 +248,10 @@ def register_handlers_common(dp: Dispatcher):
 
     # start_trial_user
     dp.register_callback_query_handler(query_trial_fund_info, lambda c: c.data == 'trial_fund_info', state="*")
-    # dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'chat', state="*")
-    # dp.register_callback_query_handler(query_register_company, lambda c: c.data == 'pay', state="*")
 
-    # fund_info
-    dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
-    # dp.register_callback_query_handler(query_, lambda c: c.data == 'edit_fund', state="*")
-    # dp.register_callback_query_handler(query_, lambda c: c.data == 'edit_fund_members', state="*")
-
-    dp.register_message_handler(webapp_answer_msg, filters.Text(startswith='webapp'))
+    dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
+                                state=Steps.reg_visitor)
+    dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
+                                state=Steps.create_fund)
+    dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'show_main_menu',
+                                       state=Steps.show_fund_link)
