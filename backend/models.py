@@ -101,12 +101,13 @@ class FundraisingInfo(BaseModel):
     is_ok: bool = None
     reason: str = ''          # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target: str = ''          # кому собираем
-    event_date: date = None      # дата события
+    event_date: date = None     # дата события
     days_left: int = None       # осталось дней до даты события (если < 0), то прошло дней
     donor_count: int = None     # количество людей присоединившихся к событию
     payed_count: int = None     # кол. людей сдавших деньги
     total_sum: int = None       # всего собрано денег
-    avg_sum: float = None         # средний чек
+    avg_sum: float = None       # средний чек
+    invite_url: str = ''        # ссылка на сбор
 
     def __repr__(self):
         return f'id={self.id}; is_open={self.is_open}; reason="{self.reason}"; target="{self.target}"; ' \

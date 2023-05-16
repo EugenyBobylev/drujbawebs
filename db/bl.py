@@ -778,6 +778,7 @@ def get_fund_info(fund_id: int) -> FundraisingInfo:
         fund_info.total_sum = get_fund_total_sum(fund_id, session)
         fund_info.avg_sum = get_fund_avg_sum(fund_id, session)
         fund_info.is_ok = fund_info.total_sum > 0
+        fund_info.invite_url = fund.invite_url
 
     return fund_info
 

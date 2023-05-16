@@ -19,8 +19,11 @@ msgs = Queue()  #
 class Steps(StatesGroup):
     reg_visitor = State()
     create_fund = State()
+    show_visitor_fund_link = State()
     show_fund_link = State()
+
     show_trial_user_menu = State()
+    show_fund_info = State()
 
     reg_company = State()
 
@@ -46,7 +49,7 @@ def visitor_keyboard():
 
 def show_invite_link_keyboard():
     buttons = [
-        InlineKeyboardButton(text="Продолжить", callback_data='show_main_menu')
+        InlineKeyboardButton(text="Продолжить", callback_data='show_invite_link_continue')
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -86,10 +89,6 @@ def fund_info_keyboard():
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
     return keyboard
-
-
-def start_registered_user(message: types.Message):
-    pass
 
 
 async def start_visitor(message: types.Message, state: FSMContext):
@@ -156,31 +155,27 @@ async def query_start(call: types.CallbackQuery):
     await cmd_start(call.message, "*")
 
 
-async def query_new_user(call: types.CallbackQuery):
-    # await cmd_new_user(call.message)
-    await call.message.delete()
-    # await call.answer('переход к действиям нового пользователя', c)
-
-
-async def fund_info(message: types.Message, fund_id: int) -> types.Message:
+async def fund_info(message: types.Message, fund_id: int, state: FSMContext) -> types.Message:
     """
     Показать информацию по сбору
     """
     await message.delete()
     fi: FundraisingInfo = db.get_fund_info(fund_id)
+    await state.update_data(invite_url=fi.invite_url)
     msg = fi.msg()
     keyboard = fund_info_keyboard()
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    await state.set_state(Steps.show_fund_info)
     return _msg
 
 
-async def query_trial_fund_info(call: types.CallbackQuery) -> types.Message:
+async def query_trial_fund_info(call: types.CallbackQuery, state: FSMContext) -> types.Message:
     user_id = call.from_user.id
     fund_id = db.get_trial_fund(user_id)
     if fund_id is None:
         await call.message.delete()
         return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
-    return await fund_info(call.message, fund_id)
+    return await fund_info(call.message, fund_id, state)
 
 
 async def webapp_create_user_account(message: types.Message, state: FSMContext):
@@ -222,7 +217,7 @@ async def webapp_create_user_fund(message: types.Message, state: FSMContext):
         msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
               f'что бы пригласить их участвовать\n\nСсылка: {invite_url}'
         await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-        await state.set_state(Steps.show_fund_link)
+        await state.set_state(Steps.show_visitor_fund_link)
         return
 
     _msg = await message.answer("Не удалось зарегистрировать пробный сбор.")
@@ -233,6 +228,7 @@ async def query_show_main_menu(call: types.CallbackQuery, state: FSMContext) -> 
     await call.message.delete()
     user_data = await state.get_data()
     # все данные о пользователе
+    exist_user_status = user_data['user_status']
     account_id = user_data['account_id']
     fund_id = user_data['fund_id']
     invite_url = user_data['invite_url']
@@ -242,9 +238,44 @@ async def query_show_main_menu(call: types.CallbackQuery, state: FSMContext) -> 
     await start_trial_user(call.message, state)
 
 
+async def query_show_invite_link_continue(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    # await call.message.delete()
+    user_data = await state.get_data()
+    # все данные о пользователе
+    user_status = user_data['user_status']
+    account_id = user_data['account_id']
+    fund_id = user_data['fund_id']
+    invite_url = user_data['invite_url']
+    await fund_info(call.message, fund_id, state)
+
+
+async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    await call.message.delete()
+    user_data = await state.get_data()
+    invite_url = user_data.get('invite_url', None)
+
+    keyboard = show_invite_link_keyboard()
+    msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
+          f'что бы пригласить их участвовать\n\nСсылка: {invite_url}'
+    await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    await state.set_state(Steps.show_fund_link)
+    return
+    pass
+
+
+async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    await call.message.delete()
+    user_id = call.from_user.id
+    user_data: dict = await state.get_data()
+    if 'user_status' in user_data and user_data['user_status'] == UserStatus.TrialUser:
+        await start_trial_user(call.message, state)
+
+
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
+    dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
+    dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'return_menu', state="*")
 
     # start_trial_user
     dp.register_callback_query_handler(query_trial_fund_info, lambda c: c.data == 'trial_fund_info', state="*")
@@ -253,5 +284,7 @@ def register_handlers_common(dp: Dispatcher):
                                 state=Steps.reg_visitor)
     dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
                                 state=Steps.create_fund)
-    dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'show_main_menu',
+    dp.register_callback_query_handler(query_show_invite_link_continue, lambda c: c.data == 'show_invite_link_continue',
                                        state=Steps.show_fund_link)
+    dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'show_invite_link_continue',
+                                       state=Steps.show_visitor_fund_link)
