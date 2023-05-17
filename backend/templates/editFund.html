@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <h3>Создание сбора</h3>
+    <p>Пожалуйста, заполните данные о сборе</p>
+    <form action="" name="feeCreationForm" >
+        <label for="reason">На что собираем:</label>
+        <input type="text" id='reason' placeholder="Тип события" value="{{reason}}">
+        <label for="target">Кому собираем:</label>
+        <input type="text" id="target" placeholder="Кому собираем" value="{{target}}">
+        <label for="eventDate">Дата события</label>
+        <input id="eventDate" type="date" value="{{event_date}}">
+
+        <label for="transferInfo">Дата события</label>
+        <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
+        <label for="transferInfo">Варианты подарков:</label>
+        <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}">
+
+        <div class="formFooter">
+            <div class="formAdding">
+                <label for="addingCheckbox">Добавить данные о праздновании</label>
+                <div class="addingOptions">
+                    <input type="text" id="congratulationDate" placeholder="Дата события" value="{{congratulation_date}}">
+                    <input type="text" id="congratulationTime" placeholder="Время" value="{{congratulation_time}}">
+                    <input type="text" id="eventPlace" placeholder="место празднования" value="{{event_place}}">
+                    <input type="text" id="dresscode" placeholder="Дресс-код" value="{{event_dresscode}}">
+                </div>
+            </div>
+            <div class="formButtons">
+                <button type="button">Отмена</button>
+                <button class="middleBtn" onclick="postFund()">Запустить</button>
+            </div>
+        </div>
+    </form>
+    <script>
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
+        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
+        tg.MainButton.show();
+        tg.MainButton.enable();
+        Telegram.WebApp.onEvent("mainButtonClicked", postFund);
+
+        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+        let api_url = "{{host}}";
+        async function postFund(){
+            let user_id = tg.initDataUnsafe.user.id;
+            let url = `${api_url}user/fundraising/${user_id}/`;
+            // создать сбор (fundraising)
+            let fund = {
+                reason: document.getElementById("reason").value,
+                target: document.getElementById("target").value,
+                event_date: document.getElementById("eventDate").value,
+                transfer_info: document.getElementById("transferInfo").value,
+                gift_info: document.getElementById("giftInfo").value,
+                congratulation_date: document.getElementById("congratulationDate").value,
+                congratulation_time: document.getElementById("congratulationTime").value,
+                event_place: document.getElementById("eventPlace").value,
+                event_dresscode: document.getElementById("dresscode").value,
+            };
+            // Отладочное сообщение
+            // tg.showAlert(url);
+
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(fund);
+
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+                body: body,
+            });
+            console.info(response.status)
+        }
+    </script>
+</body>
+</html>

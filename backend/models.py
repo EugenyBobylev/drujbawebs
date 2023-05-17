@@ -80,7 +80,7 @@ class Account(BaseModel):
 
 class Fundraising(BaseModel):
     id: int = None
-    reason: str              # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+    reason: str               # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
     target: str               # кому собираем
     account_id: int = None    # с какого аккаунта был создан сбор
     start: date = None        # дата регистрации сбора

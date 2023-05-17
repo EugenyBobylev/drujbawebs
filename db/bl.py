@@ -757,6 +757,34 @@ def get_trial_fund(user_id) -> int | None:
     return trial_fund_id
 
 
+def get_api_fund(fund_id) -> ApiFundraising:
+    """
+    Дать сбор для последующего редактирования
+    :param fund_id: уникальный идентификатор сбора
+    """
+    session = get_session()
+    fund = get_fundraising(fund_id, session)
+
+    api_fund = ApiFundraising()
+    if fund is not None:
+        api_fund.id = fund_id
+        api_fund.reason = fund.id
+        api_fund.target = fund.target
+        api_fund.account_id = fund.account_id
+        api_fund.start = fund.start
+        api_fund.end = fund.end
+        api_fund.event_date = fund.event_date
+        api_fund.transfer_info = fund.transfer_info
+        api_fund.gift_info = fund.gift_info
+        api_fund.congratulation_date = fund.congratulation_date
+        api_fund.congratulation_time = fund.congratulation_time
+        api_fund.event_place = fund.event_place
+        api_fund.event_dresscode = fund.event_dresscode
+        api_fund.invite_url = fund.invite_url
+
+    return api_fund
+
+
 def get_fund_info(fund_id: int) -> FundraisingInfo:
     """
     Вернуть статистику по

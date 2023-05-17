@@ -197,3 +197,38 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
         'event_id': event.id,
         'invite_url': event.invite_url
     }
+
+
+@app.post('/fundraising/{fund_id}/')
+@auth
+def get_fund(fund_id):
+    """
+    Get fundraising (event)
+    """
+    fund: Fundraising = db.get_api_fund(fund_id)
+    fund_json = jsonable_encoder(fund)
+    return JSONResponse(content=account_json, status_code=200)
+
+
+@app.post('/fundraising/{fund_id}/')
+@auth
+def edit_fund(fund_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+    """
+    Edit fundraising (event)
+    """
+    event: Fundraising = db.create_private_fundraising(user_id, fund)
+    assert event is not None
+
+    web_init = WebAppInitData.form_auth_header(authorization)
+    data = {
+        'fund_id': event.id,
+        'invite_url': event.invite_url,
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, data_json)
+    assert 200 == r.status_code
+    return {
+        'event_id': event.id,
+        'invite_url': event.invite_url
+    }
+
