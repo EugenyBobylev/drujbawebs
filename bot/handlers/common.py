@@ -22,8 +22,8 @@ class Steps(StatesGroup):
     show_visitor_fund_link = State()
     show_fund_link = State()
 
-    show_trial_user_menu = State()
-    show_fund_info = State()
+    trial_user_menu = State()
+    fund_info = State()
 
     reg_company = State()
 
@@ -58,7 +58,7 @@ def show_invite_link_keyboard():
 
 def trial_user_menu_keyboard():
     buttons = [
-        InlineKeyboardButton(text="Перейти к сбору", callback_data='trial_fund_info'),
+        InlineKeyboardButton(text="Перейти к сбору", callback_data='fund_info'),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Оплатить тариф и создать новый сбор", callback_data='pay'),
     ]
@@ -79,10 +79,13 @@ def new_private_fund_keyboard():
     return keyboard
 
 
-def fund_info_keyboard():
+async def fund_info_keyboard(state: FSMContext):
+    user_data = await state.get_data()
+    fund_id = user_data['fund_id']
+    url1 = f'{bot_config.base_url}fundraising/{fund_id}'
     buttons = [
         InlineKeyboardButton(text="Ссылка на сбор", callback_data='show_fund_link'),
-        InlineKeyboardButton(text="Изменить детали сбора", callback_data='edit_fund'),
+        InlineKeyboardButton(text="Изменить детали сбора", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Редактировать список участников", callback_data='edit_fund_members'),
         InlineKeyboardButton(text="Закрыть", callback_data='return_menu'),
     ]
@@ -108,7 +111,7 @@ async def start_trial_user(message: types.Message, state: FSMContext):
     msg = db.get_message_text('trial_menu').format(name=name)
     keyboard = trial_user_menu_keyboard()
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    await state.set_state(Steps.show_trial_user_menu)
+    await state.set_state(Steps.trial_user_menu)
     msgs.put(_msg)
 
 
@@ -163,18 +166,24 @@ async def fund_info(message: types.Message, fund_id: int, state: FSMContext) -> 
     fi: FundraisingInfo = db.get_fund_info(fund_id)
     await state.update_data(invite_url=fi.invite_url)
     msg = fi.msg()
-    keyboard = fund_info_keyboard()
+    keyboard = await fund_info_keyboard(state)
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    await state.set_state(Steps.show_fund_info)
+    await state.set_state(Steps.fund_info)
     return _msg
 
 
-async def query_trial_fund_info(call: types.CallbackQuery, state: FSMContext) -> types.Message:
-    user_id = call.from_user.id
-    fund_id = db.get_trial_fund(user_id)
-    if fund_id is None:
-        await call.message.delete()
-        return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
+async def query_fund_info(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    user_data = await state.get_data()
+    user_status = user_data['user_status']
+
+    fund_id = None
+    if user_status == UserStatus.TrialUser:
+        user_id = call.from_user.id
+        fund_id = db.get_trial_fund(user_id)
+        if fund_id is None:
+            await call.message.delete()
+            return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
+    await state.update_data(fund_id=fund_id)
     return await fund_info(call.message, fund_id, state)
 
 
@@ -278,7 +287,7 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'return_menu', state="*")
 
     # start_trial_user
-    dp.register_callback_query_handler(query_trial_fund_info, lambda c: c.data == 'trial_fund_info', state="*")
+    dp.register_callback_query_handler(query_fund_info, lambda c: c.data == 'fund_info', state="*")
 
     dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
                                 state=Steps.reg_visitor)

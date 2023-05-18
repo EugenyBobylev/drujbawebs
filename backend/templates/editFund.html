@@ -53,7 +53,8 @@
         let api_url = "{{host}}";
         async function postFund(){
             let user_id = tg.initDataUnsafe.user.id;
-            let url = `${api_url}user/fundraising/${user_id}/`;
+            let fund_id = "{{fund_id}}"
+            let url = `${api_url}api/fundraising/${fund_id}/`;
             // создать сбор (fundraising)
             let fund = {
                 reason: document.getElementById("reason").value,
@@ -73,7 +74,7 @@
             let body = JSON.stringify(fund);
 
             let response = await fetch(url, {
-                method: 'POST',
+                method: 'PUT',
                 mode: 'cors',
                 headers: {
                     'ngrok-skip-browser-warning': '100',
@@ -82,8 +83,10 @@
                     'Authorization': btoa(tg.initData),
                 },
                 body: body,
-            });
-            console.info(response.status)
+            }).then(response => response.json())
+              .then((data) =>{
+                  tg.close();
+              });
         }
     </script>
 </body>

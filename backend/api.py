@@ -59,7 +59,7 @@ async def root():
 
 
 @app.get('/query/{query_id}')
-async def get_query_id(query_id: str, response: Response):
+async def get_query_id(query_id: str):
     # response.headers["Allow-Origins"] = "*"
     # response.headers["Allow-Credentials"] = "true"
     # response.headers["Access-Control-Allow-Origin"] = "*"
@@ -75,7 +75,7 @@ async def get_query_id(query_id: str, response: Response):
 # Вызов WebApps
 # ****************************************
 @app.get('/UserRegistration')
-async def get_user_registration_html(request: Request,  response: Response):
+async def get_user_registration_html(request: Request):
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
@@ -86,7 +86,7 @@ async def get_user_registration_html(request: Request,  response: Response):
 
 
 @app.get('/FeeCreation')
-async def get_private_fundraising_html(request: Request,  response: Response):
+async def get_private_fundraising_html(request: Request):
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
@@ -97,21 +97,59 @@ async def get_private_fundraising_html(request: Request,  response: Response):
 
 
 @app.get('/EventSettings/{fund_id}')
-async def get_fund_info(fund_id: int, request: Request,  response: Response):
-    fund_info = db.get_fund_info(fund_id)
+async def get_fund_info(fund_id: int, request: Request):
+    # Здесь какая-то херня (писал во время обострения отита)
+    host = BotConfig.instance().base_url
+    fund_info = db.get_api_fund(fund_id)
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
+    context = {
+        'request': request,
+        'host': host,
+        'reason': fund_info.reason,
+        'target': fund_info.target,
+        'event_date': fund_info.event_date,
+        'transfer_info': fund_info.transfer_info,
+        'gift_info': fund_info.gift_info,
+        'congratulation_date': fund_info.congratulation_date,
+        'congratulation_time': fund_info.congratulation_time,
+        'event_place': fund_info.event_place,
+        'event_dresscode': fund_info.event_dresscode
+    }
+    return templates.TemplateResponse('editFund.html', context=context, headers=headers)
+
+
+@app.get('/fundraising/{fund_id}')
+async def get_fund(fund_id: int, request: Request):
     host = BotConfig.instance().base_url
-    return templates.TemplateResponse('eventSettings.html',
-                                      context={'request': request, 'host': host}, headers=headers)
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    fund: Fundraising = db.get_api_fund(fund_id)
+    context = {
+        'request': request,
+        'host': host,
+        'fund_id': fund_id,
+        'reason': fund.reason,
+        'target': fund.target,
+        'event_date': fund.event_date,
+        'transfer_info': fund.transfer_info,
+        'gift_info': fund.gift_info,
+        'congratulation_date': fund.congratulation_date,
+        'congratulation_time': fund.congratulation_time,
+        'event_place': fund.event_place,
+        'event_dresscode': fund.event_dresscode
+    }
+    return templates.TemplateResponse('editFund.html', context=context, headers=headers)
 
 
 # ****************************************
 # API for PrivateUser
 # ****************************************
-@app.post('/user/')
+@app.post('/api/user/')
 @auth
 def create_new_user(user: User, authorization: str | None = Header(convert_underscores=True)):
     """
@@ -132,10 +170,10 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
     data_json = json.dumps(data)
     r = send_answer_web_app_query(web_init.query_id, data_json)
     assert 200 == r.status_code
-    return {'account_id': db_account.id }
+    return {'account_id': db_account.id}
 
 
-@app.get('/user/{user_id}')
+@app.get('/api/user/{user_id}')
 @auth
 def get_user(user_id: int, authorization: str | None = Header(convert_underscores=True)):
     """
@@ -151,7 +189,7 @@ def get_user(user_id: int, authorization: str | None = Header(convert_underscore
     return Response(status_code=HTTP_204_NO_CONTENT)
 
 
-@app.get('/user/account/{user_id}/')
+@app.get('/api/user/account/{user_id}/')
 @auth
 def get_user_account(user_id: int, authorization: str | None = Header(convert_underscores=True)):
     """
@@ -167,16 +205,17 @@ def get_user_account(user_id: int, authorization: str | None = Header(convert_un
     return Response(status_code=HTTP_204_NO_CONTENT)
 
 
-@app.get('/user/card/{user_id}/')
+@app.get('/api/user/card/{user_id}/')
 @auth
 def get_user_card_info(user_id: int, authorization: str | None = Header(convert_underscores=True)):
     """
     Get statistic info about all his fundraisings
     :return:
     """
+    pass
 
 
-@app.post('/user/fundraising/{user_id}/')
+@app.post('/api/user/fundraising/{user_id}/')
 @auth
 def create_private_event(user_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
     """
@@ -199,36 +238,26 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
     }
 
 
-@app.post('/fundraising/{fund_id}/')
+@app.get('/api/fundraising/{fund_id}/')
 @auth
-def get_fund(fund_id):
+def get_api_fund(fund_id):
     """
     Get fundraising (event)
     """
     fund: Fundraising = db.get_api_fund(fund_id)
     fund_json = jsonable_encoder(fund)
-    return JSONResponse(content=account_json, status_code=200)
+    return JSONResponse(content=fund_json, status_code=200)
 
 
-@app.post('/fundraising/{fund_id}/')
+@app.put('/api/fundraising/{fund_id}/')
 @auth
-def edit_fund(fund_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+def edit_api_fund(fund_id: int, fund: Fundraising):
     """
     Edit fundraising (event)
     """
-    event: Fundraising = db.create_private_fundraising(user_id, fund)
-    assert event is not None
-
-    web_init = WebAppInitData.form_auth_header(authorization)
-    data = {
-        'fund_id': event.id,
-        'invite_url': event.invite_url,
-    }
-    data_json = json.dumps(data)
-    r = send_answer_web_app_query(web_init.query_id, data_json)
-    assert 200 == r.status_code
+    ok: bool = db.update_api_fund(fund_id, fund)
     return {
-        'event_id': event.id,
-        'invite_url': event.invite_url
+        'fund_id': fund_id,
+        'result': ok,
     }
 

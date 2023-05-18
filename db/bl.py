@@ -444,14 +444,15 @@ def insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraisi
     return event
 
 
-def update_fundraising(event_id: int, session: Session, **kvargs) -> Fundraising | None:
-    if event_id is None:
+def update_fundraising(fund_id: int, session: Session, **kvargs) -> Fundraising | None:
+    if fund_id is None:
         raise ValueError('event_id can not be None')
     if session is None:
         raise ValueError("session can't be None")
-    kvargs.pop('account_id')
+    kvargs.pop('fund_id', None)
+    kvargs.pop('account_id', None)
 
-    event = get_fundraising(event_id, session)
+    event = get_fundraising(fund_id, session)
     if event is None:
         return None
 
@@ -757,7 +758,7 @@ def get_trial_fund(user_id) -> int | None:
     return trial_fund_id
 
 
-def get_api_fund(fund_id) -> ApiFundraising:
+def get_api_fund(fund_id: int) -> ApiFundraising:
     """
     Дать сбор для последующего редактирования
     :param fund_id: уникальный идентификатор сбора
@@ -765,10 +766,10 @@ def get_api_fund(fund_id) -> ApiFundraising:
     session = get_session()
     fund = get_fundraising(fund_id, session)
 
-    api_fund = ApiFundraising()
+    api_fund = ApiFundraising.get_empty()
     if fund is not None:
         api_fund.id = fund_id
-        api_fund.reason = fund.id
+        api_fund.reason = fund.reason
         api_fund.target = fund.target
         api_fund.account_id = fund.account_id
         api_fund.start = fund.start
@@ -783,6 +784,18 @@ def get_api_fund(fund_id) -> ApiFundraising:
         api_fund.invite_url = fund.invite_url
 
     return api_fund
+
+
+def update_api_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
+    """
+    Обновить информацию о сборе
+    :param fund_id: уникальный код сбора
+    :param api_fund: данные для корректировки
+    """
+    session = get_session()
+    kvargs = api_fund.dict()
+    fund = update_fundraising(fund_id, session, **kvargs)
+    return fund is not None
 
 
 def get_fund_info(fund_id: int) -> FundraisingInfo:

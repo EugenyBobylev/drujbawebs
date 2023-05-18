@@ -94,6 +94,10 @@ class Fundraising(BaseModel):
     event_dresscode: str = ''  # дресс-код
     invite_url: str = ''       # ссылка приглашения для участия в сборе
 
+    @classmethod
+    def get_empty(cls):
+        return cls(reason='', target='', event_date = date.today(), transfer_info='')
+
 
 class FundraisingInfo(BaseModel):
     id: int = None
