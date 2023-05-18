@@ -53,12 +53,27 @@ def auth(func):
 # ****************************************
 # Тестовый мусор
 # ****************************************
-@app.get("/")
+@app.get("/test/")
+async def get_test(request: Request):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    host = BotConfig.instance().base_url
+    courses = ['C', 'C++', 'Python', 'Java']
+    context = {
+        'request': request,
+        'courses': courses,
+    }
+    return templates.TemplateResponse('test.html', context=context, headers=headers)
+
+
+@app.get("/api/")
 async def root():
     return {"message": "Hello World"}
 
 
-@app.get('/query/{query_id}')
+@app.get('api/query/{query_id}')
 async def get_query_id(query_id: str):
     # response.headers["Allow-Origins"] = "*"
     # response.headers["Allow-Credentials"] = "true"
@@ -144,6 +159,31 @@ async def get_fund(fund_id: int, request: Request):
         'event_dresscode': fund.event_dresscode
     }
     return templates.TemplateResponse('editFund.html', context=context, headers=headers)
+
+
+@app.get('/donors/{fund_id}')
+async def get_donors(fund_id: int, request: Request):
+    host = BotConfig.instance().base_url
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    data = db.get_api_all_donors(fund_id)
+    donors = []
+    for d in data:
+        item = {
+            'user_id': d.user_id,
+            'info': f'{d.name}, {d.payed} руб.',
+        }
+        donors.append(item)
+
+    context = {
+        'request': request,
+        'host': host,
+        'fund_id': fund_id,
+        'donors_info': donors
+    }
+    return templates.TemplateResponse('participantList.html', context=context, headers=headers)
 
 
 # ****************************************
@@ -257,7 +297,41 @@ def edit_api_fund(fund_id: int, fund: Fundraising):
     """
     ok: bool = db.update_api_fund(fund_id, fund)
     return {
+        'operation': 'edit fundraising',
         'fund_id': fund_id,
         'result': ok,
     }
 
+
+@app.delete('/api/fundraising/{fund_id}/donor/{user_id}/')
+@auth
+def delete_donor(fund_id: int, user_id: int):
+    """
+    Delete donor form donors of the fundraising
+    :return:
+    """
+    ok: bool = db.delete_api_donor(fund_id=fund_id, user_id=user_id)
+    return {
+        'operation': 'delete donor',
+        'fund_id': fund_id,
+        'user_id': user_id,
+        'result': ok,
+    }
+
+
+@app.get('/api/fundraising/{fund_id}/admin/{user_id}/')
+@auth
+def set_fund_admin(fund_id: int, user_id: int):
+    """
+    Change fundraising admin
+    :param fund_id:
+    :param user_id:
+    :return:
+    """
+    ok: bool = db.set_api_fund_admin(fund_id=fund_id, user_id=user_id)
+    return {
+        'operation': 'change admin',
+        'fund_id': fund_id,
+        'user_id': user_id,
+        'result': ok,
+    }

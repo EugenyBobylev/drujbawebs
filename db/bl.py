@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from backend import User as ApiUser, FundraisingInfo
 from backend import Fundraising as ApiFundraising
 from backend import Account as ApiAccount
+from backend import Donor as ApiDonor
 from config import BotConfig
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, MC, Payment
@@ -513,7 +514,7 @@ def update_donor(fund_id: int, user_id: int, session: Session, pay_sum: int) -> 
     return donor
 
 
-def delete_donor(fund_id: int, user_id: int, session: Session):
+def delete_donor(fund_id: int, user_id: int, session: Session) -> bool:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
     if user_id is None:
@@ -525,6 +526,17 @@ def delete_donor(fund_id: int, user_id: int, session: Session):
     if donor:
         session.delete(donor)
         session.commit()
+        return True
+    return False
+
+
+def get_donors(fund_id, session: Session) -> [Donor]:
+    if fund_id is None:
+        raise ValueError('fund_id can not be None')
+
+    query = select(Donor).where(Donor.fund_id == fund_id)
+    result = session.execute(query).scalars().all()
+    return result
 
 
 def is_fundraising_open(fund_id: int, session: Session) -> bool | None:
@@ -873,6 +885,35 @@ def get_user_name(user_id) -> str:
     session = get_session()
     user = get_user(user_id, session)
     return user.name if user is not None else ''
+
+
+def delete_api_donor(fund_id: int, user_id: int) -> bool:
+    session = get_session()
+    ok = delete_donor(fund_id, user_id, session)
+    return ok
+
+
+def set_api_fund_admin(fund_id: int, user_id: int) -> bool:
+    session = get_session()
+    new_account = get_user_account(user_id, session)
+    if new_account is None:
+        return False
+    fund: Fundraising = get_fundraising(fund_id, session)
+    if fund is None:
+        return False
+    fund.account_id = new_account.id
+    session.commit()
+    return True
+
+
+def get_api_all_donors(fund_id) -> ApiDonor:
+    session = get_session()
+    donors = get_donors(fund_id, session)
+    result = []
+    for donor in donors:
+        api_donor = ApiDonor(fund_id=donor.fund_id, user_id=donor.user_id, payed=donor.payed, name=donor.user.name)
+        result.append(api_donor)
+    return result
 
 
 def get_message_text(text_name: str) -> str:

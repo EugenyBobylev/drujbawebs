@@ -83,10 +83,11 @@ async def fund_info_keyboard(state: FSMContext):
     user_data = await state.get_data()
     fund_id = user_data['fund_id']
     url1 = f'{bot_config.base_url}fundraising/{fund_id}'
+    url2 = f'{bot_config.base_url}donors/{fund_id}'
     buttons = [
         InlineKeyboardButton(text="Ссылка на сбор", callback_data='show_fund_link'),
         InlineKeyboardButton(text="Изменить детали сбора", web_app=types.WebAppInfo(url=url1)),
-        InlineKeyboardButton(text="Редактировать список участников", callback_data='edit_fund_members'),
+        InlineKeyboardButton(text="Редактировать список участников", web_app=types.WebAppInfo(url=url2)),
         InlineKeyboardButton(text="Закрыть", callback_data='return_menu'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)

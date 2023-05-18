@@ -126,3 +126,13 @@ class FundraisingInfo(BaseModel):
                f'Дата: {self.event_date}\nОсталось дней: {self.days_left}\n\nСбор успешен: {is_ok}\n ' \
                f'Участники сбора: {self.donor_count} чел.\n\nСдали деньги: {self.payed_count} чел.\n' \
                f'Сумма сбора: {self.total_sum} руб.\nСредний чек: {self.avg_sum} руб.'
+
+
+class Donor(BaseModel):
+    fund_id: int
+    user_id: int
+    name: str = ''
+    payed: int = 0
+
+    def __repr__(self):
+        return f'find_id={self.fund_id}; user_id={self.user_id}; name="{self.name}"; payed="{self.payed}"'
