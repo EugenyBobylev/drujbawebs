@@ -17,14 +17,19 @@ pip install requests
 pip install jinja2
 ```
 
-** Create new Revision
+**Create new Revision**
 ```shell
 alembic revision --autogenerate -m "..."
 ```
-** Running migration
+**Running migration:**
 ```shell
 alembic upgrade head
 ```
+**Running uvicorn:**
+```shell
+uvicorn backend.api:app --forwarded-allow-ips='*' --uds /tmp/uvicorn.sock
+```
+
 
 #### Ближашие задачи
 
@@ -82,7 +87,3 @@ alembic upgrade head
    - **описать бизнес процессы для каждой роли от точки входа в бот до завершения**, описание должно содержать в том числе последовательность перехода между элементами графической схемы в текстовом файле
 10. Другое
 
-
-
-    
-    
