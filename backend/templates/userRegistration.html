@@ -17,43 +17,38 @@
     <h3>Регистрация</h3>
     <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
     <form action="" name="userRegistrationForm">
-        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="Пушкин"/>
+        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="" size="40"/>
         <div class="dateInput">
-            <input type="date" id="birthday" name="birthday"/>
-            <label for="birthday">Дата рождения</label>
+            <input type="date" id="birthday" name="birthday" value="1974-11-03"/>
+            <label for="birthday">Дата рождения!</label>
         </div>
-        <select class="timezone" name="timezone" id="timezone">
-            <option value="-12.0"> (GMT -12:00) Эниветок, Кваджалейн </option>
-            <option value="-11.0"> (GMT -11:00) Остров Мидуэй, Самоа </option>
-            <option value="-10.0"> (GMT -10:00) Гавайи </option>
-            <option value="-9.0"> (GMT -9:00) Аляска </option>
-            <option value="-8.0"> (GMT -8:00) Тихоокеанское время (США и Канада) </option>
-            <option value="-7.0"> (GMT -7:00) Горное время (США и Канада) </option>
-            <option value="-6.0"> (GMT -6:00) Центральное время (США и Канада), Мехико</option>
-            <option value="-5.0"> (GMT -5:00) Восточное время (США и Канада), Богота, Лима </option>
-            <option value="-4.0"> (GMT -4:00) Атлантическое время (Канада), Каракас, Ла-Пас </option>
-            <option value="-3.5"> (GMT -3:30) Ньюфаундленд </option>
-            <option value="-3.0"> (GMT -3:00) Бразилия, Буэнос-Айрес, Джорджтаун </option>
-            <option value="-2.0"> (GMT -2:00) Срединно-Атлантического </option>
-            <option value="-1.0"> (GMT -1:00 час) Азорские острова, острова Зеленого Мыса </option>
-            <option value="0.0"> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
-            <option value="1.0"> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
-            <option value="2.0"> (GMT +2:00) Киев, Калининград, Южная Африка </option>
-            <option value="3.0"> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
-            <option value="3.5"> (GMT +3:30) Тегеран </option>
-            <option value="4.0"> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
-            <option value="4.5"> (GMT +4:30) Кабул </option>
-            <option value="5.0"> (GMT +5:00) Екатеринбург, Исламабад, Карачи, Ташкент</option>
-            <option value="5.5"> (GMT +5:30) Бомбей, Калькутта, Мадрас, Нью-Дели</option>
-            <option value="5.75"> (GMT +5:45) Катманду</option>
-            <option value="6.0"> (GMT +6:00) Алматы, Дакке, Коломбо </option>
-            <option value="7.0"> (GMT +7:00) Бангкок, Ханой, Джакарта</option>
-            <option value="8.0"> (GMT +8:00) Пекин, Перт, Сингапур, Гонконг</option>
-            <option value="9.0"> (GMT +9:00) Токио, Сеул, Осака, Саппоро, Якутск</option>
-            <option value="9.5"> (GMT +9:30) Аделаида, Дарвин </option>
-            <option value="10.0"> (GMT +10:00) Восточная Австралия, Гуам, Владивосток </option>
-            <option value="11.0"> (GMT +11:00) Магадан, Соломоновы острова, Новая Каледония</option>
-            <option value="12.0"> (GMT +12:00) Окленд, Веллингтон, Фиджи, Камчатка</option>
+        <select class="timezone" name="timezone" id="timezone" style="max-width:90%;">
+            <option value=-12> (GMT -12:00) Эниветок, Кваджалейн </option>
+            <option value=-11> (GMT -11:00) Остров Мидуэй, Самоа </option>
+            <option value=-10> (GMT -10:00) Гавайи </option>
+            <option value=-9> (GMT -9:00) Аляска </option>
+            <option value=-8> (GMT -8:00) Тихоокеанское время (США и Канада) </option>
+            <option value=-7> (GMT -7:00) Горное время (США и Канада) </option>
+            <option value=-6> (GMT -6:00) Центральное время (США и Канада), Мехико</option>
+            <option value=-5> (GMT -5:00) Восточное время (США и Канада), Богота, Лима </option>
+            <option value=-4> (GMT -4:00) Атлантическое время (Канада), Каракас, Ла-Пас </option>
+            <option value=-3> (GMT -3:30) Ньюфаундленд </option>
+            <option value=-3> (GMT -3:00) Бразилия, Буэнос-Айрес, Джорджтаун </option>
+            <option value=-2> (GMT -2:00) Срединно-Атлантического </option>
+            <option value=-1> (GMT -1:00 час) Азорские острова, острова Зеленого Мыса </option>
+            <option value=0> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
+            <option value=1> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
+            <option value=2> (GMT +2:00) Киев, Калининград, Южная Африка </option>
+            <option value=3 selected> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
+            <option value=4> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
+            <option value=5> (GMT +5:00) Екатеринбург, Исламабад, Карачи, Ташкент</option>
+            <option value=6> (GMT +6:00) Алматы, Дакке, Коломбо </option>
+            <option value=7> (GMT +7:00) Бангкок, Ханой, Джакарта</option>
+            <option value=8> (GMT +8:00) Пекин, Перт, Сингапур, Гонконг</option>
+            <option value=9> (GMT +9:00) Токио, Сеул, Осака, Саппоро, Якутск</option>
+            <option value=10> (GMT +10:00) Восточная Австралия, Гуам, Владивосток </option>
+            <option value=11> (GMT +11:00) Магадан, Соломоновы острова, Новая Каледония</option>
+            <option value=12> (GMT +12:00) Окленд, Веллингтон, Фиджи, Камчатка</option>
         </select>
     </form>
     <div class="formFooter">
@@ -66,21 +61,24 @@
         tg.MainButton.enable();
         Telegram.WebApp.onEvent("mainButtonClicked", postUser);
 
-        document.getElementById("uname").value = "Фефелов";
+        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+        document.getElementById("uname").value = user_name;
         let api_url = "{{host}}";
 
         async function postUser(){
-            let url = `${api_url}user/`;
+            let url = `${api_url}api/user/`;
 
             // вывести отладочное сообещние
-            // msg = `query_id=${tg.initDataUnsafe.query_id}`
+            // msg = `user_id=${tg.initDataUnsafe.user.id}`
             // if(tg.initData !== '')
-            //     Telegram.WebApp.showAlert(msg);
+            //      Telegram.WebApp.showAlert(msg);
 
             // создать пользователя
             let user = {
+                id: tg.initDataUnsafe.user.id,
                 name: document.getElementById("uname").value,
-                timezone: -1,
+                birthdate: document.getElementById("birthday").value,
+                timezone: document.getElementById("timezone").value,
             };
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(user);
@@ -96,7 +94,7 @@
                 },
                 body: body,
             });
-            let result = await response.json();
+            console.info(response.status)
         }
     </script>
 </body>

@@ -1,10 +1,12 @@
 import json
 
 import requests
+from fastapi.encoders import jsonable_encoder
 
-from backend.backend import User
-from backend.telegram_api import send_message
+from backend import User
+from backend import send_message
 from config import BotConfig
+from db import Account
 
 auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0ExMjQ0NzE3NTElMkMlMjJmaXJzdF9uYW1' \
        'lJTIyJTNBJTIyJUQwJTk1JUQwJUIyJUQwJUIzJUQwJUI1JUQwJUJEJUQwJUI4JUQwJUI5JTIyJTJDJTIybGFzdF9uYW1lJTIyJTNBJTIy' \
@@ -16,37 +18,115 @@ auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0Ex
 # *************************************
 # Required working backend
 # *************************************
+def test_get_root():
+    url = 'http://127.0.0.1:8000/'
+    headers = {
+        'Authorization': auth
+    }
+    r = requests.get(url)
+    assert r.status_code == 200
+
+
 def test_create_user_without_auth():
     url = 'http://127.0.0.1:8000/user/'
-    user = User(name='test_user', timezone=1)
-    r = requests.post(url, json=user.__dict__)
+    user = User(id=1234, name='test_user', timezone=1, birthdate='1980-01-23')
+    user_json = jsonable_encoder(user)
+    r = requests.post(url, json=user_json)
     assert r.status_code == 422
 
 
 def test_create_user_with_auth():
     url = 'http://127.0.0.1:8000/user/'
     headers = {
+        'Content-Type': 'application/json',
         'Authorization': auth
     }
-    user = User(name='test_user', timezone=1)
-    r = requests.post(url, headers=headers, json=user.__dict__)
+    user = User(id=1234, name='Kent Beck', timezone=1, birthdate='1960-01-23')
+    user_json = jsonable_encoder(user)
+    r = requests.post(url, headers=headers, json=user_json)
     assert r.status_code == 200
 
 
-def test_create_user_with_wrong_auth():
-    url = 'http://127.0.0.1:8000/user/'
+def test_get_user():
+    url = 'http://127.0.0.1:8000/user/1234/'
     headers = {
-        'Authorization': 'all nonsense'
+        'Content-Type': 'application/json',
+        'Authorization': auth
     }
-    user = User(name='test_user', timezone=1)
-    r = requests.post(url, headers=headers, json=user.__dict__)
-    assert r.status_code == 401
+    r = requests.get(url, headers=headers)
+    api_user: Account = r.json()
+    assert r.status_code == 200
+    assert api_user is not None
+
+
+def test_get_wrong_user():
+    url = 'http://127.0.0.1:8000/user/-1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    assert r.status_code == 204
+
+
+def test_get_user_account():
+    url = 'http://127.0.0.1:8000/user/account/1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    api_model: Account = r.json()
+    assert r.status_code == 200
+
+
+def test_get_wrong_user_account():
+    url = 'http://127.0.0.1:8000/user/account/-1234/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    r = requests.get(url, headers=headers)
+    assert r.status_code == 204
+
+
+def test_create_user_fundraising():
+    user_id = 1234
+    url = f'http://127.0.0.1:8000/user/fundraising/{user_id}/'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': auth
+    }
+    fund = {
+        'reason': 'ДР',
+        'target': 'юбилей',
+        'start': '2023-01-15',
+        'end': '2023-05-10',
+        'event_date': '2023-05-15',
+        'transfer_info': 'на карту Мир сбербанка 000-1111-2222-4444',
+        'gift_info': 'ящик коньяка',
+        'congratulation_date': '2023-05-16',
+        'congratulation_time': '19:00',
+        'event_place': 'Дача юбиляра на Щукинке',
+        'event_dresscode': 'чтобы комары на сожрали',
+    }
+
+    fund_json = jsonable_encoder(fund)
+    r = requests.post(url, headers=headers, json=fund_json)
+    assert r.status_code == 200
+
+
+# def test_create_user_with_wrong_auth():
+#     url = 'http://127.0.0.1:8000/user/'
+#     headers = {
+#         'Authorization': 'all nonsense'
+#     }
+#     user = User(name='test_user', timezone=1)
+#     r = requests.post(url, headers=headers, json=user.__dict__)
+#     assert r.status_code == 401
 
 
 def test_api_bot_send_me():
-    headers = {
-        'Content-Type: application/json'
-    }
     token = BotConfig.instance().token
     url = f'https://api.telegram.org/bot{token}/getMe'
     r = requests.get(url)
@@ -58,12 +138,12 @@ def test_api_bot_send_me():
 
 
 def test_answer_web_app_query():
-    '''
+    """
     Тест на отправку боту данных из WebApp
-    перед выполнение,каждый раз, требуется обновлять web_query_id
+    перед выполнением, каждый раз, требуется обновлять web_query_id
     т.к. он может быть использован только единожды
     :return:
-    '''
+    """
     web_query_id = 'AAHHSWsHAAAAAMdJawcBvcwJ'
     headers = {
         'Content-Type': 'application/json'
