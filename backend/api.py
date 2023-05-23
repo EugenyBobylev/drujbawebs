@@ -73,7 +73,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get('api/query/{query_id}')
+@app.get('/api/query/{query_id}')
 async def get_query_id(query_id: str):
     # response.headers["Allow-Origins"] = "*"
     # response.headers["Allow-Credentials"] = "true"
