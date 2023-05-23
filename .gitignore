@@ -164,3 +164,4 @@ alembic/remote_versions/
 alembic/versions/
 postgres_data/
 
+/chat/
