@@ -10,7 +10,7 @@ from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from config import BotConfig
 from db import EntityNotExistsException
-from db.models import Msg, User, Company, Account, Fundraising, Donor, MC, Payment
+from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
 from utils import get_days_left
 
 
@@ -38,12 +38,12 @@ def get_msg(text_name: str, session: Session) -> Msg | None:
     return result
 
 
-def insert_msg(text_name: str, text_value: str, session: Session) -> Msg:
+def _insert_msg(text_name: str, text_value: str, session: Session) -> Msg:
     if session is None:
         raise ValueError("session can't be None")
     msg = get_msg(text_name, session)
     if msg:
-        msg = update_msg(text_name, text_value, session)
+        msg = _update_msg(text_name, text_value, session)
     else:
         msg = Msg(text_name=text_name, text_value=text_value)
         session.add(msg)
@@ -51,7 +51,7 @@ def insert_msg(text_name: str, text_value: str, session: Session) -> Msg:
     return msg
 
 
-def update_msg(text_name: str, text_value: str, session: Session) -> Msg:
+def _update_msg(text_name: str, text_value: str, session: Session) -> Msg:
     if session is None:
         raise ValueError("session can't be None")
     msg = get_msg(text_name, session)
@@ -59,11 +59,11 @@ def update_msg(text_name: str, text_value: str, session: Session) -> Msg:
         msg.text_value = text_value
         session.commit()
     else:
-        msg = insert_msg(text_name, text_value, session)
+        msg = _insert_msg(text_name, text_value, session)
     return msg
 
 
-def delete_msg(text_name: str, session: Session):
+def _delete_msg(text_name: str, session: Session):
     if session is None:
         raise ValueError("session can't be None")
     msg = get_msg(text_name, session)
@@ -75,19 +75,19 @@ def delete_msg(text_name: str, session: Session):
 # **********************************************************************
 #  User
 # **********************************************************************
-def get_user(user_id: int, session: Session) -> User | None:
+def _get_user(user_id: int, session: Session) -> User | None:
     if session is None:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
     return user
 
 
-def insert_user(user_id: int, session: Session, **kvargs) -> User:
+def _insert_user(user_id: int, session: Session, **kvargs) -> User:
     if session is None:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
     if user:
-        user = update_user(user_id, session, **kvargs)
+        user = _update_user(user_id, session, **kvargs)
     else:
         user = User(id=user_id)
         for field in User.get_fields():
@@ -98,12 +98,12 @@ def insert_user(user_id: int, session: Session, **kvargs) -> User:
     return user
 
 
-def update_user(user_id: int, session: Session, **kvargs) -> User:
+def _update_user(user_id: int, session: Session, **kvargs) -> User:
     if session is None:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
     if user is None:
-        user = insert_user(user_id, session, **kvargs)
+        user = _insert_user(user_id, session, **kvargs)
     else:
         for field in User.get_fields():
             if field in kvargs:
@@ -112,7 +112,7 @@ def update_user(user_id: int, session: Session, **kvargs) -> User:
     return user
 
 
-def delete_user(user_id: int, session: Session):
+def _delete_user(user_id: int, session: Session):
     if session is None:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
@@ -121,7 +121,7 @@ def delete_user(user_id: int, session: Session):
         session.commit()
 
 
-def register_user(user_id: int, session: Session, **kvargs) -> User:
+def _register_user(user_id: int, session: Session, **kvargs) -> User:
     if user_id is None:
         raise ValueError("user_id can't be None")
     if session is None:
@@ -129,20 +129,20 @@ def register_user(user_id: int, session: Session, **kvargs) -> User:
 
     user = session.get(User, user_id)
     if user:
-        user = update_user(user_id, session, **kvargs)
-        account = get_user_account(user_id, session)
+        user = _update_user(user_id, session, **kvargs)
+        account = _get_user_account(user_id, session)
         if account is None:
-            insert_user_account(user.id, session)
+            _insert_user_account(user.id, session)
         session.refresh(user)
         return user
 
-    user = insert_user(user_id, session, **kvargs)
-    account = insert_user_account(user.id, session)
+    user = _insert_user(user_id, session, **kvargs)
+    account = _insert_user_account(user.id, session)
     assert account is not None
     return user
 
 
-def is_user_registered(user_id: int, session: Session) -> bool:
+def _is_user_registered(user_id: int, session: Session) -> bool:
     if user_id is None:
         raise ValueError("user_id can't be None")
     if session is None:
@@ -153,7 +153,7 @@ def is_user_registered(user_id: int, session: Session) -> bool:
     return False
 
 
-def get_user_companies(user_id: int, session: Session) -> [Company]:
+def _get_user_companies(user_id: int, session: Session) -> [Company]:
     if user_id is None:
         raise ValueError("user_id can't be None")
     if session is None:
@@ -169,7 +169,7 @@ def get_user_companies(user_id: int, session: Session) -> [Company]:
 # **********************************************************************
 # Account
 # **********************************************************************
-def get_account(account_id: int, session: Session = None) -> Account | None:
+def _get_account(account_id: int, session: Session = None) -> Account | None:
     if account_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
@@ -178,7 +178,7 @@ def get_account(account_id: int, session: Session = None) -> Account | None:
     return account
 
 
-def get_user_account(user_id: int, session: Session = None) -> Account | None:
+def _get_user_account(user_id: int, session: Session = None) -> Account | None:
     if user_id is None:
         raise ValueError('user_id can not be None')
     if session is None:
@@ -187,7 +187,7 @@ def get_user_account(user_id: int, session: Session = None) -> Account | None:
     return account
 
 
-def get_company_account(company_id: int, session: Session = None) -> Account | None:
+def _get_company_account(company_id: int, session: Session = None) -> Account | None:
     if company_id is None:
         raise ValueError('company_id can not be None')
     if session is None:
@@ -196,7 +196,7 @@ def get_company_account(company_id: int, session: Session = None) -> Account | N
     return account
 
 
-def insert_user_account(user_id: int, session: Session) -> Account:
+def _insert_user_account(user_id: int, session: Session) -> Account:
     if user_id is None:
         raise ValueError('user_id can not be None')
     if session is None:
@@ -211,7 +211,7 @@ def insert_user_account(user_id: int, session: Session) -> Account:
     return account
 
 
-def insert_company_account(company_id: int, session: Session) -> Account:
+def _insert_company_account(company_id: int, session: Session) -> Account:
     if company_id is None:
         raise ValueError('company_id can not be None')
     if session is None:
@@ -226,10 +226,10 @@ def insert_company_account(company_id: int, session: Session) -> Account:
     return account
 
 
-def update_account(account_id: int, session: Session, **kvargs) -> Account:
+def _update_account(account_id: int, session: Session, **kvargs) -> Account:
     if session is None:
         session = get_session()
-    account = get_account(account_id, session)
+    account = _get_account(account_id, session)
     kvargs.pop('user_id', None)
     kvargs.pop('company_id', None)
 
@@ -240,7 +240,7 @@ def update_account(account_id: int, session: Session, **kvargs) -> Account:
     return account
 
 
-def delete_account(account_id: int, session: Session):
+def _delete_account(account_id: int, session: Session):
     if session is None:
         session = get_session()
     account = session.get(Account, account_id)
@@ -253,31 +253,31 @@ def delete_account(account_id: int, session: Session):
 # **********************************************************************
 # Company
 # **********************************************************************
-def get_company(company_id: int, session: Session) -> Company | None:
+def _get_company(company_id: int, session: Session) -> Company | None:
     if session is None:
         raise ValueError("session can't be None")
     company = session.get(Company, company_id)
     return company
 
 
-def get_company_by_name(name: str, session: Session) -> Company | None:
+def _get_company_by_name(name: str, session: Session) -> Company | None:
     if session is None:
         raise ValueError("session can't be None")
     company = session.scalars(select(Company).where(Company.name == name)).first()
     return company
 
 
-def insert_company(name: str, admin_id: int, session: Session, **kvargs) -> Company:
+def _insert_company(name: str, admin_id: int, session: Session, **kvargs) -> Company:
     if name is None:
         raise ValueError("name can't be None")
     if admin_id is None:
         raise ValueError("admin_id can't be None")
     if session is None:
         raise ValueError("session can't be None")
-    company = get_company_by_name(name, session)
+    company = _get_company_by_name(name, session)
     if company:
         company.admin_id = admin_id
-        update_company(company.id, session, **kvargs)
+        _update_company(company.id, session, **kvargs)
 
     company = Company(name=name, admin_id=admin_id)
     for field in Company.get_fields():
@@ -287,12 +287,12 @@ def insert_company(name: str, admin_id: int, session: Session, **kvargs) -> Comp
     session.commit()
 
     # сразу создать account
-    insert_company_account(company.id, session)
+    _insert_company_account(company.id, session)
     session.commit()
     return company
 
 
-def update_company(company_id: int, session: Session, **kvargs) -> Company:
+def _update_company(company_id: int, session: Session, **kvargs) -> Company:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if session is None:
@@ -310,7 +310,7 @@ def update_company(company_id: int, session: Session, **kvargs) -> Company:
     return company
 
 
-def delete_company(company_id: int, session: Session):
+def _delete_company(company_id: int, session: Session):
     if session is None:
         raise ValueError("session can't be None")
     company = session.get(Company, company_id)
@@ -319,7 +319,7 @@ def delete_company(company_id: int, session: Session):
         session.commit()
 
 
-def get_company_users(company_id: str, session: Session) -> [User]:
+def _get_company_users(company_id: str, session: Session) -> [User]:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if session is None:
@@ -332,7 +332,7 @@ def get_company_users(company_id: str, session: Session) -> [User]:
     return company_users
 
 
-def get_member(company_id: str, user_id: int, session: Session) -> [Account]:
+def _get_member(company_id: str, user_id: int, session: Session) -> [Account]:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if user_id is None:
@@ -345,7 +345,7 @@ def get_member(company_id: str, user_id: int, session: Session) -> [Account]:
     return result
 
 
-def add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Account:
+def _add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Account:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if user_id is None:
@@ -353,12 +353,12 @@ def add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Acc
     if session is None:
         raise ValueError("session can't be None")
 
-    account = get_member(company_id, user_id, session)
+    account = _get_member(company_id, user_id, session)
     if account is not None:
-        update_account(account.id, session, **kvargs)
+        _update_account(account.id, session, **kvargs)
         return account
 
-    account = insert_user_account(user_id, session)
+    account = _insert_user_account(user_id, session)
     account.company_id = company_id
     session.commit()
     return account
@@ -367,7 +367,7 @@ def add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Acc
 # **********************************************************************
 # Fundraising
 # **********************************************************************
-def get_fundraising(fund_id: int, session: Session) -> Fundraising | None:
+def _get_fundraising(fund_id: int, session: Session) -> Fundraising | None:
     """
     get account of the company member (employee)
     :return:
@@ -382,7 +382,7 @@ def get_fundraising(fund_id: int, session: Session) -> Fundraising | None:
     return result
 
 
-def get_all_fundraisings(account_id: int, session: Session) -> [Fundraising]:
+def _get_all_fundraisings(account_id: int, session: Session) -> [Fundraising]:
     if account_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
@@ -393,7 +393,7 @@ def get_all_fundraisings(account_id: int, session: Session) -> [Fundraising]:
     return result
 
 
-def get_all_open_fundraising(account_id: int, session: Session) -> [Fundraising]:
+def _get_all_open_fundraising(account_id: int, session: Session) -> [Fundraising]:
     if account_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
@@ -407,7 +407,7 @@ def get_all_open_fundraising(account_id: int, session: Session) -> [Fundraising]
     return result
 
 
-def get_all_closed_fundraising(account_id: int, session: Session) -> [Fundraising]:
+def _get_all_closed_fundraising(account_id: int, session: Session) -> [Fundraising]:
     if account_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
@@ -421,7 +421,7 @@ def get_all_closed_fundraising(account_id: int, session: Session) -> [Fundraisin
     return result
 
 
-def insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraising:
+def _insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraising:
     if account_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
@@ -436,16 +436,16 @@ def insert_fundraising(account_id: int, session: Session, **kvargs) -> Fundraisi
     session.commit()
 
     # включить создателя сбора в список доноров
-    account = get_account(account_id, session)
+    account = _get_account(account_id, session)
     if account.user_id is not None:
-        insert_donor(event.id, account.user_id, session)
+        _insert_donor(event.id, account.user_id, session)
     if account.company_id is not None:
         user_id = account.company.admin.id
-        insert_donor(event.id, user_id, session)
+        _insert_donor(event.id, user_id, session)
     return event
 
 
-def update_fundraising(fund_id: int, session: Session, **kvargs) -> Fundraising | None:
+def _update_fundraising(fund_id: int, session: Session, **kvargs) -> Fundraising | None:
     if fund_id is None:
         raise ValueError('event_id can not be None')
     if session is None:
@@ -453,7 +453,7 @@ def update_fundraising(fund_id: int, session: Session, **kvargs) -> Fundraising 
     kvargs.pop('fund_id', None)
     kvargs.pop('account_id', None)
 
-    event = get_fundraising(fund_id, session)
+    event = _get_fundraising(fund_id, session)
     if event is None:
         return None
 
@@ -467,7 +467,7 @@ def update_fundraising(fund_id: int, session: Session, **kvargs) -> Fundraising 
 # **********************************************************************
 # Donor
 # **********************************************************************
-def get_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
+def _get_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
     if fund_id is None:
         raise ValueError('event_id can not be None')
     if user_id is None:
@@ -479,7 +479,7 @@ def get_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
     return donor
 
 
-def insert_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
+def _insert_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
     if user_id is None:
@@ -487,7 +487,7 @@ def insert_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
     if session is None:
         raise ValueError("session can't be None")
 
-    donor = get_donor(fund_id, user_id, session)
+    donor = _get_donor(fund_id, user_id, session)
     if donor is not None:
         return donor
 
@@ -497,7 +497,7 @@ def insert_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
     return donor
 
 
-def update_donor(fund_id: int, user_id: int, session: Session, pay_sum: int) -> Donor:
+def _update_donor(fund_id: int, user_id: int, session: Session, pay_sum: int) -> Donor:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
     if user_id is None:
@@ -505,16 +505,16 @@ def update_donor(fund_id: int, user_id: int, session: Session, pay_sum: int) -> 
     if session is None:
         raise ValueError("session can't be None")
 
-    donor = get_donor(fund_id, user_id, session)
+    donor = _get_donor(fund_id, user_id, session)
     if donor is None:
-        donor = insert_donor(fund_id, user_id, session)
+        donor = _insert_donor(fund_id, user_id, session)
 
     donor.payed = pay_sum
     session.commit()
     return donor
 
 
-def delete_donor(fund_id: int, user_id: int, session: Session) -> bool:
+def _delete_donor(fund_id: int, user_id: int, session: Session) -> bool:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
     if user_id is None:
@@ -522,7 +522,7 @@ def delete_donor(fund_id: int, user_id: int, session: Session) -> bool:
     if session is None:
         raise ValueError("session can't be None")
 
-    donor = get_donor(fund_id, user_id, session)
+    donor = _get_donor(fund_id, user_id, session)
     if donor:
         session.delete(donor)
         session.commit()
@@ -530,7 +530,7 @@ def delete_donor(fund_id: int, user_id: int, session: Session) -> bool:
     return False
 
 
-def get_donors(fund_id, session: Session) -> [Donor]:
+def _get_donors(fund_id, session: Session) -> [Donor]:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
 
@@ -539,10 +539,10 @@ def get_donors(fund_id, session: Session) -> [Donor]:
     return result
 
 
-def is_fundraising_open(fund_id: int, session: Session) -> bool | None:
+def _is_fundraising_open(fund_id: int, session: Session) -> bool | None:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
-    fund = get_fundraising(fund_id, session)
+    fund = _get_fundraising(fund_id, session)
     if fund is None:
         return None
     days_left = get_days_left(fund.event_date)
@@ -550,24 +550,24 @@ def is_fundraising_open(fund_id: int, session: Session) -> bool | None:
     return is_open
 
 
-def get_fund_avg_sum(fund_id: int, session: Session) -> float:
+def _get_fund_avg_sum(fund_id: int, session: Session) -> float:
     """
     Average check of a donor in a fundraising
     """
     if fund_id is None:
         raise ValueError('fund_id can not be None')
-    total_sum = get_fund_total_sum(fund_id, session)
+    total_sum = _get_fund_total_sum(fund_id, session)
     if total_sum == 0:
         return 0.0
 
-    donor_count = get_payed_donor_count(fund_id, session)
+    donor_count = _get_payed_donor_count(fund_id, session)
     if donor_count == 0:
         return 0.0
     avg_sum = round(total_sum / donor_count, 2)
     return avg_sum
 
 
-def get_fund_total_sum(fund_id: int, session: Session) -> int:
+def _get_fund_total_sum(fund_id: int, session: Session) -> int:
     """
     Sum of all money raised by fundraising donors
     """
@@ -581,7 +581,7 @@ def get_fund_total_sum(fund_id: int, session: Session) -> int:
     return total_sum
 
 
-def get_all_donor_count(fund_id: int, session: Session) -> int:
+def _get_all_donor_count(fund_id: int, session: Session) -> int:
     """
     Get number of fundraising donors
     """
@@ -595,7 +595,7 @@ def get_all_donor_count(fund_id: int, session: Session) -> int:
     return count
 
 
-def get_payed_donor_count(fund_id, session) -> int:
+def _get_payed_donor_count(fund_id, session) -> int:
     """
     Get number of fundraising donors
     """
@@ -609,7 +609,7 @@ def get_payed_donor_count(fund_id, session) -> int:
     return count
 
 
-def init_texts_tbl(session: Session = None):
+def _init_texts_tbl(session: Session = None):
     data = [
         ('welcome_invited', 'Приветствую вас! \n Я создан для сбора на подарки для вас и ваших коллег из компании {}. '
                             'Для завершения регистрации, пожалуйста, заполните анкету, '
@@ -668,13 +668,13 @@ def init_texts_tbl(session: Session = None):
     if session is None:
         session = get_session()
     for name, value in data:
-        insert_msg(name, value, session)
+        _insert_msg(name, value, session)
 
 
 # **********************************************************************
 # Payment
 # **********************************************************************
-def get_payments_count(account_id: int, session: Session) -> int:
+def _get_payments_count(account_id: int, session: Session) -> int:
     """
     количество платежей с аккаунта
     """
@@ -710,13 +710,13 @@ def create_user(user: ApiUser) -> (User, Account):
     user_id = user.id
     user_data: dict = user.dict()
     user_data.pop('id')
-    user = register_user(user_id, session, **user_data)
+    user = _register_user(user_id, session, **user_data)
     return user, user.account
 
 
-def get_api_user(user_id: int) -> User | None:
+def get_user(user_id: int) -> User | None:
     session = get_session()
-    user: User = get_user(user_id, session)
+    user: User = _get_user(user_id, session)
     api_user: ApiUser = None
     if user is not None:
         api_user = ApiUser(id=user.id, name=user.name, timezone=user.timezone, birthdate=user.birthdate)
@@ -725,7 +725,7 @@ def get_api_user(user_id: int) -> User | None:
 
 def get_api_user_account(user_id: int) -> ApiAccount | None:
     session = get_session()
-    account: Account = get_user_account(user_id, session)
+    account: Account = _get_user_account(user_id, session)
     api_account = None
     if account is not None:
         api_account = ApiAccount(id=account.id, user_id=account.user_id, company_id=account.company_id,
@@ -735,12 +735,12 @@ def get_api_user_account(user_id: int) -> ApiAccount | None:
 
 def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundraising | None:
     session = get_session()
-    account = get_user_account(user_id, session)
+    account = _get_user_account(user_id, session)
     assert account is not None
 
     fund_data = fund.dict()
     fund_data.pop('account_id', None)
-    event: Fundraising = insert_fundraising(account.id, session, **fund_data)
+    event: Fundraising = _insert_fundraising(account.id, session, **fund_data)
 
     invite_url = f'https://t.me/bot_druzhba_bot?start=fund_{event.id}'
     event.invite_url = invite_url
@@ -755,12 +755,12 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
     return fund
 
 
-def get_trial_fund(user_id) -> int | None:
+def get_trial_fund_id(user_id) -> int | None:
     """
     Найти id пробного (бесплатного) сбора
     """
     session = get_session()
-    account = get_user_account(user_id, session)
+    account = _get_user_account(user_id, session)
     if account is None:
         return None
 
@@ -770,13 +770,13 @@ def get_trial_fund(user_id) -> int | None:
     return trial_fund_id
 
 
-def get_api_fund(fund_id: int) -> ApiFundraising:
+def get_fund(fund_id: int) -> ApiFundraising:
     """
     Дать сбор для последующего редактирования
     :param fund_id: уникальный идентификатор сбора
     """
     session = get_session()
-    fund = get_fundraising(fund_id, session)
+    fund = _get_fundraising(fund_id, session)
 
     api_fund = ApiFundraising.get_empty()
     if fund is not None:
@@ -798,7 +798,7 @@ def get_api_fund(fund_id: int) -> ApiFundraising:
     return api_fund
 
 
-def update_api_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
+def update_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
     """
     Обновить информацию о сборе
     :param fund_id: уникальный код сбора
@@ -806,7 +806,7 @@ def update_api_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
     """
     session = get_session()
     kvargs = api_fund.dict()
-    fund = update_fundraising(fund_id, session, **kvargs)
+    fund = _update_fundraising(fund_id, session, **kvargs)
     return fund is not None
 
 
@@ -817,19 +817,19 @@ def get_fund_info(fund_id: int) -> FundraisingInfo:
     :return:
     """
     session = get_session()
-    fund = get_fundraising(fund_id, session)
+    fund = _get_fundraising(fund_id, session)
 
     fund_info = FundraisingInfo()
     if fund is not None:
-        fund_info.is_open = is_fundraising_open(fund_id, session)
+        fund_info.is_open = _is_fundraising_open(fund_id, session)
         fund_info.reason = fund.reason
         fund_info.target = fund.target
         fund_info.event_date = fund.event_date.strftime("%m.%d.%Y")
         fund_info.days_left = get_days_left(fund.event_date)
-        fund_info.donor_count = get_all_donor_count(fund_id, session)
-        fund_info.payed_count = get_payed_donor_count(fund_id, session)
-        fund_info.total_sum = get_fund_total_sum(fund_id, session)
-        fund_info.avg_sum = get_fund_avg_sum(fund_id, session)
+        fund_info.donor_count = _get_all_donor_count(fund_id, session)
+        fund_info.payed_count = _get_payed_donor_count(fund_id, session)
+        fund_info.total_sum = _get_fund_total_sum(fund_id, session)
+        fund_info.avg_sum = _get_fund_avg_sum(fund_id, session)
         fund_info.is_ok = fund_info.total_sum > 0
         fund_info.invite_url = fund.invite_url
 
@@ -845,34 +845,34 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
     :return: статус пользователя телеграм (UserStatus)
     """
     session = get_session()
-    is_registered: bool = is_user_registered(user_id, session)
+    is_registered: bool = _is_user_registered(user_id, session)
 
     if not is_registered:
         return UserStatus.Visitor if not has_invite_url else UserStatus.AnonymousDonor
 
-    user_account = get_user_account(user_id, session)
+    user_account = _get_user_account(user_id, session)
     if user_account is not None:
-        payment_count = get_payments_count(user_account.id, session)
+        payment_count = _get_payments_count(user_account.id, session)
         if payment_count > 0:
             return UserStatus.User
-        trial_fund_id = get_trial_fund(user_id)
+        trial_fund_id = get_trial_fund_id(user_id)
         if trial_fund_id is None:
             return UserStatus.Visitor
         return UserStatus.TrialUser
 
-    companies = get_user_companies(user_id, session)
+    companies = _get_user_companies(user_id, session)
 
     if account_id is None:
         return UserStatus.Visitor
 
-    account = get_account(account_id, session)
+    account = _get_account(account_id, session)
     assert account is not None
 
     if has_invite_url:
         return UserStatus.Donor
 
     if account.user_id is not None and account.company_id is None:  # TrialUser or User
-        payments_count = get_payments_count(account_id, session)
+        payments_count = _get_payments_count(account_id, session)
         return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
 
     if account.user_id is None and account.company_id is not None:
@@ -883,22 +883,22 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
 
 def get_user_name(user_id) -> str:
     session = get_session()
-    user = get_user(user_id, session)
+    user = _get_user(user_id, session)
     return user.name if user is not None else ''
 
 
-def delete_api_donor(fund_id: int, user_id: int) -> bool:
+def delete_donor(fund_id: int, user_id: int) -> bool:
     session = get_session()
-    ok = delete_donor(fund_id, user_id, session)
+    ok = _delete_donor(fund_id, user_id, session)
     return ok
 
 
-def set_api_fund_admin(fund_id: int, user_id: int) -> bool:
+def set_fund_admin(fund_id: int, user_id: int) -> bool:
     session = get_session()
-    new_account = get_user_account(user_id, session)
+    new_account = _get_user_account(user_id, session)
     if new_account is None:
         return False
-    fund: Fundraising = get_fundraising(fund_id, session)
+    fund: Fundraising = _get_fundraising(fund_id, session)
     if fund is None:
         return False
     fund.account_id = new_account.id
@@ -906,14 +906,23 @@ def set_api_fund_admin(fund_id: int, user_id: int) -> bool:
     return True
 
 
-def get_api_all_donors(fund_id) -> ApiDonor:
+def get_fund_donors(fund_id) -> ApiDonor:
     session = get_session()
-    donors = get_donors(fund_id, session)
+    donors = _get_donors(fund_id, session)
     result = []
     for donor in donors:
-        api_donor = ApiDonor(fund_id=donor.fund_id, user_id=donor.user_id, payed=donor.payed, name=donor.user.name)
+        api_donor = ApiDonor(fund_id=donor.fund_id, user_id=donor.user_id, payed_date=donor.payed_date,
+                             payed=donor.payed, name=donor.user.name)
         result.append(api_donor)
     return result
+
+
+def is_fund_open(fund_id) -> bool:
+    """
+    проверить состояние сбора (открыт или закрыт)
+    """
+    session = get_session()
+    return _is_fundraising_open(fund_id, session)
 
 
 def get_message_text(text_name: str) -> str:

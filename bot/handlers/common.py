@@ -5,11 +5,12 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
-from backend import FundraisingInfo, User, Account
+from backend import FundraisingInfo, Account
 from config import BotConfig
-from db.bl import get_session, get_msg, UserStatus
+from db.bl import get_session, UserStatus
 
 bot_config = BotConfig.instance()
 
@@ -17,14 +18,25 @@ msgs = Queue()  #
 
 
 class Steps(StatesGroup):
-    reg_visitor = State()
-    create_fund = State()
-    show_visitor_fund_link = State()
-    show_fund_link = State()
+    tg_2 = State()
+    tg_3 = State()
+    tg_4 = State()
+    tg_5 = State()
+    tg_6 = State()
+    tg_7 = State()
+    tg_8 = State()
+    tg_9 = State()
+    tg_10 = State()
+    tg_11 = State()
+    tg_12 = State()
+    tg_13 = State()
+    tg_14 = State()
+    tg_15 = State()
+    tg_16 = State()
+    tg_17 = State()
+    tg_18 = State()
 
-    trial_user_menu = State()
     fund_info = State()
-
     reg_company = State()
 
 
@@ -32,7 +44,10 @@ async def _remove_all_messages(chat_id: int):
     while not msgs.empty():
         m = msgs.get()
         if type(m) == types.Message and m.chat.id == chat_id:
-            await m.delete()
+            try:
+                await m.delete()
+            except MessageToDeleteNotFound as ex:
+                pass
 
 
 def visitor_keyboard():
@@ -47,9 +62,18 @@ def visitor_keyboard():
     return keyboard
 
 
-def show_invite_link_keyboard():
+def go_back_keyboard():
     buttons = [
-        InlineKeyboardButton(text="Продолжить", callback_data='show_invite_link_continue')
+        InlineKeyboardButton(text="Назад", callback_data='go_back')
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def go_menu_keyboard():
+    buttons = [
+        InlineKeyboardButton(text="В меню", callback_data='go_menu')
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -61,6 +85,8 @@ def trial_user_menu_keyboard():
         InlineKeyboardButton(text="Перейти к сбору", callback_data='fund_info'),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Оплатить тариф и создать новый сбор", callback_data='pay'),
+        InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
+        InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -69,25 +95,38 @@ def trial_user_menu_keyboard():
 
 def new_private_fund_keyboard():
     url1 = f'{bot_config.base_url}FeeCreation'
-    url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
         InlineKeyboardButton(text="Создать сбор", web_app=types.WebAppInfo(url=url1)),
-        InlineKeyboardButton(text="Оплатить", web_app=types.WebAppInfo(url=url2)),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
     return keyboard
 
 
-async def fund_info_keyboard(state: FSMContext):
+async def open_fund_info_keyboard(state: FSMContext):
     user_data = await state.get_data()
     fund_id = user_data['fund_id']
     url1 = f'{bot_config.base_url}fundraising/{fund_id}'
-    url2 = f'{bot_config.base_url}donors/{fund_id}'
+    url2 = f'{bot_config.base_url}donors/edit/{fund_id}'
+    url3 = f'{bot_config.base_url}donors/{fund_id}'
     buttons = [
         InlineKeyboardButton(text="Ссылка на сбор", callback_data='show_fund_link'),
         InlineKeyboardButton(text="Изменить детали сбора", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Редактировать список участников", web_app=types.WebAppInfo(url=url2)),
+        InlineKeyboardButton(text="Детали сбора", web_app=types.WebAppInfo(url=url3)),
+        InlineKeyboardButton(text="В меню", callback_data='go_menu'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+async def closed_fund_info_keyboard(state: FSMContext):
+    user_data = await state.get_data()
+    fund_id = user_data['fund_id']
+    url1 = f'{bot_config.base_url}donors/{fund_id}'
+    buttons = [
+        InlineKeyboardButton(text="Детали сбора", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Закрыть", callback_data='return_menu'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
@@ -103,16 +142,18 @@ async def start_visitor(message: types.Message, state: FSMContext):
     keyboard = visitor_keyboard()
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
-    await state.set_state(Steps.reg_visitor)
+    await state.set_state(Steps.tg_2)
 
 
 async def start_trial_user(message: types.Message, state: FSMContext):
+    await _remove_all_messages(message.chat.id)
     # await message.delete()
     name = db.get_user_name(message.chat.id)
     msg = db.get_message_text('trial_menu').format(name=name)
     keyboard = trial_user_menu_keyboard()
+
+    await state.set_state(Steps.tg_13)
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    await state.set_state(Steps.trial_user_menu)
     msgs.put(_msg)
 
 
@@ -132,7 +173,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
         return
 
     if user_status == UserStatus.TrialUser:
-        fund_id = db.get_trial_fund(user_id)
+        fund_id = db.get_trial_fund_id(user_id)
         account: Account = db.get_api_user_account(user_id)
         await state.update_data(account_id=account.id)
         await state.update_data(fund_id=fund_id)
@@ -159,17 +200,33 @@ async def query_start(call: types.CallbackQuery):
     await cmd_start(call.message, "*")
 
 
-async def fund_info(message: types.Message, fund_id: int, state: FSMContext) -> types.Message:
+async def open_fund_info(message: types.Message, fund_id: int, state: FSMContext) -> types.Message:
     """
-    Показать информацию по сбору
+    Показать информацию по открытому сбору
+    """
+    await message.delete()
+    await _remove_all_messages(message.chat.id)
+    fi: FundraisingInfo = db.get_fund_info(fund_id)
+    await state.update_data(invite_url=fi.invite_url)
+    await state.update_data(fund_target=fi.target)
+    msg = fi.msg()
+    keyboard = await open_fund_info_keyboard(state)
+    await state.set_state(Steps.tg_16)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    return _msg
+
+
+async def closed_fund_info(message: types.Message, fund_id: int, state: FSMContext) -> types.Message:
+    """
+    Показать информацию по закрытому сбору
     """
     await message.delete()
     fi: FundraisingInfo = db.get_fund_info(fund_id)
     await state.update_data(invite_url=fi.invite_url)
     msg = fi.msg()
-    keyboard = await fund_info_keyboard(state)
+    keyboard = await closed_fund_info_keyboard(state)
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    await state.set_state(Steps.fund_info)
+    await state.set_state(Steps.tg_15)
     return _msg
 
 
@@ -177,15 +234,18 @@ async def query_fund_info(call: types.CallbackQuery, state: FSMContext) -> types
     user_data = await state.get_data()
     user_status = user_data['user_status']
 
-    fund_id = None
     if user_status == UserStatus.TrialUser:
         user_id = call.from_user.id
-        fund_id = db.get_trial_fund(user_id)
+        fund_id = db.get_trial_fund_id(user_id)
         if fund_id is None:
             await call.message.delete()
             return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
-    await state.update_data(fund_id=fund_id)
-    return await fund_info(call.message, fund_id, state)
+
+        await state.update_data(fund_id=fund_id)
+        is_fund_open = db.is_fund_open(fund_id)
+        if is_fund_open:
+            return await open_fund_info(call.message, fund_id, state)
+        return await closed_fund_info(call.message, fund_id, state)
 
 
 async def webapp_create_user_account(message: types.Message, state: FSMContext):
@@ -198,12 +258,13 @@ async def webapp_create_user_account(message: types.Message, state: FSMContext):
     if 'account_id' in answer:
         account_id = answer['account_id']
         await state.update_data(account_id=account_id)
+        await state.update_data(user_status=UserStatus.TrialUser)
 
         keyboard = new_private_fund_keyboard()
-        msg = 'Вы успешно зарегистрировались. Давайте продолжим.'
+        msg = 'Ура, вы успешно зарегистрировались!\nДавайте перейдем к созданию сбора на подарок'
         _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
         msgs.put(_msg)
-        await state.set_state(Steps.create_fund)
+        await state.set_state(Steps.tg_3)
         return
 
     _msg = await message.answer("Не удалось зарегистрировать пользователя. Попробуйте снова")
@@ -211,7 +272,7 @@ async def webapp_create_user_account(message: types.Message, state: FSMContext):
 
 
 async def webapp_create_user_fund(message: types.Message, state: FSMContext):
-    # state == Steps.create_fund
+    # state == Steps.tg_3
     await message.delete()
     await _remove_all_messages(message.from_user.id)
 
@@ -220,18 +281,42 @@ async def webapp_create_user_fund(message: types.Message, state: FSMContext):
     if 'fund_id' in answer:
         fund_id = answer['fund_id']
         invite_url = answer['invite_url']
+        target = answer['target']
         await state.update_data(fund_id=fund_id)
         await state.update_data(invite_url=invite_url)
 
-        keyboard = show_invite_link_keyboard()
-        msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
-              f'что бы пригласить их участвовать\n\nСсылка: {invite_url}'
+        msg = f'Поздравляю, вы успешно создали сбор!\nСкопируйте эту ссылку и текст сообщения и отправьте ' \
+              f'друзьям или коллегам.\nПусть каждый внесёт свой вклад в поздравление {target}\n\n'
+        await state.set_state(Steps.tg_4)
+        _msg = await message.answer(msg, parse_mode=ParseMode.HTML)
+        msgs.put(_msg)
+
+        keyboard = go_menu_keyboard()
+        msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+              f'{invite_url}'
+
+        await state.set_state(Steps.tg_5)
         await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-        await state.set_state(Steps.show_visitor_fund_link)
         return
 
     _msg = await message.answer("Не удалось зарегистрировать пробный сбор.")
     msgs.put(_msg)
+
+
+async def show_fund_link(message: types.Message, state: FSMContext):
+    await message.delete()
+    await _remove_all_messages(message.from_user.id)
+    user_data = await state.get_data()
+
+    invite_url = user_data['invite_url']
+    target = user_data['target']
+
+    keyboard = go_back_keyboard()
+    msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+          f'{invite_url}'
+
+    await state.set_state(Steps.tg_5)
+    await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 
 async def query_show_main_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
@@ -256,21 +341,27 @@ async def query_show_invite_link_continue(call: types.CallbackQuery, state: FSMC
     account_id = user_data['account_id']
     fund_id = user_data['fund_id']
     invite_url = user_data['invite_url']
-    await fund_info(call.message, fund_id, state)
+    await open_fund_info(call.message, fund_id, state)
 
 
 async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> types.Message:
     await call.message.delete()
     user_data = await state.get_data()
     invite_url = user_data.get('invite_url', None)
+    fund_target = user_data.get('fund_target', None)
 
-    keyboard = show_invite_link_keyboard()
-    msg = f'Поздравляю, вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям, ' \
-          f'что бы пригласить их участвовать\n\nСсылка: {invite_url}'
+    curr_state = await state.get_state()
+
+    msg = f'Всё получилось — вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям или коллегам. ' \
+          f'Пусть каждый внесёт свой вклад в поздравление {fund_target}'
+    _msg = await call.message.answer(msg)
+    msgs.put(_msg)
+
+    keyboard = go_back_keyboard()
+    msg = f'Здравствуйте! У {fund_target} скоро день рождения. Это ссылка для сбор на подарок. Присоединяйтесь!' \
+          f'\n{invite_url}'
     await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-    await state.set_state(Steps.show_fund_link)
     return
-    pass
 
 
 async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
@@ -285,16 +376,18 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
-    dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'return_menu', state="*")
+    dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")
 
     # start_trial_user
     dp.register_callback_query_handler(query_fund_info, lambda c: c.data == 'fund_info', state="*")
 
     dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
-                                state=Steps.reg_visitor)
+                                state=Steps.tg_2)
     dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
-                                state=Steps.create_fund)
-    dp.register_callback_query_handler(query_show_invite_link_continue, lambda c: c.data == 'show_invite_link_continue',
-                                       state=Steps.show_fund_link)
-    dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'show_invite_link_continue',
-                                       state=Steps.show_visitor_fund_link)
+                                state=Steps.tg_3)
+    dp.register_callback_query_handler(query_show_invite_link_continue, lambda c: c.data == 'go_back',
+                                       state=Steps.tg_16)
+    dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'go_back',
+                                       state=Steps.tg_5)
+
+    dp.register_message_handler(show_fund_link, state=Steps.tg_4)

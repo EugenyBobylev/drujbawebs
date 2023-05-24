@@ -132,7 +132,9 @@ class Donor(BaseModel):
     fund_id: int
     user_id: int
     name: str = ''
+    payed_date: date = None
     payed: int = 0
 
     def __repr__(self):
-        return f'find_id={self.fund_id}; user_id={self.user_id}; name="{self.name}"; payed="{self.payed}"'
+        return f'find_id={self.fund_id}; user_id={self.user_id}; name="{self.name}"; payed={self.payed};' \
+               f'payed_date={self.payed_date}'

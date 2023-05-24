@@ -115,7 +115,7 @@ async def get_private_fundraising_html(request: Request):
 async def get_fund_info(fund_id: int, request: Request):
     # Здесь какая-то херня (писал во время обострения отита)
     host = BotConfig.instance().base_url
-    fund_info = db.get_api_fund(fund_id)
+    fund_info = db.get_fund(fund_id)
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
@@ -143,7 +143,7 @@ async def get_fund(fund_id: int, request: Request):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    fund: Fundraising = db.get_api_fund(fund_id)
+    fund: Fundraising = db.get_fund(fund_id)
     context = {
         'request': request,
         'host': host,
@@ -168,7 +168,34 @@ async def get_donors(fund_id: int, request: Request):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    data = db.get_api_all_donors(fund_id)
+    data = db.get_fund_donors(fund_id)
+    donors = []
+    for d in data:
+        item = {
+            'user_id': d.user_id,
+            'name': d.name,
+            'payed': d.payed,
+            'payed_date': d.payed_date if d.payed_date is not None else '',
+        }
+        donors.append(item)
+
+    context = {
+        'request': request,
+        'host': host,
+        'fund_id': fund_id,
+        'donors_info': donors
+    }
+    return templates.TemplateResponse('donors.html', context=context, headers=headers)
+
+
+@app.get('/donors/edit/{fund_id}')
+async def get_donors(fund_id: int, request: Request):
+    host = BotConfig.instance().base_url
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    data = db.get_fund_donors(fund_id)
     donors = []
     for d in data:
         item = {
@@ -222,7 +249,7 @@ def get_user(user_id: int, authorization: str | None = Header(convert_underscore
     :param authorization:
     :return:
     """
-    user: User = db.get_api_user(user_id)
+    user: User = db.get_user(user_id)
     if user is not None:
         user_json = jsonable_encoder(user)
         return JSONResponse(content=user_json, status_code=200)
@@ -261,20 +288,21 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
     """
     Create new user's fundraising (event)
     """
-    event: Fundraising = db.create_private_fundraising(user_id, fund)
-    assert event is not None
+    fund: Fundraising = db.create_private_fundraising(user_id, fund)
+    assert fund is not None
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
-        'fund_id': event.id,
-        'invite_url': event.invite_url,
+        'fund_id': fund.id,
+        'target': fund.target,  # кому собираем
+        'invite_url': fund.invite_url,
     }
     data_json = json.dumps(data)
     r = send_answer_web_app_query(web_init.query_id, data_json)
     assert 200 == r.status_code
     return {
-        'event_id': event.id,
-        'invite_url': event.invite_url
+        'event_id': fund.id,
+        'invite_url': fund.invite_url
     }
 
 
@@ -284,7 +312,7 @@ def get_api_fund(fund_id):
     """
     Get fundraising (event)
     """
-    fund: Fundraising = db.get_api_fund(fund_id)
+    fund: Fundraising = db.get_fund(fund_id)
     fund_json = jsonable_encoder(fund)
     return JSONResponse(content=fund_json, status_code=200)
 
@@ -295,7 +323,7 @@ def edit_api_fund(fund_id: int, fund: Fundraising):
     """
     Edit fundraising (event)
     """
-    ok: bool = db.update_api_fund(fund_id, fund)
+    ok: bool = db.update_fund(fund_id, fund)
     return {
         'operation': 'edit fundraising',
         'fund_id': fund_id,
@@ -310,7 +338,7 @@ def delete_donor(fund_id: int, user_id: int):
     Delete donor form donors of the fundraising
     :return:
     """
-    ok: bool = db.delete_api_donor(fund_id=fund_id, user_id=user_id)
+    ok: bool = db.delete_donor(fund_id=fund_id, user_id=user_id)
     return {
         'operation': 'delete donor',
         'fund_id': fund_id,
@@ -328,7 +356,7 @@ def set_fund_admin(fund_id: int, user_id: int):
     :param user_id:
     :return:
     """
-    ok: bool = db.set_api_fund_admin(fund_id=fund_id, user_id=user_id)
+    ok: bool = db.set_fund_admin(fund_id=fund_id, user_id=user_id)
     return {
         'operation': 'change admin',
         'fund_id': fund_id,

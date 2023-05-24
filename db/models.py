@@ -121,6 +121,7 @@ class Donor(Base):
     __tablename__: str = 'donors'
     fund_id = mapped_column(Integer, ForeignKey('fundraising.id', ondelete='CASCADE'), primary_key=True)
     user_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    payed_date = mapped_column(Date)
     payed = mapped_column(Integer, nullable=False, default=0)
 
     fundraising = relationship('Fundraising', foreign_keys=[fund_id], back_populates='donors')
