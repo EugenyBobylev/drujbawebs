@@ -925,6 +925,17 @@ def is_fund_open(fund_id) -> bool:
     return _is_fundraising_open(fund_id, session)
 
 
+def get_available_funds(account_id) -> int:
+    """
+    Вернуть количество доступных сборов
+    """
+    session = get_session()
+    account: Account = _get_account(account_id, session)
+    if account is None:
+        return 0
+    return account.payed_events
+
+
 def get_message_text(text_name: str) -> str:
     session = get_session()
     txt = get_msg(text_name, session).text_value.replace("\\n", "\n")

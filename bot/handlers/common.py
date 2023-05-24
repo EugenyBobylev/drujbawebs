@@ -11,6 +11,7 @@ import db
 from backend import FundraisingInfo, Account
 from config import BotConfig
 from db.bl import get_session, UserStatus
+from utils import is_number, calc_payment_sum
 
 bot_config = BotConfig.instance()
 
@@ -62,6 +63,23 @@ def visitor_keyboard():
     return keyboard
 
 
+def home_button():
+    buttons = ['В меню']
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, is_persistent=True, one_time_keyboard=False)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def payment_keyboard():
+    buttons = [
+        InlineKeyboardButton(text="Оплатить", callback_data='do_payment'),
+        InlineKeyboardButton(text="В меню", callback_data='go_menu')
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def go_back_keyboard():
     buttons = [
         InlineKeyboardButton(text="Назад", callback_data='go_back')
@@ -84,7 +102,7 @@ def trial_user_menu_keyboard():
     buttons = [
         InlineKeyboardButton(text="Перейти к сбору", callback_data='fund_info'),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
-        InlineKeyboardButton(text="Оплатить тариф и создать новый сбор", callback_data='pay'),
+        InlineKeyboardButton(text="Оплатить тариф и создать новый сбор", callback_data='start_pay'),
         InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
         InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
     ]
@@ -319,18 +337,21 @@ async def show_fund_link(message: types.Message, state: FSMContext):
     await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 
-async def query_show_main_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
-    await call.message.delete()
+async def show_main_menu(message: types.Message, state: FSMContext):
+    await message.delete()
     user_data = await state.get_data()
     # все данные о пользователе
     exist_user_status = user_data['user_status']
     account_id = user_data['account_id']
     fund_id = user_data['fund_id']
-    invite_url = user_data['invite_url']
-    user_status = db.get_user_status(call.from_user.id, account_id=account_id, has_invite_url=False)
+    user_status = db.get_user_status(message.from_user.id, account_id=account_id, has_invite_url=False)
     await state.update_data(user_status=user_status)
 
-    await start_trial_user(call.message, state)
+    await start_trial_user(message, state)
+
+
+async def query_show_main_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    await show_main_menu(call.message, state)
 
 
 async def query_show_invite_link_continue(call: types.CallbackQuery, state: FSMContext) -> types.Message:
@@ -372,6 +393,49 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
         await start_trial_user(call.message, state)
 
 
+async def start_payment(message: types.Message, state: FSMContext):
+    await message.delete()
+    user_id = message.from_user.id
+    user_data: dict = await state.get_data()
+    user_status: UserStatus = user_data.get('user_status')
+    account_id = user_data.get('account_id')
+
+    keyboard = go_menu_keyboard()
+    available_funds = db.get_available_funds(account_id)
+    msg = f'Сейчас у вас подключен тариф: \n\nДоступные сборы: {available_funds}\n\n\n' \
+          f'Введите количество сборов, которые хотите оплатить:'
+    await state.set_state(Steps.tg_8)
+    _msg = await message.answer(msg, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def query_start_payment(call: types.CallbackQuery, state: FSMContext):
+    """
+    Start the payment process
+    """
+    await start_payment(call.message, state)
+
+
+async def payment_step_2(message: types.Message, state: FSMContext):
+    # state tg_8
+    await message.delete()
+    await _remove_all_messages(message.from_user.id)
+
+    ok = is_number(message.text)
+    if not ok:
+        await start_payment(message, state)
+        return
+
+    keyboard = payment_keyboard()
+    fund_count = int(message.text)
+    payment_sum = calc_payment_sum(fund_count)
+    msg = f'Стоимость {fund_count} сборов составит {payment_sum} руб.\n\n' \
+          f'Нажмите «Оплатить» или введите другое количество сборов.'
+    await state.set_state(Steps.tg_9)
+    _msg = await message.answer(msg, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
@@ -389,5 +453,11 @@ def register_handlers_common(dp: Dispatcher):
                                        state=Steps.tg_16)
     dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'go_back',
                                        state=Steps.tg_5)
+
+    dp.register_callback_query_handler(query_start_payment, lambda c: c.data == 'start_pay', state='*')
+
+    dp.register_message_handler(show_main_menu, lambda message: message.text == 'В меню', state='*')
+
+    dp.register_message_handler(payment_step_2, state=[Steps.tg_8, Steps.tg_9])
 
     dp.register_message_handler(show_fund_link, state=Steps.tg_4)

@@ -63,3 +63,21 @@ def get_days_left(date_event: date) -> int:
     today = date.today()
     days_left = (date_event - today).days
     return days_left
+
+
+def is_number(txt: str) -> bool:
+    if txt is None:
+        return False
+    return txt.isdigit()
+
+
+def calc_payment_sum(count: int):
+    if 1 <= count <= 5:
+        return count * 250
+    if 6 <= count <= 49:
+        return count * 200
+    if 50 <= count <= 99:
+        return count * 150
+    if count >= 100:
+        return count * 100
+    return 0
