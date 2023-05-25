@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Интернет-магазин Cloudpayments</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="cloudpayments_files/style.min.css" type="text/css" rel="stylesheet">
+    <script src="cloudpayments_files/jquery-3.4.1.js"></script>
+    <link href="cloudpayments_files/select2.min.css" rel="stylesheet">
+</head>
+
+<body class="">
+
+    <header class="page-header header">
+    <a class="header__basket header__basket--widget basket" href="#">
+        <span class="header__basket-count basket-count">1</span>
+    </a>
+
+    <div class="page-header__wrapper header__wrapper">
+        <a href="https://show.cloudpayments.ru/" class="page-header__link"></a>
+        <h1 class="page-header__title">Интернет-магазин</h1>
+        <p class="header__text">Мы сделали для вас пример 
+интернет-магазина. Здесь можно посмотреть, как ваши покупатели будут 
+видеть платежи через CloudPayments. Добавьте в корзину товар, который 
+хотите купить. Деньги не спишутся — все товары, как и платежи, не 
+настоящие.</p>
+        <p class="header__text" style="margin-bottom: 45px;">Важно: не 
+все браузеры поддерживают оплату через Apple и Google Pay. Для 
+корректной работы откройте страницу в соответствующем браузере. Для 
+Apple Pay это Apple Safari, для Google Pay — Google Chrome, Mozilla 
+Firefox, Apple Safari, Microsoft Edge, Opera или UCWeb UC.</p>
+    </div>
+</header>
+<main class="page-goods page-goods--widget">
+    <h2 class="visually-hidden">Окно товаров</h2>
+
+    <ul class="page-goods__list page-goods__list--widget">
+                                <li class="goods">
+                <div class="goods__image-wrapper goods__image-wrapper--checkout">
+                    <img src="cloudpayments_files/pillow@1x.jpg" srcset="cloudpayments_files/pillow@2x.jpg 1x" alt="подушка 2x" class="goods__image">
+                </div>
+                <div class="goods__content">
+                    <div class="goods__text-wrapper">
+                        <h3 class="goods__text">Подушка «Padi»</h3>
+                        <p class="goods__text-price">1 р.</p>
+                    </div>
+                    <button type="button" class="button button--goods addBtn button--basket" value="1" data-product-id="1">Удалить</button>
+                </div>
+            </li>
+                                <li class="goods">
+                <div class="goods__image-wrapper goods__image-wrapper--checkout">
+                    <img src="cloudpayments_files/lamp@1x.jpg" srcset="cloudpayments_files/lamp@2x.jpg 1x" alt="лампа 2x" class="goods__image">
+                </div>
+                <div class="goods__content">
+                    <div class="goods__text-wrapper">
+                        <h3 class="goods__text">Лампа «Lamp»</h3>
+                        <p class="goods__text-price">1 р.</p>
+                    </div>
+                    <button type="button" class="button button--goods addBtn " value="0" data-product-id="2">Купить                    </button>
+                </div>
+            </li>
+                                <li class="goods">
+                <div class="goods__image-wrapper goods__image-wrapper--checkout">
+                    <img src="cloudpayments_files/blanket@1x.jpg" srcset="cloudpayments_files/blanket@2x.jpg 1x" alt="плед 2x" class="goods__image">
+                </div>
+                <div class="goods__content">
+                    <div class="goods__text-wrapper">
+                        <h3 class="goods__text">Плед «Tekk»</h3>
+                        <p class="goods__text-price">1 р.</p>
+                    </div>
+                    <button type="button" class="button button--goods addBtn " value="0" data-product-id="3">Купить                    </button>
+                </div>
+            </li>
+            </ul>
+</main>
+
+<section class="popup-down popup-down--hidden">
+    <div class="popup-down__wrapper">
+        <h3 class="popup-down__title">Ваш заказ:</h3>
+        <button class="popup-down__close-btn close-button" type="button" name="button"><span class="visually-hidden">Закрыть попап</span>
+        </button>
+        <form class="popup-down__main" action="#" data-select2-id="6">
+            <div id="widget-cart"><ul class="popup-down__list">
+            <li class="popup-down__item" data-name="Подушка «Padi»" data-id="1" data-price="1">
+            <img class="popup-down__image" src="cloudpayments_files/pillow@1x.jpg" srcset="cloudpayments_files/pillow@2x.jpg 2x" alt="подушка">
+            <div class="popup-down__m-group">
+                <b class="popup-down__name">Подушка «Padi»</b>
+                <div class="popup-down__count">
+                    <button class="button-cv button-cv--decrease" type="button" name="button" value="0" data-product-id="1"><span class="visually-hidden">Уменьшить количество товаров</span></button>
+                    <input class="popup-down__field" type="text" value="1" id="goodsValue-1">
+                    <button class="button-cv button-cv--increase" type="button" name="button" value="1" data-product-id="1"><span class="visually-hidden">Увеличить количество товаров</span></button>
+                </div>
+            </div>
+            <span class="popup-down__counter"><span id="goodsCost-1">1</span> р.</span>
+        </li>
+    </ul>
+<b class="popup-down__sum">Итого: <span id="sumFields">1</span>р.</b>
+</div>
+            <div class="not-empty-cart" style="display: block;" data-select2-id="5">
+                <div class="popup-down__group">
+                    <span class="popup-down__text">Выслать кассовый чек</span>
+                    <input class="popup-down__input-radio visually-hidden" type="radio" name="check" id="checkMail">
+                    <label class="radio-popup radio-popup--mail popup-down__radio-mail" for="checkMail">на почту</label>
+                    <input class="popup-down__input-radio visually-hidden" type="radio" name="check" id="checkSms" checked="checked">
+                    <label class="radio-popup popup-down__radio-sms" for="checkSms">sms</label>
+                </div>
+                <label class="popup-down__mail order__mail order__invis">
+                    <input class="input-field" type="email" placeholder="ваш e-mail" id="email" title="Введите свой электронный адрес" pattern="^[\w]{1,}[\w.+-]{0,}@[\w-]{2,}([.][a-zA-Z]{2,}|[.][\w-]{2,}[.][a-zA-Z]{2,})$" required="" value="sddgfdgfd"><span class="visually-hidden">Ваш email</span>
+                </label>
+                <label class="popup-down__tel order__tel">
+                    <input class="input-field" type="tel" placeholder="ваш телефон" id="tel" title="Введите свой телефон" pattern="\+7\s[0-9]{3}\s[0-9]{3}-[0-9]{2}-[0-9]{2}" required=""><span class="visually-hidden">Ваш телефон</span>
+                </label>
+                <div class="popup-down__select-wrapper" data-select2-id="4">
+                    <label class="popup-down__label">
+                        Выберете стиль виджета
+                        <select class="popup-down__select select-active js-example-responsive select2-hidden-accessible" id="widget-skin" style="width: 100%" data-select2-id="widget-skin" tabindex="-1" aria-hidden="true" lang="ru">
+                            <option class="popup-down__select-option option-active" selected="selected" value="classic" data-select2-id="2">Classic</option>
+                            <option class="popup-down__select-option option-active" value="modern" data-select2-id="7">Modern</option>
+                            <option class="popup-down__select-option option-active" value="mini" data-select2-id="8">Minimal</option>
+                        </select><span class="select2 select2-container select2-container--default select2-container--below" dir="ltr" data-select2-id="1" style="width: 100%;"><span class="selection"><span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-widget-skin-container"><span class="select2-selection__rendered" id="select2-widget-skin-container" role="textbox" aria-readonly="true" title="Classic">Classic</span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+                    </label>
+                </div>
+                <div class="popup-down__footer">
+                    <button class="popup-down__footer-button button" type="button" id="pay" disabled="disabled">Оплатить</button>
+                    <p class="popup-down__footer-text">⚠︎ Оплата тестовая, можно использовать любые карты</p>
+                </div>
+            </div>
+            <div class="empty-cart" style="display: none;">
+                <p class="popup-down__footer-text">В корзине нет товаров</p>
+            </div>
+        </form>
+    </div>
+</section>
+
+<div class="overlay overlay--invis"></div>
+
+<script>
+    window.cloudpayments_config = {"public_id":"pk_b430f8b23575e9942b71e7d2b3f49","applepay_merchant_id":"merchant.ru.cloudpayments","googlepay_gateway":"cloudpayments","googlepay_merchant_id":"04349806409183181471"}</script>
+
+
+<script src="cloudpayments_files/Untitled"></script>
+<script>
+    var pay = function () {
+        var email = '', phone = '';
+        if ($('#checkSms').is(':checked')) {
+            phone = $('#tel').val();
+        } else {
+            email = $('#email').val();
+        }
+        var skin = $('#widget-skin').val();
+        //Подготавливаем данные
+        var json_data = {
+            'cloudPayments': {
+                'customerReceipt': {
+                    'Items': [],
+                    'taxationSystem': 0,
+                    'email': email,
+                    'phone': phone
+                }
+            }
+        };
+        //Формируем чек
+        var items = [],
+            total_cost = 0;
+        $('#widget-cart li').each(function () {
+            var $this = $(this);
+            var quantity = $this.find('input').val();
+            items.push({
+                label: $this.data('name'),
+                price: parseFloat($this.data('price')),
+                quantity: quantity,
+                amount: quantity * parseFloat($this.data('price')),
+                vat: 18
+            });
+            total_cost += quantity * parseFloat($this.data('price'));
+        });
+        if (!total_cost) {
+            alert('В корзине нет товаров');
+            return false;
+        }
+        json_data['cloudPayments']['customerReceipt']['Items'] = items;
+
+        //Вызываем виджет
+        var widget = new cp.CloudPayments();
+        widget.charge({
+                publicId: window.cloudpayments_config.public_id,
+                description: 'Оплата товаров в show.cloudpayments.ru',
+                amount: total_cost, //сумма
+                invoiceId: "1",
+                accountId: "1",
+                currency: "RUB",
+                email: email,
+                skin: skin,
+                data: json_data
+            },
+            function (options) { // success
+                window.location.assign("/success/");
+            },
+            function (reason, options) { // fail
+                window.location.assign("/widget/");
+            });
+
+    };
+
+    $(document).on('click', '#pay', function (e) {
+        e.preventDefault();
+        pay();
+    });
+
+</script>
+
+    <footer class="page-footer ">
+        <div class="container">
+            <div class="footer__wrap">
+                <div class="footer__item"><a class="footer__logo" href="#">
+                        <svg class="svgstyle">
+                            <use xlink:href="/assets/img/sprite.svg#logo-2"></use>
+                        </svg></a>
+                    <div class="footer__copyrights">CloudPayments © 2014–2022</div>
+                </div>
+                <div class="footer__item">
+                    <div class="footer__lists">
+                        <div class="footer__list">
+                            <ul class="footer-menu footer-menu--large">
+                                <li class="footer-menu__item" style="list-style: none"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.ru/integration" target="_self">О сервисе</a>
+                                </li>
+                                <li class="footer-menu__item" style="list-style: none"><a class="footer-menu__link" style="color:#000e27" href="https://developers.cloudpayments.ru/" target="_blank">Разработчикам</a>
+                                </li>
+                                <li class="footer-menu__item" style="list-style: none"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.atlassian.net/wiki/spaces/KB/overview" target="_blank">Поддержка</a>
+                                </li>
+                                <li class="footer-menu__item" style="list-style: none"><a class="footer-menu__link" style="color:#000e27" href="https://blog.cloudpayments.ru/" target="_blank">Блог</a>
+                                </li>
+                                <li class="footer-menu__item" style="list-style: none"><a class="footer-menu__link" style="color:#000e27" href="https://merchant.cloudpayments.ru/login" target="_blank">Войти</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="footer__list">
+                            <h3 class="footer__title">Решения<br> для&nbsp;бизнеса</h3>
+                            <ul class="footer-menu">
+                                <li class="footer-menu__item"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.ru/food-service">Рестораны, кафе и доставка</a>
+                                </li>
+                                <li class="footer-menu__item"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.ru/e-commerce">E-commerce</a>
+                                </li>
+                                <li class="footer-menu__item"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.ru/finance">Финансы</a>
+                                </li>
+                                <li class="footer-menu__item"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.ru/entertainment">Медиа и платный контент</a>
+                                </li>
+                                <li class="footer-menu__item"><a class="footer-menu__link" style="color:#000e27" href="https://cloudpayments.ru/online-education">Образование</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="footer__list">
+                            <h3 class="footer__title">Контакты</h3>
+                            <ul class="footer-menu">
+                                <li class="footer-menu__item"><a class="footer-menu__link stats-clickphone" href="tel:+74953747860">+7 495 374-78-60</a></li>
+                                <li class="footer-menu__item"><a class="footer-menu__link stats-clickmail" href="mailto:sales@cloudpayments.ru">sales@cloudpayments.ru</a></li>
+                            </ul>
+                            <div class="footer-socials">
+                                <a class="footer-socials__link footer__socials-link--vk" href="https://vk.com/cloudpayments" title="vk" target="_blank">
+                                    <svg class="footer-social__icon svgstyle">
+                                        <use xlink:href="/assets/img/sprite.svg#vk"></use>
+                                    </svg>
+                                </a>
+                                <a class="footer-socials__link footer__socials-link--tg" href="https://t.me/cloudpayments_news" title="tg" target="_blank">
+                                    <svg class="footer-social__icon svgstyle">
+                                        <use xlink:href="/assets/img/sprite.svg#tg"></use>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </footer>
+
+    <script src="cloudpayments_files/IMask.js"></script>
+<script src="cloudpayments_files/validation.js"></script>
+<script src="cloudpayments_files/changeFields.js"></script>
+<script src="cloudpayments_files/button-cv.js"></script>
+<script src="cloudpayments_files/select-custom.js"></script>
+<script src="cloudpayments_files/basket.js"></script>
+<script src="cloudpayments_files/widget-basket.js"></script>
+<script src="cloudpayments_files/select2.js"></script>
+
+
+</body></html>
