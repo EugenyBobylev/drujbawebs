@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 
 from backend import User
 from backend import send_message
+from backend.models import PaymentResult
 from config import BotConfig
 from db import Account
 
@@ -175,3 +176,16 @@ def test_send_message():
 
     r = send_message(chat_id, text)
     assert 200 == r.status_code
+
+
+def test_create_payment_result():
+    data = {
+        'code': 0,
+        'success': True,
+        'message': None,
+        'account_id': 100,
+        'cnt': 10,
+        'transaction_id': None
+    }
+    res = PaymentResult(** data)
+    assert res is not None

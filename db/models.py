@@ -135,6 +135,7 @@ class Payment(Base):
     payment_date = mapped_column(Date)
     payment_sum = mapped_column(Integer)
     payed_events = mapped_column(Integer)
+    transaction_id = mapped_column(Integer)
 
     relationship('Account', back_populates='payments')
 

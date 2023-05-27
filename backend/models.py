@@ -138,3 +138,16 @@ class Donor(BaseModel):
     def __repr__(self):
         return f'find_id={self.fund_id}; user_id={self.user_id}; name="{self.name}"; payed={self.payed};' \
                f'payed_date={self.payed_date}'
+
+
+class PaymentResult(BaseModel):
+    code: int
+    success: bool
+    message: str = None
+    account_id: int
+    cnt: int
+    transaction_id: int = None
+
+    def __repr__(self):
+        return f'code={self.code}; success={self.success}; message={self.message}; account_id={self.account_id}, ' \
+               f'cnt={self.cnt}; transaction_id={self.transaction_id}'

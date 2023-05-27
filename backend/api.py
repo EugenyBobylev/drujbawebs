@@ -13,7 +13,7 @@ from starlette.templating import Jinja2Templates
 
 import db
 from backend import send_answer_web_app_query
-from backend.models import User, Fundraising, WebAppInitData
+from backend.models import User, Fundraising, WebAppInitData, PaymentResult
 from config import BotConfig
 from db import Account
 from utils import check_webapp_signature, decode_base64_str
@@ -89,6 +89,22 @@ async def get_query_id(query_id: str):
 # ****************************************
 # Вызов WebApps
 # ****************************************
+@app.get('/payment/{account_id}/{cnt}')
+async def get_payment_html(request: Request, account_id: int, cnt: int):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    host = BotConfig.instance().base_url
+    context = {
+        'request': request,
+        'host': host,
+        'account_id': account_id,
+        'cnt': cnt,
+    }
+    return templates.TemplateResponse('payment.html', context=context, headers=headers)
+
+
 @app.get('/UserRegistration')
 async def get_user_registration_html(request: Request):
     headers = {
@@ -363,3 +379,8 @@ def set_fund_admin(fund_id: int, user_id: int):
         'user_id': user_id,
         'result': ok,
     }
+
+
+@app.post('/api/payment/')
+async def get_payment_html(result: PaymentResult):
+    print(result)

@@ -22,8 +22,15 @@
     <button onclick="recalc()">Пересчитать</button><br><br>
     <button onclick="pay()">Оплатить через виджет</button>
     <script>
+        let api_url = "{{host}}";
+        let account_id = "{{account_id}}"
+        let cnt = "{{cnt}}"
+        let sum = 0
+        document.getElementById("cnt").value = cnt;
+        recalc();
+
         function recalc(){
-            let sum = 0;
+            sum = 0;
             const count = parseInt(document.getElementById("cnt").value);
             if(1 <= count && count <= 5)
                 sum = count * 250;
@@ -39,8 +46,6 @@
 
         function pay() {
             recalc();
-            let cnt = parseInt(document.getElementById("cnt").value);
-            let sum = parseInt(document.getElementById("sum").value);
             var widget = new cp.CloudPayments();
             widget.pay('auth', // или 'charge'
                     { //options
@@ -72,17 +77,50 @@
                     {
                         onSuccess: function (options) { // success
                             //действие при успешной оплате
-                            alert('Оплата успешно прошла')
+                            // alert('Оплата успешно прошла')
                         },
                         onFail: function (reason, options) { // fail
                             //действие при неуспешной оплате
-                            alert('Оплата на прошла.')
+                            // alert('Оплата на прошла.')
                         },
                         onComplete: function (paymentResult, options) { //Вызывается как только виджет получает от api.cloudpayments ответ с результатом транзакции.
                             //например вызов вашей аналитики Facebook Pixel
+                            const code = paymentResult.code;
+                            const success = paymentResult.success;
+                            let message = paymentResult.message;
+                            const transaction_id = null;
+                            post_result(code, success, message, transaction_id);
                         }
                     }
             )
+        }
+
+        async function post_result(code, success, message, transactionId){
+            let url = `${api_url}api/payment/`;
+            // создать PaymentResult
+            let payment_result = {
+              code:  code,
+              success: success,
+              message: message,
+              account_id: account_id,
+              cnt: cnt,
+              transaction_id : transactionId
+            };
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(payment_result);
+
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                },
+                body: body,
+            });
+            console.info(response.status)
+
         }
     </script>
 </body>
