@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
-from backend import FundraisingInfo, Account
+from backend import FundraisingInfo, Account, PaymentResult
 from config import BotConfig
 from db.bl import get_session, UserStatus
 from utils import is_number, calc_payment_sum
@@ -70,9 +70,11 @@ def home_button():
     return keyboard
 
 
-def payment_keyboard():
+def payment_keyboard(account_id: int, cnt: int):
+    url = f'{bot_config.base_url}payment/{account_id}/{cnt}'
+
     buttons = [
-        InlineKeyboardButton(text="Оплатить", callback_data='do_payment'),
+        InlineKeyboardButton(text="Оплатить", url=url),
         InlineKeyboardButton(text="В меню", callback_data='go_menu')
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
@@ -426,14 +428,39 @@ async def payment_step_2(message: types.Message, state: FSMContext):
         await start_payment(message, state)
         return
 
-    keyboard = payment_keyboard()
     fund_count = int(message.text)
+    user_data = await state.get_data()
+    account_id = user_data['account_id']
     payment_sum = calc_payment_sum(fund_count)
+    keyboard = payment_keyboard(account_id, fund_count)
+    # await state.update_data(fund_count=fund_count)
     msg = f'Стоимость {fund_count} сборов составит {payment_sum} руб.\n\n' \
           f'Нажмите «Оплатить» или введите другое количество сборов.'
     await state.set_state(Steps.tg_9)
     _msg = await message.answer(msg, reply_markup=keyboard)
     msgs.put(_msg)
+
+
+async def payment_step_3(message: types.Message, state: FSMContext):
+    await message.delete()
+    await _remove_all_messages(message.from_user.id)
+
+    result: PaymentResult = json.loads(message.text)
+    if result.success:
+        keyboard = go_menu_keyboard()
+        msg = f'Поздравляю! Вы успешно приобрели пакет из: {result.payed_events} сборов. ' \
+              f'Теперь можно начинать готовиться к праздникам :)\n\nСпасибо, что выбрали Дружбу!'
+        await state.set_state(Steps.tg_11)
+    else:
+        keyboard = payment_keyboard(result.account_id, result.payed_events)
+        msg = f'К сожалению, оплата не прошла. Давайте попробуем ещё раз.'
+        await state.set_state(Steps.tg_9)
+    _msg = await message.answer(msg, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def try_msg(message: types.Message, state: FSMContext):
+    await message.answer(f'Я поймал тебя. chat_id={message.chat.id}')
 
 
 def register_handlers_common(dp: Dispatcher):
@@ -461,3 +488,9 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(payment_step_2, state=[Steps.tg_8, Steps.tg_9])
 
     dp.register_message_handler(show_fund_link, state=Steps.tg_4)
+
+    dp.register_message_handler(payment_step_3, state=Steps.tg_9)
+
+    dp.register_message_handler(try_msg, filters.Text('Privet'))
+
+    dp.register_message_handler(try_msg, commands="qqq", state="*")

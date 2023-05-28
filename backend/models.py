@@ -145,9 +145,10 @@ class PaymentResult(BaseModel):
     success: bool
     message: str = None
     account_id: int
-    cnt: int
+    payed_events: int
+    payed_sum: int
     transaction_id: int = None
 
     def __repr__(self):
         return f'code={self.code}; success={self.success}; message={self.message}; account_id={self.account_id}, ' \
-               f'cnt={self.cnt}; transaction_id={self.transaction_id}'
+               f'cnt={self.payed_events}; transaction_id={self.transaction_id}'

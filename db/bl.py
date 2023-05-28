@@ -8,6 +8,7 @@ from backend import User as ApiUser, FundraisingInfo
 from backend import Fundraising as ApiFundraising
 from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
+from backend import PaymentResult as ApiPaymentResult
 from config import BotConfig
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
@@ -674,6 +675,22 @@ def _init_texts_tbl(session: Session = None):
 # **********************************************************************
 # Payment
 # **********************************************************************
+def _insert_payment(account_id: int, session: Session, **kvargs) -> Payment:
+    if account_id is None:
+        raise ValueError('account_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+    kvargs['account_id'] = account_id
+
+    payment = Payment()
+    for field in Payment.get_fields():
+        if field in kvargs:
+            setattr(payment, field, kvargs[field])
+    session.add(payment)
+    session.commit()
+    return payment
+
+
 def _get_payments_count(account_id: int, session: Session) -> int:
     """
     количество платежей с аккаунта
@@ -702,6 +719,29 @@ class UserStatus(Enum):
     Donor = 5           # зарегистрированный донор (спонсор)
     AnonymousDonor = 6  # анонимный донор (спонсор)
     Unknown = 12        # фиг его знает, кто это такой
+
+
+def get_user_id_by_account(account_id) -> int | None:
+    """
+    вернуть id владельца аккаунта
+    """
+    session = get_session()
+    account: Account = _get_account(account_id, session)
+    if account is not None:
+        if account.user_id is not None:
+            return account.user_id
+        company = _get_company(account.company_id, session)
+        if company is not None:
+            return company.admin_id
+    return None
+
+
+def get_account(account_id) -> ApiAccount:
+    session = get_session()
+    account: Account = _get_account(account_id, session)
+    api_account = ApiAccount(id=account.id, user_id=account.user_id,
+                             company_id=account.company_id, payed_evens=account.payed_events)
+    return api_account
 
 
 def create_user(user: ApiUser) -> (User, Account):
@@ -940,3 +980,20 @@ def get_message_text(text_name: str) -> str:
     session = get_session()
     txt = get_msg(text_name, session).text_value.replace("\\n", "\n")
     return txt
+
+
+def add_account_payment(result: ApiPaymentResult):
+    account_id = result.account_id
+    session = get_session()
+    account = _get_account(account_id, session)
+    # update account
+    payed_events = account.payed_events + result.payed_events
+    _update_account(account_id, session, payed_events=payed_events)
+    # insert payment
+    data = {
+        'payment_date': date.today(),
+        'payed_events': result.payed_events,
+        'payment_sum': result.payed_sum,
+        'transaction_id': result.transaction_id
+    }
+    _insert_payment(account_id, session, **data)

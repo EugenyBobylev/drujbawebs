@@ -2,6 +2,7 @@ import json
 
 import requests
 from fastapi.encoders import jsonable_encoder
+from telethon import TelegramClient
 
 from backend import User
 from backend import send_message
@@ -173,18 +174,43 @@ def test_answer_web_app_query():
 def test_send_message():
     chat_id = 124471751
     text = 'Текстовое сообщение для примера'
+    text = 'Privet'
 
     r = send_message(chat_id, text)
     assert 200 == r.status_code
 
 
+def test_send_message2():
+    chat_id = 124471751
+    text = 'Privet'
+
+    token = BotConfig.instance().token
+    url = f'https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text=Privet'
+    r = requests.get(url)
+
+    assert 200 == r.status_code
+
+
+
+async def test_send_telethon():
+    api_id = 21153375
+    api_hash = 'd0294bfb441a64a457438cf0478d8b65'
+    client = TelegramClient('session_name', api_id, api_hash, )
+    client.start()
+    destination_user_username = 'BobylevEA'
+    entity = client.get_entity(destination_user_username)
+    ok = await client.send_message(entity=entity, message="Hi")
+    assert ok
+
+
 def test_create_payment_result():
     data = {
-        'code': 0,
-        'success': True,
+        'account_id': "107",
+        'code': "0",
         'message': None,
-        'account_id': 100,
-        'cnt': 10,
+        'payed_events': 12,
+        'payed_sum': 2400,
+        'success': True,
         'transaction_id': None
     }
     res = PaymentResult(** data)
