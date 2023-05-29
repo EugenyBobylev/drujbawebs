@@ -9,14 +9,14 @@ from backend import Fundraising as ApiFundraising
 from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import PaymentResult as ApiPaymentResult
-from config import BotConfig
+from config import Config
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
 from utils import get_days_left
 
 
 def get_engine() -> Engine:
-    config = BotConfig.instance()
+    config = Config()
     url = config.get_postgres_url()
     engine = create_engine(url, pool_size=50, echo=False)
     return engine

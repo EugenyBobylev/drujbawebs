@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy import create_engine, select, func
 
-from config import BotConfig
+from config import Config
 
 import db
 from db import get_session
@@ -10,7 +10,7 @@ from db.models import User, Account, Company
 
 
 def test_connect_to_postgres():
-    config = BotConfig.instance()
+    config = Config()
     url = config.get_postgres_url()
     engine = create_engine(url, pool_size=50, echo=False)
     assert engine is not None

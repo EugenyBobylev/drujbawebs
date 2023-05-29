@@ -9,11 +9,11 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult
-from config import BotConfig
+from config import Config
 from db.bl import get_session, UserStatus
 from utils import is_number, calc_payment_sum
 
-bot_config = BotConfig.instance()
+bot_config = Config()
 
 msgs = Queue()  #
 

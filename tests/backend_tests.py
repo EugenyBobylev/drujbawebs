@@ -7,7 +7,7 @@ from telethon import TelegramClient
 from backend import User
 from backend import send_message
 from backend.models import PaymentResult
-from config import BotConfig
+from config import Config
 from db import Account
 
 auth = 'cXVlcnlfaWQ9QUFISFNXc0hBQUFBQU1kSmF3ZUxNU0FiJnVzZXI9JTdCJTIyaWQlMjIlM0ExMjQ0NzE3NTElMkMlMjJmaXJzdF9uYW1' \
@@ -129,7 +129,7 @@ def test_create_user_fundraising():
 
 
 def test_api_bot_send_me():
-    token = BotConfig.instance().token
+    token = Config().token
     url = f'https://api.telegram.org/bot{token}/getMe'
     r = requests.get(url)
     assert 200 == r.status_code
@@ -164,7 +164,7 @@ def test_answer_web_app_query():
         }
     }
     body = json.dumps(data)
-    token = BotConfig.instance().token
+    token = Config().token
     url = f'https://api.telegram.org/bot{token}/answerWebAppQuery'
 
     r = requests.post(url, headers=headers, data=body)
@@ -184,12 +184,11 @@ def test_send_message2():
     chat_id = 124471751
     text = 'Privet'
 
-    token = BotConfig.instance().token
+    token = Config().token
     url = f'https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text=Privet'
     r = requests.get(url)
 
     assert 200 == r.status_code
-
 
 
 async def test_send_telethon():
@@ -215,3 +214,7 @@ def test_create_payment_result():
     }
     res = PaymentResult(** data)
     assert res is not None
+
+
+def test_telethon():
+    assert True

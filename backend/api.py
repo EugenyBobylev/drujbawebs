@@ -14,11 +14,11 @@ from starlette.templating import Jinja2Templates
 import db
 from backend import send_answer_web_app_query, send_message
 from backend.models import User, Fundraising, WebAppInitData, PaymentResult
-from config import BotConfig
+from config import Config
 from db import Account
 from utils import check_webapp_signature, decode_base64_str
 
-config = BotConfig.instance()
+config = Config()
 app = FastAPI()
 
 templates = Jinja2Templates(directory="backend/templates")
@@ -59,7 +59,7 @@ async def get_test(request: Request):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     courses = ['C', 'C++', 'Python', 'Java']
     context = {
         'request': request,
@@ -95,7 +95,7 @@ async def get_payment_html(request: Request, account_id: int, cnt: int):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     context = {
         'request': request,
         'host': host,
@@ -111,7 +111,7 @@ async def get_user_registration_html(request: Request):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     return templates.TemplateResponse('userRegistration.html',
                                       context={'request': request, 'host': host}, headers=headers)
 
@@ -122,7 +122,7 @@ async def get_private_fundraising_html(request: Request):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     return templates.TemplateResponse('feeCreation.html',
                                       context={'request': request, 'host': host}, headers=headers)
 
@@ -130,7 +130,7 @@ async def get_private_fundraising_html(request: Request):
 @app.get('/EventSettings/{fund_id}')
 async def get_fund_info(fund_id: int, request: Request):
     # Здесь какая-то херня (писал во время обострения отита)
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     fund_info = db.get_fund(fund_id)
     headers = {
         'ngrok-skip-browser-warning': '100',
@@ -154,7 +154,7 @@ async def get_fund_info(fund_id: int, request: Request):
 
 @app.get('/fundraising/{fund_id}')
 async def get_fund(fund_id: int, request: Request):
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
@@ -179,7 +179,7 @@ async def get_fund(fund_id: int, request: Request):
 
 @app.get('/donors/{fund_id}')
 async def get_donors(fund_id: int, request: Request):
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
@@ -206,7 +206,7 @@ async def get_donors(fund_id: int, request: Request):
 
 @app.get('/donors/edit/{fund_id}')
 async def get_donors(fund_id: int, request: Request):
-    host = BotConfig.instance().base_url
+    host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'

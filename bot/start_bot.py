@@ -4,7 +4,7 @@ import logging
 from aiogram import Dispatcher, Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from config import BotConfig
+from config import Config
 from bot.handlers.common import register_handlers_common
 
 
@@ -17,7 +17,7 @@ async def start():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', )
 
     # Объявление и инициализация объектов бота и диспетчера
-    token = BotConfig.instance().token
+    token = Config().token
     bot = Bot(token=token)
     storage: MemoryStorage = MemoryStorage()
     dp = Dispatcher(bot, storage=storage)

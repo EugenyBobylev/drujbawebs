@@ -3,7 +3,7 @@ from datetime import datetime, date
 import json
 
 from backend.models import WebAppInitData
-from config import BotConfig
+from config import Config
 from utils import re_search, check_webapp_signature, decode_base64_str
 import urllib.parse
 
@@ -27,7 +27,7 @@ def get_webapp_init_data() -> str:
 
 
 def test_create_config():
-    config = BotConfig.instance()
+    config = Config()
     assert config is not None
     assert config.token is not None
     assert config.payment_username is not None
@@ -69,7 +69,7 @@ def test_parse_webapp_init_data():
 
 def test_check_init_data_hash():
     init_data = urllib.parse.unquote(decoded_auth)
-    config = BotConfig.instance()
+    config = Config()
     ok = check_webapp_signature(config.token, init_data)
     assert ok
 
