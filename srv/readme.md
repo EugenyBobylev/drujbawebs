@@ -25,13 +25,20 @@ sudo nano /etc/supervisor/conf.d/uvicorn.conf
 sudo cat /etc/supervisor/conf.d/uvicorn.conf
 ```
 
+```shell
+sudo touch /etc/supervisor/conf.d/bot.conf
+sudo nano /etc/supervisor/conf.d/bot.conf
+sudo cat /etc/supervisor/conf.d/bot.conf
+```
+
+
 ### reread and update supervisor the new job
 ```shell
 sudo supervisorctl reread
 sudo supervisorctl update
 ```
 
-```
+```shell
 sudo supervisorctl start my_uvicorn
 sudo supervisorctl status my_uvicorn
 sudo supervisorctl stop my_uvicorn
@@ -39,4 +46,5 @@ sudo supervisorctl stop my_uvicorn
 
 ```shell
 sudo cat /usr/prj/drujbawebs/logs/supervisor.log
+sudo cat /usr/prj/drujbawebs/logs/bot.log
 ```
