@@ -9,13 +9,15 @@ uvicorn backend.api:app --forwarded-allow-ips='*' --uds /tmp/uvicorn.sock
 Файл конфигурации nginx: /etc/nginx/conf.d/drujba.conf
 
 Скрипт запуска uvicorn:  /usr/prj/drujbawebs/srv/start.bash
+Скрипт запуска bot:      /usr/prj/drujbawebs/srv/start_bot.bash
 
 Файл конфигурации supervisor: /etc/supervisor/conf.d/uvicorn.conf
-
+                              /etc/supervisor/conf.d/bot.conf
 
 **Make script executable**
 ```shell
 sudo chmod +x /usr/prj/drujbawebs/srv/start.bash
+sudo chmod +x /usr/prj/drujbawebs/srv/start_bot.bash
 ```
 
 **create the supervisor configuration file**
@@ -39,9 +41,9 @@ sudo supervisorctl update
 ```
 
 ```shell
-sudo supervisorctl start my_uvicorn
-sudo supervisorctl status my_uvicorn
-sudo supervisorctl stop my_uvicorn
+sudo supervisorctl start uvicorn
+sudo supervisorctl status uvicorn
+sudo supervisorctl stop uvicorn
 ```
 
 ```shell
