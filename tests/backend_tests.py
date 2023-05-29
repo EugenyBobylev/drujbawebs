@@ -191,17 +191,6 @@ def test_send_message2():
     assert 200 == r.status_code
 
 
-async def test_send_telethon():
-    api_id = 21153375
-    api_hash = 'd0294bfb441a64a457438cf0478d8b65'
-    client = TelegramClient('session_name', api_id, api_hash, )
-    client.start()
-    destination_user_username = 'BobylevEA'
-    entity = client.get_entity(destination_user_username)
-    ok = await client.send_message(entity=entity, message="Hi")
-    assert ok
-
-
 def test_create_payment_result():
     data = {
         'account_id': "107",
@@ -216,11 +205,29 @@ def test_create_payment_result():
     assert res is not None
 
 
-def test_telethon():
+def test_telethon_send_msg():
+    async def _send_msg():
+        _msg = await client.send_message('@BobylevEA', 'Привет медведь')
+        assert _msg is not None
+
+    config = Config()
+    api_id = config.api_id
+    api_hash = config.api_hash
+    client = TelegramClient('bobylev', api_id, api_hash, )
+    with client:
+        client.loop.run_until_complete(_send_msg())
+
+
+def test_telethon_send_bot_msg():
+    async def _send_msg():
+        _chat_id = 124471751
+        _msg = await bot.send_message(_chat_id, 'Привет медведь')
+        assert _msg is not None
     config = Config()
     api_id = config.api_id
     api_hash = config.api_hash
     bot_token = config.token
     bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
+    with bot:
+        bot.loop.run_until_complete(_send_msg())
 
-    assert bot is not None
