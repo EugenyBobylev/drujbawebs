@@ -293,5 +293,5 @@ def get_company_by_name(name: str = 'ProfiTeam'):
 
 def test_init_texts_tbl():
     session = get_session()
-    db._init_texts_tbl(session)
+    db.init_texts_tbl(session)
     assert True

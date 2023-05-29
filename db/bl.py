@@ -625,7 +625,7 @@ def _get_payed_donor_count(fund_id, session) -> int:
     return count
 
 
-def _init_texts_tbl(session: Session = None):
+def init_texts_tbl(session: Session = None):
     data = [
         ('welcome_invited', 'Приветствую вас! \n Я создан для сбора на подарки для вас и ваших коллег из компании {}. '
                             'Для завершения регистрации, пожалуйста, заполните анкету, '
@@ -633,9 +633,9 @@ def _init_texts_tbl(session: Session = None):
         ('open_events', 'Открытые сборы: {open_events_len}'),
         ('closed_events', 'Закрытые сборы: {closed_events_len}'),
         ('shareEvent', 'Здравствуйте! У {} скоро день рождения.\\nЭто ссылка для сбор на подарок. Присоединяйтесь!'),
-        ('participant_menu', 'Здравствуйте, {name}!\nЗдесь вы можете оценить свою активность\n\nУчастие в сборах:'
-                             ' {participated_events_len}\nСоздано сборов: {created_events_len}\n'
-                             'Ваши компании: {companies_len}\nОткрытые сборы: {open_events}'),
+        ('user_menu', 'Здравствуйте, {name}!\nЗдесь вы можете оценить свою активность\n\nУчастие в сборах:'
+                      ' {donors_len}\nСоздано сборов: {funds_len}\n'
+                      'Ваши компании: {companies_len}\nОткрытые сборы: {open_funds_len}'),
         ('trial_menu', 'Здравствуйте, {name}!\nЗдесь вы можете управлять бесплатным сбором'),
         ('company_invite', 'Зарегистрируйтесь, чтобы участвовать в сборах и получать поздравления от друзей.'),
         ('event_accepted', 'Тип события: {type}\nКому: {target}\nК вашему сбору присоединился пользователь. <{name}>.'),
