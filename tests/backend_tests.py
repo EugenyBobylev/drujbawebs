@@ -217,4 +217,10 @@ def test_create_payment_result():
 
 
 def test_telethon():
-    assert True
+    config = Config()
+    api_id = config.api_id
+    api_hash = config.api_hash
+    bot_token = config.token
+    bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
+
+    assert bot is not None

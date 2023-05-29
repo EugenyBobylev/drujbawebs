@@ -18,24 +18,27 @@ class SingletonMeta(type):
 
 class Config(metaclass=SingletonMeta):
     def __init__(self):
-        ok = load_dotenv('.env')
+        script_path = os.path.abspath(__file__)
+        env_path = Path(script_path).parent / '.env'
+
+        ok = load_dotenv(env_path)
         # Telethon
-        self.api_hash: str = os.getenv('API_HASH') if ok else None
-        self.api_id: int = os.getenv('API_ID') if ok else None
+        self.api_hash: str = os.getenv('API_HASH')
+        self.api_id: int = os.getenv('API_ID')
         # telegram bot
-        self.token: str = os.getenv('TOKEN') if ok else None
+        self.token: str = os.getenv('TOKEN')
         # CloudPayments
-        self.payment_username: str = os.getenv('PAYMENT_USERNAME') if ok else None
-        self.payment_password: str = os.getenv('PAYMENT_PASSWORD') if ok else None
+        self.payment_username: str = os.getenv('PAYMENT_USERNAME')
+        self.payment_password: str = os.getenv('PAYMENT_PASSWORD')
         # Postgres
-        self.db: str = os.getenv('DB') if ok else None
-        self.db_user = os.getenv('DB_USER') if ok else None
-        self.db_password: str = os.getenv('DB_PASSWORD') if ok else None
-        self.db_host: str = os.getenv('DB_GHOST') if ok else '127.0.0.1'
-        self.db_port: int = os.getenv('DB_PORT') if ok else 5432
+        self.db: str = os.getenv('DB')
+        self.db_user = os.getenv('DB_USER')
+        self.db_password: str = os.getenv('DB_PASSWORD', None)
+        self.db_host: str = os.getenv('DB_GHOST', '127.0.0.1')
+        self.db_port: int = os.getenv('DB_PORT', 5432)
         # Fast API
-        self.api_host: str = os.getenv('API_HOST') if ok else '127.0.0.1'
-        self.base_url: str = os.getenv('BASE_URL') if ok else None
+        self.api_host: str = os.getenv('API_HOST', '127.0.0.1')
+        self.base_url: str = os.getenv('BASE_URL')
 
     def get_postgres_url(self):
         """
