@@ -424,11 +424,8 @@ async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> 
 async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
     await call.message.delete()
     user_id = call.from_user.id
-    user_data: dict = await state.get_data()
-    user_status: UserStatus = user_data.get('user_status', None)
-    if user_status is None:
-        user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
-        await state.update_data(user_status=user_status)
+    user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
+    await state.update_data(user_status=user_status)
 
     if user_status == UserStatus.TrialUser:
         await start_trial_user(call.message, state)
