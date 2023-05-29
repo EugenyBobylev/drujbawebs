@@ -2,7 +2,7 @@ import json
 
 import requests
 from fastapi.encoders import jsonable_encoder
-from telethon import TelegramClient
+from telethon import TelegramClient, Button
 
 from backend import User
 from backend import send_message
@@ -207,7 +207,7 @@ def test_create_payment_result():
 
 def test_telethon_send_msg():
     async def _send_msg():
-        _msg = await client.send_message('@BobylevEA', 'Привет медведь')
+        _msg = await client.send_message('@BobylevEA', 'Привет медведь!')
         assert _msg is not None
 
     config = Config()
@@ -221,7 +221,12 @@ def test_telethon_send_msg():
 def test_telethon_send_bot_msg():
     async def _send_msg():
         _chat_id = 124471751
-        _msg = await bot.send_message(_chat_id, 'Привет медведь')
+        _txt = 'Поздравляю! Вы успешно приобрели пакет из: 10 сборов. ' \
+               'Теперь можно начинать готовиться к праздникам :)\n\nСпасибо, что выбрали Дружбу!'
+        _keyboard = [
+            Button.inline('В меню', 'go_menu')
+        ]
+        _msg = await bot.send_message(_chat_id, _txt, buttons=_keyboard)
         assert _msg is not None
     config = Config()
     api_id = config.api_id
@@ -230,4 +235,3 @@ def test_telethon_send_bot_msg():
     bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
     with bot:
         bot.loop.run_until_complete(_send_msg())
-

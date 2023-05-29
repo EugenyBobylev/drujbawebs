@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
-from backend import FundraisingInfo, Account, PaymentResult
+from backend import FundraisingInfo, Account, PaymentResult, UserInfo
 from config import Config
 from db.bl import get_session, UserStatus
 from utils import is_number, calc_payment_sum
@@ -30,12 +30,13 @@ class Steps(StatesGroup):
     tg_10 = State()
     tg_11 = State()
     tg_12 = State()
-    tg_13 = State()
+    tg_13 = State()  # форма главного меню TrialUser
     tg_14 = State()
     tg_15 = State()
     tg_16 = State()
     tg_17 = State()
     tg_18 = State()
+    tg_19 = State()  # форма главного меню User
 
     fund_info = State()
     reg_company = State()
@@ -113,6 +114,20 @@ def trial_user_menu_keyboard():
     return keyboard
 
 
+def user_menu_keyboard():
+    buttons = [
+        InlineKeyboardButton(text="Ваши сборы", callback_data='funds_info'),
+        InlineKeyboardButton(text="Создать новый сбор", callback_data='create_fund'),
+        InlineKeyboardButton(text="Редактировать анкету", callback_data='edit_user'),
+        InlineKeyboardButton(text="Чаты", callback_data='chat'),
+        InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
+        InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def new_private_fund_keyboard():
     url1 = f'{bot_config.base_url}FeeCreation'
     buttons = [
@@ -177,6 +192,24 @@ async def start_trial_user(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
+async def start_user(message: types.Message, state: FSMContext):
+    user_id = message.chat.id
+    await _remove_all_messages(user_id)
+    name = db.get_user_name(user_id)
+    user_info: UserInfo = db.get_user_info(user_id)
+    msg = f'Здравствуйте, {name}!\nЗдесь вы можете оценить свою активность\n\n' \
+          f'Участие в сборах: {user_info.donors_count}\n' \
+          f'Создано сборов: {user_info.funds_count}\n' \
+          f'Участвуете в компаниях: {user_info.company_count}\n' \
+          f'Открытые сборы: {user_info.open_funds}\n' \
+          f'Администратор компаний: {user_info.admin_count}'
+    keyboard = user_menu_keyboard()
+
+    await state.set_state(Steps.tg_19)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
 async def cmd_start(message: types.Message, state: FSMContext):
     """
     Точка входа в бот
@@ -201,8 +234,9 @@ async def cmd_start(message: types.Message, state: FSMContext):
         return
 
     if user_status == UserStatus.User:
-        await message.answer(f'user_status={user_status}, находится в разработке')
+        await start_user(message, state)
         return
+
     if user_status == UserStatus.Admin:
         await message.answer(f'user_status={user_status}, находится в разработке')
         return
@@ -391,8 +425,15 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
     await call.message.delete()
     user_id = call.from_user.id
     user_data: dict = await state.get_data()
-    if 'user_status' in user_data and user_data['user_status'] == UserStatus.TrialUser:
+    user_status: UserStatus = user_data.get('user_status', None)
+    if user_status is None:
+        user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
+        await state.update_data(user_status=user_status)
+
+    if user_status == UserStatus.TrialUser:
         await start_trial_user(call.message, state)
+    elif user_status == UserStatus.User:
+        await start_user(call.message, state)
 
 
 async def start_payment(message: types.Message, state: FSMContext):
@@ -459,10 +500,6 @@ async def payment_step_3(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
-async def try_msg(message: types.Message, state: FSMContext):
-    await message.answer(f'Я поймал тебя. chat_id={message.chat.id}')
-
-
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
@@ -490,7 +527,3 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(show_fund_link, state=Steps.tg_4)
 
     dp.register_message_handler(payment_step_3, state=Steps.tg_9)
-
-    dp.register_message_handler(try_msg, filters.Text('Privet'))
-
-    dp.register_message_handler(try_msg, commands="qqq", state="*")

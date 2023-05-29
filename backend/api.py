@@ -14,6 +14,7 @@ from starlette.templating import Jinja2Templates
 import db
 from backend import send_answer_web_app_query, send_message
 from backend.models import User, Fundraising, WebAppInitData, PaymentResult
+from backend.telegram_api import send_payment_message
 from config import Config
 from db import Account
 from utils import check_webapp_signature, decode_base64_str
@@ -382,9 +383,9 @@ def set_fund_admin(fund_id: int, user_id: int):
 
 
 @app.post('/api/payment/')
-async def get_payment_html(result: PaymentResult):
+def get_payment_html(result: PaymentResult):
     user_id = db.get_user_id_by_account(result.account_id)
     if result.success:
         db.add_account_payment(result)
-    data_json = jsonable_encoder(result)
-    send_message(user_id, data_json)
+    # data_json = jsonable_encoder(result)
+    send_payment_message(user_id, result)

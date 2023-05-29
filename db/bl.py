@@ -9,6 +9,7 @@ from backend import Fundraising as ApiFundraising
 from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import PaymentResult as ApiPaymentResult
+from backend import UserInfo as ApiUserInfo
 from config import Config
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
@@ -320,7 +321,7 @@ def _delete_company(company_id: int, session: Session):
         session.commit()
 
 
-def _get_company_users(company_id: str, session: Session) -> [User]:
+def _get_company_users(company_id: int, session: Session) -> [User]:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if session is None:
@@ -590,6 +591,20 @@ def _get_all_donor_count(fund_id: int, session: Session) -> int:
         raise ValueError('fund_id can not be None')
     count = session.scalar(
         select(func.count()).select_from(Donor).where(Donor.fund_id == fund_id)
+    )
+    if count is None:
+        count = 0
+    return count
+
+
+def _get_donors_count_by_user(user_id: int, session: Session) -> int:
+    """
+    Get number of donor fundraising by user
+    """
+    if user_id is None:
+        raise ValueError('fund_id can not be None')
+    count = session.scalar(
+        select(func.count()).select_from(Donor).where(Donor.user_id == user_id)
     )
     if count is None:
         count = 0
@@ -874,6 +889,25 @@ def get_fund_info(fund_id: int) -> FundraisingInfo:
         fund_info.invite_url = fund.invite_url
 
     return fund_info
+
+
+def get_user_info(user_id: int) -> ApiUserInfo:
+    session = get_session()
+    account = _get_user_account(user_id, session)
+    funds = _get_all_fundraisings(account.id, session)
+    open_fundraisings = _get_all_open_fundraising(account.id, session)
+    companies = _get_user_companies(user_id, session)
+    admins = [company for company in companies if company.admin_id == user_id]
+
+    donors_count = _get_donors_count_by_user(user_id, session)
+    funds_count = len(funds) if funds is not None else 0
+    open_funds = len(open_fundraisings) if open_fundraisings is not None else 0
+    company_count = len(companies) if companies is not None else 0
+    admin_count = len(admins) if account is not None else 0
+
+    user_info = ApiUserInfo(donors_count=donors_count, funds_count=funds_count, open_funds=open_funds,
+                            company_count=company_count, admin_count=admin_count)
+    return user_info
 
 
 def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool = False) -> UserStatus:

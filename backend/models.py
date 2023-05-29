@@ -71,6 +71,14 @@ class User(BaseModel):
         return f'id={self.id}; name={self.name}; timezone={self.timezone}; birthdate={self.birthdate}'
 
 
+class UserInfo(BaseModel):
+    donors_count: int = 0   # участвует в сборах
+    funds_count: int = 0    # создано сборов
+    company_count: int = 0  # участвуете в компаниях
+    open_funds: int = 0     # открытые сборы
+    admin_count: int = 0    # администратор компаний
+
+
 class Account(BaseModel):
     id: int
     user_id: int = None
