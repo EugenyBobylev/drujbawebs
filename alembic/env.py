@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config, create_engine
 from sqlalchemy import pool
 
 from alembic import context
-from config import BotConfig
+from config import Config
 from db.models import *
 
 # this is the Alembic Config object, which provides
@@ -29,7 +29,7 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    _config = BotConfig.instance()
+    _config = Config()
     _url = _config.get_postgres_url()
     return _url
 
