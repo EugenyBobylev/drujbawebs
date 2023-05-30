@@ -47,6 +47,13 @@ sudo supervisorctl stop uvicorn
 ```
 
 ```shell
+sudo supervisorctl start drujbabot
+sudo supervisorctl status drujbabot
+sudo supervisorctl stop drujbabot
+```
+
+
+```shell
 sudo cat /usr/prj/drujbawebs/logs/supervisor.log
 sudo cat /usr/prj/drujbawebs/logs/bot.log
 ```
