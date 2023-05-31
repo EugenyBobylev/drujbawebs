@@ -25,8 +25,9 @@ class Config(metaclass=SingletonMeta):
         # Telethon
         self.api_hash: str = os.getenv('API_HASH')
         self.api_id: int = os.getenv('API_ID')
-        # telegram bot
-        self.token: str = os.getenv('TOKEN')
+        # telegram bot tokens
+        self.token: str = os.getenv('TOKEN', None)
+        self.test_token: str = os.getenv('TEST_TOKEN', None)
         # CloudPayments
         self.payment_username: str = os.getenv('PAYMENT_USERNAME')
         self.payment_password: str = os.getenv('PAYMENT_PASSWORD')
@@ -42,7 +43,6 @@ class Config(metaclass=SingletonMeta):
         # Logging
         self.app_dir: str = str(Path(script_path).parent)
         self.logs_dir: str = os.getenv('LOGS_DIR', '')
-
         self.api_log_path = f'{self.app_dir}/{self.logs_dir}/api.log'
         self.bot_log_path = f'{self.app_dir}/{self.logs_dir}/bot.log'
 
