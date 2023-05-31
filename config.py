@@ -39,6 +39,9 @@ class Config(metaclass=SingletonMeta):
         # Fast API
         self.api_host: str = os.getenv('API_HOST', '127.0.0.1')
         self.base_url: str = os.getenv('BASE_URL')
+        # Logging
+        self.app_gir: str = str(Path(script_path).parent)
+        self.logs_dir: str = os.getenv('LOGS_DIR', '')
 
     def get_postgres_url(self):
         """

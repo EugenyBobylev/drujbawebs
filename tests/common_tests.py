@@ -1,6 +1,8 @@
+import os
 import urllib
 from datetime import datetime, date
 import json
+from pathlib import Path
 
 from backend.models import WebAppInitData
 from config import Config
@@ -80,3 +82,22 @@ def test_days_left():
     days_left = (date_event - today).days
     print(f'\n{days_left=}')
     assert days_left > 0
+
+
+def test_loguru():
+    from loguru import logger
+    # config log path
+    app_dir = Config().app_gir
+    logs_dir = Config().logs_dir
+    # remove exists log
+    log_path = f'{app_dir}/{logs_dir}/test.log'
+    if Path(log_path).exists():
+        os.remove(log_path)
+    # config loguru
+    logger.remove(0)
+    logger.add(log_path)
+
+    logger.debug("Happy logging with Loguru!")
+    logger.info('Новое сообщение в лог')
+
+    assert Path(log_path).exists()
