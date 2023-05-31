@@ -882,6 +882,21 @@ def remove_user(user_id: int):
     session.commit()
 
 
+def remove_user_payments(user_id: int):
+    """
+    Удалить из БД платежи пользователя
+    :param user_id:
+    :return:
+    """
+    session = get_session()
+    user: User = _get_user(user_id, session)
+    account: Account = user.account
+
+    for payment in account.payments:    # удалить платежи
+        session.delete(payment)
+    session.commit()
+
+
 def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundraising | None:
     session = get_session()
     account = _get_user_account(user_id, session)
