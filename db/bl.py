@@ -690,6 +690,16 @@ def init_texts_tbl(session: Session = None):
 # **********************************************************************
 # Payment
 # **********************************************************************
+def _get_payment(payment_id: int, session: Session) -> Payment | None:
+    if payment_id is None:
+        raise ValueError('payment_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    payment: Payment = session.get(Payment, payment_id)
+    return payment
+
+
 def _insert_payment(account_id: int, session: Session, **kvargs) -> Payment:
     if account_id is None:
         raise ValueError('account_id can not be None')
@@ -704,6 +714,67 @@ def _insert_payment(account_id: int, session: Session, **kvargs) -> Payment:
     session.add(payment)
     session.commit()
     return payment
+
+
+def _delete_payment(payment_id: int, session: Session) -> bool:
+    if payment_id is None:
+        raise ValueError('account_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    payment = _get_payment(payment_id, session)
+    if payment:
+        session.delete(payment)
+        session.commit()
+        return True
+    return False
+
+
+def _delete_user_payments(user_id: int, session: Session) -> int:
+    '''
+    удалить платежи аккаунта пользователя
+    :param user_id:
+    :param session:
+    :return:
+    '''
+    if user_id is None:
+        raise ValueError('user_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    deleted_payment_count = 0
+    account = _get_user_account(user_id, session)
+    if account is not None:
+        query = select(Payment).where(Payment.account_id == account.id)
+        account_payments = session.execute(query).scalars().all()
+        for payment in account_payments:
+            session.delete(payment)
+            deleted_payment_count += 1
+        session.commit()
+
+    return deleted_payment_count
+
+
+def _delete_user_donors(user_id: int, session: Session) -> int:
+    '''
+    удалить платежи аккаунта пользователя
+    :param user_id:
+    :param session:
+    :return:
+    '''
+    if user_id is None:
+        raise ValueError('user_id can not be None')
+    if session is None:
+        raise ValueError("session can't be None")
+
+    deleted_count = 0
+    query = select(Donor).where(Donor.user_id == user_id)
+    user_donors = session.execute(query).scalars().all()
+    for donor in user_donors:
+        session.delete(donor)
+        deleted_count += 1
+
+    return deleted_count
 
 
 def _get_payments_count(account_id: int, session: Session) -> int:
@@ -786,6 +857,29 @@ def get_api_user_account(user_id: int) -> ApiAccount | None:
         api_account = ApiAccount(id=account.id, user_id=account.user_id, company_id=account.company_id,
                                  payed_events=account.payed_events)
     return api_account
+
+
+def remove_user(user_id: int):
+    session = get_session()
+    user: User = _get_user(user_id, session)
+
+    account: Account = user.account
+    for payment in account.payments:    # удалить платежи
+        session.delete(payment)
+
+    for fund in account.fundraisings:   # удалить сборы
+        fund_donors = fund.donors
+        for fd in fund_donors:          # удалить доноров сбора
+            session.delete(fd)
+        session.delete(fund)
+
+    for donor in user.donors:           # удалить донорство в других сборах
+        session.delete(donor)
+
+    for member in user.members:         # удалить участие в компаниях
+        session.delete(member)
+
+    session.commit()
 
 
 def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundraising | None:
