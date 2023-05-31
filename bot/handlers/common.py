@@ -262,6 +262,20 @@ async def cmd_reset(message: types.Message, state: FSMContext):
     await message.answer(msg)
 
 
+async def cmd_reset_payments(message: types.Message, state: FSMContext):
+    await message.delete()
+    await state.finish()
+    user_id = message.from_user.id
+    user_name = message.from_user.username
+    first_name = message.from_user.first_name
+    last_name = message.from_user.last_name
+
+    db.remove_user_payments(user_id)
+    msg = f'Данные о платежах пользователя @{user_name} ({first_name} {last_name}) ' \
+          f'были удалены из базы данных бота Дружба'
+    await message.answer(msg)
+
+
 async def query_start(call: types.CallbackQuery):
     await cmd_start(call.message, "*")
 
@@ -512,6 +526,7 @@ async def payment_step_3(message: types.Message, state: FSMContext):
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
+    dp.register_message_handler(cmd_reset_payments, commands="reset_payments", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")
