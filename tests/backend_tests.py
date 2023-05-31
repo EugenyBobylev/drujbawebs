@@ -232,6 +232,7 @@ def test_telethon_send_bot_msg():
     api_id = config.api_id
     api_hash = config.api_hash
     bot_token = config.token
+    bot_token = '6022915470:AAFL2-jKBpRGkPt8JQeBtOAPVh1me4H3YI0'  # profiteam
     bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
     with bot:
         bot.loop.run_until_complete(_send_msg())
