@@ -892,6 +892,7 @@ def remove_user_payments(user_id: int):
     user: User = _get_user(user_id, session)
     account: Account = user.account
 
+    account.payed_events = 0
     for payment in account.payments:    # удалить платежи
         session.delete(payment)
     session.commit()
