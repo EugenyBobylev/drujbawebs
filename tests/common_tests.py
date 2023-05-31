@@ -87,10 +87,10 @@ def test_days_left():
 def test_loguru():
     from loguru import logger
     # config log path
-    app_dir = Config().app_gir
+    app_dir = Config().app_dir
     logs_dir = Config().logs_dir
-    # remove exists log
     log_path = f'{app_dir}/{logs_dir}/test.log'
+    # remove exists log
     if Path(log_path).exists():
         os.remove(log_path)
     # config loguru

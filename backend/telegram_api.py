@@ -2,11 +2,16 @@ import asyncio
 import json
 
 import requests
+from loguru import logger
 from requests import Response
 from telethon import Button, TelegramClient
 
 from backend import PaymentResult
 from config import Config
+
+# setup loguru
+logger.remove(0)
+logger.add(Config().api_log_path)
 
 
 def send_answer_web_app_query(web_query_id: str, data: str) -> Response:
@@ -59,6 +64,8 @@ async def send_payment_ok_msg(chat_id: int, payed_events: int):
     api_id = config.api_id
     api_hash = config.api_hash
     bot_token = config.token
+    logger.debug(f'{bot_token=}; {chat_id=}; {payed_events=}')
+
     bot = TelegramClient('bot', api_id, api_hash)
     bot = await bot.start(bot_token=bot_token)
     async with bot:
