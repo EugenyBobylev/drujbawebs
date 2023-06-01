@@ -879,6 +879,8 @@ def remove_user(user_id: int):
     for member in user.members:         # удалить участие в компаниях
         session.delete(member)
 
+    session.delete(account)
+    session.delete(user)
     session.commit()
 
 
