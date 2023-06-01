@@ -89,7 +89,7 @@ def _insert_user(user_id: int, session: Session, **kvargs) -> User:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
     if user:
-        user = _update_user(user_id, session, **kvargs)
+        return user
     else:
         user = User(id=user_id)
         for field in User.get_fields():
@@ -1166,3 +1166,37 @@ def about_fund_info(fund_id) -> str:
     msg += '\nПожалуйста, заполните анкету для регистрации.\n'
     msg += '\nТак вы сможете участвовать в других сборах, а я напомню друзьям, когда у вас день рождения.'
     return msg
+
+
+def transfer_fund_info(fund_id) -> str:
+    session = get_session()
+    fund: Fundraising = _get_fundraising(fund_id, session)
+    avg_sum = _get_fund_avg_sum(fund_id, session)
+
+    msg = f'Другие участники уже сдали на подарок в среднем по {avg_sum} руб>. Присоединяйтесь.\n\n'
+    msg += f'Отправить деньги на подарок можно сюда:\n{fund.transfer_info}\n\n'
+    msg += f'Поучаствовать в обсуждении можно в этом чате, созданном специально для этого сбора:\n\n{fund.chat_url}'
+    return msg
+
+
+def save_money_transfer(fund_id: int, user_id: int, user_name: str, sum_money: int) -> bool:
+    """
+    Записать перевод донора
+    :param fund_id: сбор
+    :param user_id: донор
+    :param sum_money: сумма перевода
+    :return:
+    """
+    session = get_session()
+    fund: Fundraising = _get_fundraising(fund_id, session)
+    donors = [d for d in fund.donors if d.user_id == user_id]
+    if len(donors) == 0:
+        user = _insert_user(user_id, session, name=user_name)
+        donor: Donor = _insert_donor(fund_id, user_id, session)
+    else:
+        donor: Donor = donors[0]
+    donor.payed += sum_money
+    donor.payed_date = date.today()
+    session.commit()
+    return True
+

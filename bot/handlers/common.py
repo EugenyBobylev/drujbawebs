@@ -1,17 +1,16 @@
 import json
 from queue import Queue
 
-from aiogram import types, Dispatcher, Bot
+from aiogram import types, Dispatcher
 from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from aiogram.utils.deep_linking import get_start_link
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult, UserInfo
 from config import Config
-from db.bl import get_session, UserStatus
+from db.bl import UserStatus
 from utils import is_number, calc_payment_sum
 
 bot_config = Config()
@@ -38,7 +37,12 @@ class Steps(StatesGroup):
     tg_17 = State()
     tg_18 = State()
     tg_19 = State()  # форма главного меню User
-    s_11 = State()  # экран приветствия анонимного донора
+    s_1 = State()    # экран приветствия донора
+    s_11 = State()   # экран приветствия анонимного донора
+    s_2 = State()
+    s_3 = State()    # экран с информацией о карте для приема денег
+    s_4 = State()    # экран для ввода суммы перевода
+    s_5 = State()    # экран где благодарим за перевод
 
     fund_info = State()
     reg_company = State()
@@ -133,8 +137,28 @@ def user_menu_keyboard():
 def anonymous_donor_menu():
     buttons = [
         InlineKeyboardButton(text="Заполнить анкету", callback_data='reg_user'),
-        InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='donor_without_reg'),
+        InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='accept_fund'),
+        InlineKeyboardButton(text="Отклонить предложение", callback_data='decline_offer'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def decline_offer_menu():
+    buttons = [
+        InlineKeyboardButton(text="Заполнить анкету", callback_data='reg_user'),
+        InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='accept_fund'),
         InlineKeyboardButton(text="Покинуть сбор", callback_data='leave_fund'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def sent_money_menu():
+    buttons = [
+        InlineKeyboardButton(text="Отправил", callback_data='sent_money'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -227,6 +251,8 @@ async def start_anonymous_donor(message: types.Message, args: str, state: FSMCon
     user_id = message.chat.id
     await _remove_all_messages(user_id)
     fund_id = args.replace('fund_', '')
+    await state.update_data(fund_id=fund_id)
+
     msg = db.about_fund_info(fund_id)
     keyboard = anonymous_donor_menu()
 
@@ -481,7 +507,9 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
     user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
     await state.update_data(user_status=user_status)
 
-    if user_status == UserStatus.TrialUser:
+    if user_status == UserStatus.Visitor:
+        await start_visitor(call.message, state)
+    elif user_status == UserStatus.TrialUser:
         await start_trial_user(call.message, state)
     elif user_status == UserStatus.User:
         await start_user(call.message, state)
@@ -551,6 +579,72 @@ async def payment_step_3(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
+async def query_decline_offer(call: types.CallbackQuery, state: FSMContext):
+    """
+    User click <Отклонить предложение> on anonymous_donor_menu
+    """
+    await call.message.delete()
+    keyboard = decline_offer_menu()
+
+    await state.set_state(Steps.s_11)
+    msg = 'Вы отказались от участия в сборе.\nВозможно, случайно.\n\nХотите принять приглашение и начать участвовать?'
+    _msg = await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def query_accept_fund(call: types.CallbackQuery, state: FSMContext):
+    """
+    Участвовать в сборе (без регистрации)
+    """
+    await call.message.delete()
+    user_id = call.message.chat.id
+    user_data = await state.get_data()
+    fund_id = user_data.get('fund_id')
+
+    keyboard = sent_money_menu()
+    msg = db.transfer_fund_info(fund_id)
+
+    await state.set_state(Steps.s_3)
+    _msg = await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+
+
+async def query_sent_money(call: types.CallbackQuery, state: FSMContext):
+    """
+    вводим сумму перевода
+    """
+    await call.message.delete()
+    user_data = await state.get_data()
+    msg = 'Пожалуйста, введите сумму, которую вы перевели для того, чтобы я ее учла.'
+    await state.set_state(Steps.s_4)
+    _msg = await call.message.answer(msg, parse_mode=ParseMode.HTML)
+    msgs.put(_msg)
+
+
+async def sent_money_2(message: types.Message, state: FSMContext):
+    # state s_4
+    await message.delete()
+    await _remove_all_messages(message.chat.id)
+
+    ok = is_number(message.text)
+    if not ok:
+        _msg = await message.answer('Нужно ввести число, попробуйте еще раз.' )
+        msgs.put(_msg)
+        return
+
+    user_id = message.from_user.id
+    user_data = await state.get_data()
+    fund_id = user_data.get('fund_id')
+    sum_money = int(message.text)
+    user_name = f'{message.from_user.first_name} {message.from_user.last_name} (@{message.from_user.username})'
+    db.save_money_transfer(fund_id, user_id, user_name, sum_money)
+
+    keyboard = go_menu_keyboard()
+    msg = f'Спасибо, вы отличный друг!'
+    await state.set_state(Steps.s_5)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
@@ -580,3 +674,11 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(show_fund_link, state=Steps.tg_4)
 
     dp.register_message_handler(payment_step_3, state=Steps.tg_9)
+
+    dp.register_callback_query_handler(query_decline_offer, lambda c: c.data == 'decline_offer', state=Steps.s_11)
+
+    dp.register_callback_query_handler(query_accept_fund, state=[Steps.s_1, Steps.s_2, Steps.s_11])
+
+    dp.register_callback_query_handler(query_sent_money, state=[Steps.s_3])
+
+    dp.register_message_handler(sent_money_2, state=Steps.s_4)

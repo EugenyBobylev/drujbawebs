@@ -106,6 +106,7 @@ class Fundraising(Base):
     event_place = mapped_column(String, default='')     # место проведения мероприятия
     event_dresscode = mapped_column(String, default='')  # дресс-код
     invite_url = mapped_column(String, nullable=False, default='')  # ссылка приглашения для участия в сборе
+    chat_url = mapped_column(String, default='')        # ссылка на чат
 
     owner = relationship('Account', back_populates='fundraisings')  # лицо ответственное за сбор
     donors = relationship('Donor')
