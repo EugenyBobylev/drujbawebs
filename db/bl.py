@@ -89,7 +89,7 @@ def _insert_user(user_id: int, session: Session, **kvargs) -> User:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
     if user:
-        user = _update_user(user_id, session, **kvargs)
+        return user
     else:
         user = User(id=user_id)
         for field in User.get_fields():
@@ -1031,17 +1031,19 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
     session = get_session()
     is_registered: bool = _is_user_registered(user_id, session)
 
-    if not is_registered:
-        return UserStatus.Visitor if not has_invite_url else UserStatus.AnonymousDonor
+    if not is_registered and has_invite_url:
+        return UserStatus.AnonymousDonor
+    if is_registered and has_invite_url:
+        return UserStatus.Donor
+
+    if not is_registered and not has_invite_url:
+        return UserStatus.Visitor
 
     user_account = _get_user_account(user_id, session)
     if user_account is not None:
         payment_count = _get_payments_count(user_account.id, session)
         if payment_count > 0:
             return UserStatus.User
-        trial_fund_id = get_trial_fund_id(user_id)
-        if trial_fund_id is None:
-            return UserStatus.Visitor
         return UserStatus.TrialUser
 
     companies = _get_user_companies(user_id, session)
@@ -1051,9 +1053,6 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
 
     account = _get_account(account_id, session)
     assert account is not None
-
-    if has_invite_url:
-        return UserStatus.Donor
 
     if account.user_id is not None and account.company_id is None:  # TrialUser or User
         payments_count = _get_payments_count(account_id, session)
@@ -1163,6 +1162,39 @@ def about_fund_info(fund_id) -> str:
     msg += f'Время: {fund.congratulation_time}\n' if fund.congratulation_time else ''
     msg += f'Где поздравляем: {fund.event_place}\n' if fund.event_place else ''
     msg += f'Дресс-код: {fund.event_dresscode}\n' if fund.event_dresscode else ''
-    msg += '\nПожалуйста, заполните анкету для регистрации.\n'
-    msg += '\nТак вы сможете участвовать в других сборах, а я напомню друзьям, когда у вас день рождения.'
     return msg
+
+
+def transfer_fund_info(fund_id) -> str:
+    session = get_session()
+    fund: Fundraising = _get_fundraising(fund_id, session)
+    avg_sum = _get_fund_avg_sum(fund_id, session)
+
+    msg = f'Другие участники уже сдали на подарок в среднем по {avg_sum} руб>. Присоединяйтесь.\n\n'
+    msg += f'Отправить деньги на подарок можно сюда:\n{fund.transfer_info}\n\n'
+    msg += f'Поучаствовать в обсуждении можно в этом чате, созданном специально для этого сбора:\n\n{fund.chat_url}'
+    return msg
+
+
+def save_money_transfer(fund_id: int, user_id: int, user_name: str, sum_money: int) -> bool:
+    """
+    Записать перевод донора
+    :param fund_id: сбор
+    :param user_id: донор
+    :param user_name: имя анонимного донора
+    :param sum_money: сумма перевода
+    :return:
+    """
+    session = get_session()
+    fund: Fundraising = _get_fundraising(fund_id, session)
+    donors = [d for d in fund.donors if d.user_id == user_id]
+    if len(donors) == 0:
+        user = _insert_user(user_id, session, name=user_name)
+        donor: Donor = _insert_donor(fund_id, user_id, session)
+    else:
+        donor: Donor = donors[0]
+    donor.payed += sum_money
+    donor.payed_date = date.today()
+    session.commit()
+    return True
+
