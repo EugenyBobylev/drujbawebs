@@ -159,11 +159,31 @@ def anonymous_donor_menu():
     return keyboard
 
 
+def donor_menu():
+    buttons = [
+        InlineKeyboardButton(text="Принять предложение", callback_data='accept_fund'),
+        InlineKeyboardButton(text="Отклонить предложение", callback_data='decline_offer'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def decline_offer_menu():
     url1 = f'{bot_config.base_url}UserRegistration'
     buttons = [
         InlineKeyboardButton(text="Заполнить анкету", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='accept_fund'),
+        InlineKeyboardButton(text="Покинуть сбор", callback_data='go_menu'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def decline_offer_menu2():
+    buttons = [
+        InlineKeyboardButton(text="Принять предложение", callback_data='accept_fund'),
         InlineKeyboardButton(text="Покинуть сбор", callback_data='go_menu'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
@@ -276,9 +296,26 @@ async def start_anonymous_donor(message: types.Message, args: str, state: FSMCon
     await state.update_data(fund_id=fund_id)
 
     msg = db.about_fund_info(fund_id)
+    msg += '\nПожалуйста, заполните анкету для регистрации.\n'
+    msg += '\nТак вы сможете участвовать в других сборах, а я напомню друзьям, когда у вас день рождения.'
     keyboard = anonymous_donor_menu()
 
     await state.set_state(Steps.s_11)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def start_donor(message: types.Message, args, state: FSMContext):
+    user_id = message.chat.id
+    await _remove_all_messages(user_id)
+    fund_id = args.replace('fund_', '')
+    await state.update_data(fund_id=fund_id)
+
+    msg = f'Здравствуйте.\nНапомню, что я - Дружба, бот-помощник для сбора на подарки.\n\n'
+    msg += db.about_fund_info(fund_id)
+    keyboard = donor_menu()
+
+    await state.set_state(Steps.s_1)
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
@@ -316,7 +353,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
         await message.answer(f'user_status={user_status}, находится в разработке')
         return
     if user_status == UserStatus.Donor:
-        await message.answer(f'user_status={user_status}, находится в разработке')
+        await start_donor(message, args, state)
         return
     if user_status == UserStatus.AnonymousDonor:
         await start_anonymous_donor(message, args, state)
@@ -605,10 +642,17 @@ async def payment_step_3(message: types.Message, state: FSMContext):
 
 async def query_decline_offer(call: types.CallbackQuery, state: FSMContext):
     """
-    User click <Отклонить предложение> on anonymous_donor_menu
+    User click <Отклонить предложение> on anonymous_donor_menu or donor_menu
     """
     await call.message.delete()
-    keyboard = decline_offer_menu()
+    user_data = await state.get_data()
+    user_status: UserStatus = user_data.get('user_status')
+
+    keyboard = None
+    if user_status == UserStatus.AnonymousDonor:
+        keyboard = decline_offer_menu()
+    if user_status == UserStatus.Donor:
+        keyboard = decline_offer_menu2()
 
     await state.set_state(Steps.s_11)
     msg = 'Вы отказались от участия в сборе.\nВозможно, случайно.\n\nХотите принять приглашение и начать участвовать?'
@@ -730,7 +774,8 @@ def register_handlers_common(dp: Dispatcher):
 
     dp.register_message_handler(payment_step_3, state=Steps.tg_9)
 
-    dp.register_callback_query_handler(query_decline_offer, lambda c: c.data == 'decline_offer', state=Steps.s_11)
+    dp.register_callback_query_handler(query_decline_offer, lambda c: c.data == 'decline_offer',
+                                       state=[Steps.s_1, Steps.s_11])
 
     dp.register_callback_query_handler(query_accept_fund, state=[Steps.s_1, Steps.s_2, Steps.s_11])
 

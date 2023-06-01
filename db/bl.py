@@ -1162,8 +1162,6 @@ def about_fund_info(fund_id) -> str:
     msg += f'Время: {fund.congratulation_time}\n' if fund.congratulation_time else ''
     msg += f'Где поздравляем: {fund.event_place}\n' if fund.event_place else ''
     msg += f'Дресс-код: {fund.event_dresscode}\n' if fund.event_dresscode else ''
-    msg += '\nПожалуйста, заполните анкету для регистрации.\n'
-    msg += '\nТак вы сможете участвовать в других сборах, а я напомню друзьям, когда у вас день рождения.'
     return msg
 
 
