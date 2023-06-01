@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -5,6 +6,10 @@ import re
 from datetime import date
 from operator import itemgetter
 from urllib.parse import parse_qsl
+
+from aiogram import Bot
+
+from config import Config
 
 
 def check_webapp_signature(token: str, init_data: str) -> bool:
@@ -81,3 +86,11 @@ def calc_payment_sum(count: int):
     if count >= 100:
         return count * 100
     return 0
+
+
+async def get_bot_url() -> str:
+    token = Config().token
+    bot = Bot(token)
+    bot_me = await bot.get_me()
+    bot_url = f'https://t.me/{bot_me.username}'
+    return bot_url

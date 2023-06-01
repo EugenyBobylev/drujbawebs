@@ -1,3 +1,4 @@
+import asyncio
 import json
 import urllib
 import urllib.parse
@@ -17,7 +18,7 @@ from backend.models import User, Fundraising, WebAppInitData, PaymentResult
 from backend.telegram_api import send_payment_message
 from config import Config
 from db import Account
-from utils import check_webapp_signature, decode_base64_str
+from utils import check_webapp_signature, decode_base64_str, get_bot_url
 
 config = Config()
 app = FastAPI()
@@ -305,7 +306,8 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
     """
     Create new user's fundraising (event)
     """
-    fund: Fundraising = db.create_private_fundraising(user_id, fund)
+    bot_url = asyncio.run(get_bot_url())
+    fund: Fundraising = db.create_private_fundraising(user_id, fund, bot_url)
     assert fund is not None
 
     web_init = WebAppInitData.form_auth_header(authorization)
