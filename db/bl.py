@@ -1031,17 +1031,19 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
     session = get_session()
     is_registered: bool = _is_user_registered(user_id, session)
 
-    if not is_registered:
-        return UserStatus.Visitor if not has_invite_url else UserStatus.AnonymousDonor
+    if not is_registered and has_invite_url:
+        return UserStatus.AnonymousDonor
+    if is_registered and has_invite_url:
+        return UserStatus.Donor
+
+    if not is_registered and not has_invite_url:
+        return UserStatus.Visitor
 
     user_account = _get_user_account(user_id, session)
     if user_account is not None:
         payment_count = _get_payments_count(user_account.id, session)
         if payment_count > 0:
             return UserStatus.User
-        trial_fund_id = get_trial_fund_id(user_id)
-        if trial_fund_id is None:
-            return UserStatus.Visitor
         return UserStatus.TrialUser
 
     companies = _get_user_companies(user_id, session)
@@ -1051,9 +1053,6 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
 
     account = _get_account(account_id, session)
     assert account is not None
-
-    if has_invite_url:
-        return UserStatus.Donor
 
     if account.user_id is not None and account.company_id is None:  # TrialUser or User
         payments_count = _get_payments_count(account_id, session)
@@ -1184,6 +1183,7 @@ def save_money_transfer(fund_id: int, user_id: int, user_name: str, sum_money: i
     Записать перевод донора
     :param fund_id: сбор
     :param user_id: донор
+    :param user_name: имя анонимного донора
     :param sum_money: сумма перевода
     :return:
     """

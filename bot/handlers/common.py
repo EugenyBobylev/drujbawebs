@@ -43,6 +43,7 @@ class Steps(StatesGroup):
     s_3 = State()    # экран с информацией о карте для приема денег
     s_4 = State()    # экран для ввода суммы перевода
     s_5 = State()    # экран где благодарим за перевод
+    s_6 = State()    # экран после регистрации анонимного донора
 
     fund_info = State()
     reg_company = State()
@@ -60,6 +61,18 @@ async def _remove_all_messages(chat_id: int):
 
 def visitor_keyboard():
     url1 = f'{bot_config.base_url}UserRegistration'
+    url2 = f'{bot_config.base_url}/webapp/templates/index'
+    buttons = [
+        InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
+        InlineKeyboardButton(text="Зарегистрировать компанию", web_app=types.WebAppInfo(url=url2)),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def create_fund_keyboard():
+    url1 = f'{bot_config.base_url}FeeCreation'
     url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
         InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
@@ -135,8 +148,9 @@ def user_menu_keyboard():
 
 
 def anonymous_donor_menu():
+    url1 = f'{bot_config.base_url}UserRegistration'
     buttons = [
-        InlineKeyboardButton(text="Заполнить анкету", callback_data='reg_user'),
+        InlineKeyboardButton(text="Заполнить анкету", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='accept_fund'),
         InlineKeyboardButton(text="Отклонить предложение", callback_data='decline_offer'),
     ]
@@ -146,10 +160,11 @@ def anonymous_donor_menu():
 
 
 def decline_offer_menu():
+    url1 = f'{bot_config.base_url}UserRegistration'
     buttons = [
-        InlineKeyboardButton(text="Заполнить анкету", callback_data='reg_user'),
+        InlineKeyboardButton(text="Заполнить анкету", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='accept_fund'),
-        InlineKeyboardButton(text="Покинуть сбор", callback_data='leave_fund'),
+        InlineKeyboardButton(text="Покинуть сбор", callback_data='go_menu'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -219,12 +234,19 @@ async def start_visitor(message: types.Message, state: FSMContext):
 
 async def start_trial_user(message: types.Message, state: FSMContext):
     await _remove_all_messages(message.chat.id)
-    # await message.delete()
     name = db.get_user_name(message.chat.id)
-    msg = db.get_message_text('trial_menu').format(name=name)
-    keyboard = trial_user_menu_keyboard()
+    user_data = await state.get_data()
+    fund_id = user_data.get('fund_id')
 
-    await state.set_state(Steps.tg_13)
+    if fund_id is not None:
+        keyboard = trial_user_menu_keyboard()
+        msg = db.get_message_text('trial_menu').format(name=name)
+        await state.set_state(Steps.tg_13)
+    else:
+        keyboard = create_fund_keyboard()   # идем по пути Посетителя
+        msg = db.get_message_text('start_message')
+        await state.set_state(Steps.tg_3)
+
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
@@ -269,7 +291,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await state.finish()
 
     args = message.get_args()
-    has_invite_url = len(args) > 0
+    has_invite_url = args is not None and len(args) > 0
 
     user_id = message.from_user.id
     user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=has_invite_url)
@@ -503,6 +525,8 @@ async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> 
 
 async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> types.Message:
     await call.message.delete()
+    await state.finish()
+
     user_id = call.from_user.id
     user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
     await state.update_data(user_status=user_status)
@@ -608,6 +632,32 @@ async def query_accept_fund(call: types.CallbackQuery, state: FSMContext):
     _msg = await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 
+async def webapp_reg_user(message: types.Message, state: FSMContext):
+    """
+    Участвовать в сборе после регистрации анонимного донора. Он уже просто донор
+    :param message:
+    :param state:
+    :return:
+    """
+    # state s_11
+    await message.delete()
+    await _remove_all_messages(message.from_user.id)
+
+    items = message.text.split('&')
+    answer = json.loads(items[1])
+    if 'account_id' not in answer:
+        return
+
+    user_data = await state.get_data()
+    fund_id = user_data.get('fund_id')
+
+    keyboard = sent_money_menu()
+    msg = 'Ура, вы успешно зарегистрировались.\n\n' + db.transfer_fund_info(fund_id)
+
+    await state.set_state(Steps.s_6)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+
+
 async def query_sent_money(call: types.CallbackQuery, state: FSMContext):
     """
     вводим сумму перевода
@@ -645,6 +695,10 @@ async def sent_money_2(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
+async def query_reg_user(call: types.CallbackQuery, state: FSMContext):
+    pass
+
+
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
@@ -652,14 +706,15 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")
-
-    # start_trial_user
     dp.register_callback_query_handler(query_fund_info, lambda c: c.data == 'fund_info', state="*")
 
     dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
                                 state=Steps.tg_2)
     dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
                                 state=Steps.tg_3)
+    dp.register_message_handler(webapp_reg_user, filters.Text(startswith='webapp'),
+                                state=[Steps.s_11, Steps.s_2])
+
     dp.register_callback_query_handler(query_show_invite_link_continue, lambda c: c.data == 'go_back',
                                        state=Steps.tg_16)
     dp.register_callback_query_handler(query_show_main_menu, lambda c: c.data == 'go_back',
@@ -679,6 +734,6 @@ def register_handlers_common(dp: Dispatcher):
 
     dp.register_callback_query_handler(query_accept_fund, state=[Steps.s_1, Steps.s_2, Steps.s_11])
 
-    dp.register_callback_query_handler(query_sent_money, state=[Steps.s_3])
+    dp.register_callback_query_handler(query_sent_money, state=[Steps.s_3, Steps.s_6])
 
     dp.register_message_handler(sent_money_2, state=Steps.s_4)
