@@ -1,10 +1,11 @@
 import json
 from queue import Queue
 
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, Bot
 from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from aiogram.utils.deep_linking import get_start_link
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
@@ -37,6 +38,7 @@ class Steps(StatesGroup):
     tg_17 = State()
     tg_18 = State()
     tg_19 = State()  # форма главного меню User
+    s_11 = State()  # экран приветствия анонимного донора
 
     fund_info = State()
     reg_company = State()
@@ -128,6 +130,17 @@ def user_menu_keyboard():
     return keyboard
 
 
+def anonymous_donor_menu():
+    buttons = [
+        InlineKeyboardButton(text="Заполнить анкету", callback_data='reg_user'),
+        InlineKeyboardButton(text="Участвовать в сборе без регистрации", callback_data='donor_without_reg'),
+        InlineKeyboardButton(text="Покинуть сбор", callback_data='leave_fund'),
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def new_private_fund_keyboard():
     url1 = f'{bot_config.base_url}FeeCreation'
     buttons = [
@@ -210,6 +223,18 @@ async def start_user(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
+async def start_anonymous_donor(message: types.Message, args: str, state: FSMContext):
+    user_id = message.chat.id
+    await _remove_all_messages(user_id)
+    fund_id = args.replace('fund_', '')
+    msg = db.about_fund_info(fund_id)
+    keyboard = anonymous_donor_menu()
+
+    await state.set_state(Steps.s_11)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
 async def cmd_start(message: types.Message, state: FSMContext):
     """
     Точка входа в бот
@@ -217,8 +242,11 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await message.delete()
     await state.finish()
 
+    args = message.get_args()
+    has_invite_url = len(args) > 0
+
     user_id = message.from_user.id
-    user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=False)
+    user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=has_invite_url)
     await state.update_data(user_status=user_status)
     if user_status == UserStatus.Visitor:
         await start_visitor(message, state)
@@ -243,7 +271,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
         await message.answer(f'user_status={user_status}, находится в разработке')
         return
     if user_status == UserStatus.AnonymousDonor:
-        await message.answer(f'user_status={user_status}, находится в разработке')
+        await start_anonymous_donor(message, args, state)
         return
     await message.answer(f'Ошибка, не удалось определить статус пользователя (user_status={user_status})')
     return

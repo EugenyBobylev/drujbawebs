@@ -898,7 +898,7 @@ def remove_user_payments(user_id: int):
     session.commit()
 
 
-def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundraising | None:
+def create_private_fundraising(user_id: int, fund: ApiFundraising, bot_url: str) -> ApiFundraising | None:
     session = get_session()
     account = _get_user_account(user_id, session)
     assert account is not None
@@ -907,7 +907,7 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
     fund_data.pop('account_id', None)
     event: Fundraising = _insert_fundraising(account.id, session, **fund_data)
 
-    invite_url = f'https://t.me/bot_druzhba_bot?start=fund_{event.id}'
+    invite_url = f'{bot_url}?start=fund_{event.id}'
     event.invite_url = invite_url
     session.commit()
 
@@ -1141,3 +1141,28 @@ def add_account_payment(result: ApiPaymentResult):
         'transaction_id': result.transaction_id
     }
     _insert_payment(account_id, session, **data)
+
+
+def about_fund_info(fund_id) -> str:
+    """
+    сформировать экран приветствия донора, анонимного донора
+    :param fund_id:
+    :return:
+    """
+    session = get_session()
+    fund: Fundraising = _get_fundraising(fund_id, session)
+    account = _get_account(fund.account_id, session)
+    user_name = account.user.name
+
+    msg = f'Вас пригласил {user_name}, чтобы подготовить подарок.\n\n'
+    msg += f'Тип события: {fund.reason}\n' if fund.reason else ''
+    msg += f'Кому собираем: {fund.target}\n' if fund.target else ''
+    msg += f'Дата события: {fund.event_date}\n' if fund.event_date else ''
+    msg += f'Варианты подарков: {fund.gift_info}\n' if fund.gift_info else ''
+    msg += f'Дата поздравления: {fund.congratulation_date}\n' if fund.congratulation_date else ''
+    msg += f'Время: {fund.congratulation_time}\n' if fund.congratulation_time else ''
+    msg += f'Где поздравляем: {fund.event_place}\n' if fund.event_place else ''
+    msg += f'Дресс-код: {fund.event_dresscode}\n' if fund.event_dresscode else ''
+    msg += '\nПожалуйста, заполните анкету для регистрации.\n'
+    msg += '\nТак вы сможете участвовать в других сборах, а я напомню друзьям, когда у вас день рождения.'
+    return msg

@@ -1,3 +1,4 @@
+import asyncio
 import os
 import urllib
 from datetime import datetime, date
@@ -6,7 +7,7 @@ from pathlib import Path
 
 from backend.models import WebAppInitData
 from config import Config
-from utils import re_search, check_webapp_signature, decode_base64_str
+from utils import re_search, check_webapp_signature, decode_base64_str, get_bot_url
 import urllib.parse
 
 decoded_auth = 'query_id=AAHHSWsHAAAAAMdJawcUaqMP' \
@@ -101,3 +102,9 @@ def test_loguru():
     logger.info('Новое сообщение в лог')
 
     assert Path(log_path).exists()
+
+
+def test_get_bot_url():
+    url = asyncio.run(get_bot_url())
+    assert url is not None
+    assert url == f'https://t.me/conceptuibot'
