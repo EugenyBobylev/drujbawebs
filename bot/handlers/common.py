@@ -1,7 +1,7 @@
 import json
 from queue import Queue
 
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, Bot
 from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
@@ -242,6 +242,12 @@ async def closed_fund_info_keyboard(state: FSMContext):
     return keyboard
 
 
+async  def send_message(chat_id, text, **kwargs):
+    bot = Bot.get_current()
+    _msg = await bot.send_message(chat_id, text, **kwargs)
+    return _msg
+
+
 async def start_visitor(message: types.Message, state: FSMContext):
     # user_data = await state.get_data()
     # user_status = user_data['user_status']
@@ -253,16 +259,17 @@ async def start_visitor(message: types.Message, state: FSMContext):
     await state.set_state(Steps.tg_2)
 
 
-async def start_trial_user(message: types.Message, state: FSMContext):
-    await _remove_all_messages(message.chat.id)
+async def start_trial_user(chat_id, state: FSMContext):
+    await _remove_all_messages(chat_id)
 
-    user_id = message.from_user.id
+    user_id = chat_id
     fund_id = db.get_trial_fund_id(user_id)
     account: Account = db.get_api_user_account(user_id)
+    await state.update_data(user_id=user_id)
     await state.update_data(account_id=account.id)
     await state.update_data(fund_id=fund_id)
 
-    name = db.get_user_name(message.chat.id)
+    name = db.get_user_name(user_id)
     if fund_id is not None:
         keyboard = trial_user_menu_keyboard()
         msg = db.get_message_text('trial_menu').format(name=name)
@@ -272,12 +279,12 @@ async def start_trial_user(message: types.Message, state: FSMContext):
         msg = db.get_message_text('start_message')
         await state.set_state(Steps.tg_3)
 
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
-async def start_user(message: types.Message, state: FSMContext):
-    user_id = message.chat.id
+async def start_user(chat_id: str, state: FSMContext):
+    user_id = chat_id
     await _remove_all_messages(user_id)
     name = db.get_user_name(user_id)
     user_info: UserInfo = db.get_user_info(user_id)
@@ -290,16 +297,12 @@ async def start_user(message: types.Message, state: FSMContext):
     keyboard = user_menu_keyboard()
 
     await state.set_state(Steps.tg_19)
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
-async def cmd_test1(message: types.Message, state: FSMContext):
-    await start_trial_user(message, state)
-
-
-async def start_anonymous_donor(message: types.Message, args: str, state: FSMContext):
-    user_id = message.chat.id
+async def start_anonymous_donor(chat_id: str, args: str, state: FSMContext):
+    user_id = chat_id
     await _remove_all_messages(user_id)
     fund_id = args.replace('fund_', '')
     await state.update_data(fund_id=fund_id)
@@ -310,12 +313,13 @@ async def start_anonymous_donor(message: types.Message, args: str, state: FSMCon
     keyboard = anonymous_donor_menu()
 
     await state.set_state(Steps.s_11)
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    bot = Bot.get_current()
+    _msg = await bot.send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
-async def start_donor(message: types.Message, args, state: FSMContext):
-    user_id = message.chat.id
+async def start_donor(chat_id, args, state: FSMContext):
+    user_id = chat_id
     await _remove_all_messages(user_id)
     fund_id = args.replace('fund_', '')
     await state.update_data(fund_id=fund_id)
@@ -325,7 +329,7 @@ async def start_donor(message: types.Message, args, state: FSMContext):
     keyboard = donor_menu()
 
     await state.set_state(Steps.s_1)
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
@@ -340,6 +344,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     has_invite_url = args is not None and len(args) > 0
 
     user_id = message.from_user.id
+    await state.update_data(user_id=user_id)
     user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=has_invite_url)
     await state.update_data(user_status=user_status)
 
@@ -348,11 +353,11 @@ async def cmd_start(message: types.Message, state: FSMContext):
         return
 
     if user_status == UserStatus.TrialUser:
-        await start_trial_user(message, state)
+        await start_trial_user(user_id, state)
         return
 
     if user_status == UserStatus.User:
-        await start_user(message, state)
+        await start_user(user_id, state)
         return
 
     if user_status == UserStatus.Admin:
@@ -360,11 +365,11 @@ async def cmd_start(message: types.Message, state: FSMContext):
         return
 
     if user_status == UserStatus.Donor:
-        await start_donor(message, args, state)
+        await start_donor(user_id, args, state)
         return
 
     if user_status == UserStatus.AnonymousDonor:
-        await start_anonymous_donor(message, args, state)
+        await start_anonymous_donor(user_id, args, state)
         return
 
     await message.answer(f'Ошибка, не удалось определить статус пользователя (user_status={user_status})')
@@ -573,15 +578,16 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
     await state.finish()
 
     user_id = call.from_user.id
+    await state.update_data(user_id=user_id)
     user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
     await state.update_data(user_status=user_status)
 
     if user_status == UserStatus.Visitor:
-        await start_visitor(call.message, state)
+        await start_visitor(user_id, state)
     elif user_status == UserStatus.TrialUser:
-        await start_trial_user(call.message, state)
+        await start_trial_user(user_id, state)
     elif user_status == UserStatus.User:
-        await start_user(call.message, state)
+        await start_user(user_id, state)
 
 
 async def start_payment(message: types.Message, state: FSMContext):
@@ -755,7 +761,6 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
     dp.register_message_handler(cmd_reset_payments, commands="reset_payments", state="*")
-    dp.register_message_handler(cmd_test1, commands="test1", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")

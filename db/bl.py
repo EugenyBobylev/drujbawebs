@@ -1005,7 +1005,12 @@ def update_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
     :param api_fund: данные для корректировки
     """
     session = get_session()
-    kvargs = api_fund.dict()
+    kvargs: dict = api_fund.dict()
+    # Эти поля пользователь не должен изменять, FK не даст изменить _update_fundraising
+    kvargs.pop('start', None)
+    kvargs.pop('stop', None)
+    kvargs.pop('invite_url', None)
+    kvargs.pop('chat_url', None)
     fund = _update_fundraising(fund_id, session, **kvargs)
     return fund is not None
 
