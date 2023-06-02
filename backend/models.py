@@ -101,6 +101,7 @@ class Fundraising(BaseModel):
     event_place: str = None           # место проведения мероприятия
     event_dresscode: str = ''  # дресс-код
     invite_url: str = ''       # ссылка приглашения для участия в сборе
+    chat_url: str = ''         # ссылка на чат
 
     @classmethod
     def get_empty(cls):

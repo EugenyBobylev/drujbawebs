@@ -306,9 +306,9 @@ def create_private_event(user_id: int, fund: Fundraising, authorization: str | N
     """
     Create new user's fundraising (event)
     """
-    bot_url = asyncio.run(get_bot_url())
-    fund: Fundraising = db.create_private_fundraising(user_id, fund, bot_url)
+    fund: Fundraising = db.create_private_fundraising(user_id, fund)
     assert fund is not None
+    db.run_fun(fund.id)
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
