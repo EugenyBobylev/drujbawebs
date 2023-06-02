@@ -6,6 +6,7 @@ from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from aiogram.utils.exceptions import MessageToDeleteNotFound
+from telethon.tl.types import Message
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult, UserInfo
@@ -254,10 +255,14 @@ async def start_visitor(message: types.Message, state: FSMContext):
 
 async def start_trial_user(message: types.Message, state: FSMContext):
     await _remove_all_messages(message.chat.id)
-    name = db.get_user_name(message.chat.id)
-    user_data = await state.get_data()
-    fund_id = user_data.get('fund_id')
 
+    user_id = message.from_user.id
+    fund_id = db.get_trial_fund_id(user_id)
+    account: Account = db.get_api_user_account(user_id)
+    await state.update_data(account_id=account.id)
+    await state.update_data(fund_id=fund_id)
+
+    name = db.get_user_name(message.chat.id)
     if fund_id is not None:
         keyboard = trial_user_menu_keyboard()
         msg = db.get_message_text('trial_menu').format(name=name)
@@ -287,6 +292,10 @@ async def start_user(message: types.Message, state: FSMContext):
     await state.set_state(Steps.tg_19)
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
+
+
+async def cmd_test1(message: types.Message, state: FSMContext):
+    await start_trial_user(message, state)
 
 
 async def start_anonymous_donor(message: types.Message, args: str, state: FSMContext):
@@ -333,15 +342,12 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=has_invite_url)
     await state.update_data(user_status=user_status)
+
     if user_status == UserStatus.Visitor:
         await start_visitor(message, state)
         return
 
     if user_status == UserStatus.TrialUser:
-        fund_id = db.get_trial_fund_id(user_id)
-        account: Account = db.get_api_user_account(user_id)
-        await state.update_data(account_id=account.id)
-        await state.update_data(fund_id=fund_id)
         await start_trial_user(message, state)
         return
 
@@ -352,14 +358,16 @@ async def cmd_start(message: types.Message, state: FSMContext):
     if user_status == UserStatus.Admin:
         await message.answer(f'user_status={user_status}, находится в разработке')
         return
+
     if user_status == UserStatus.Donor:
         await start_donor(message, args, state)
         return
+
     if user_status == UserStatus.AnonymousDonor:
         await start_anonymous_donor(message, args, state)
         return
+
     await message.answer(f'Ошибка, не удалось определить статус пользователя (user_status={user_status})')
-    return
 
 
 async def cmd_reset(message: types.Message, state: FSMContext):
@@ -747,6 +755,7 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
     dp.register_message_handler(cmd_reset_payments, commands="reset_payments", state="*")
+    dp.register_message_handler(cmd_test1, commands="test1", state="*")
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")

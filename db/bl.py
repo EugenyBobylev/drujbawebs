@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, timedelta
 from enum import Enum
 
@@ -13,7 +14,7 @@ from backend import UserInfo as ApiUserInfo
 from config import Config
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
-from utils import get_days_left
+from utils import get_days_left, get_bot_url
 
 
 def get_engine() -> Engine:
@@ -860,10 +861,18 @@ def get_api_user_account(user_id: int) -> ApiAccount | None:
 
 
 def remove_user(user_id: int):
+    """
+    Удалить из БД пользователя
+    """
     session = get_session()
     user: User = _get_user(user_id, session)
+    if user is None:
+        return
 
     account: Account = user.account
+    if account is None:
+        return
+
     for payment in account.payments:    # удалить платежи
         session.delete(payment)
 
@@ -900,26 +909,50 @@ def remove_user_payments(user_id: int):
     session.commit()
 
 
-def create_private_fundraising(user_id: int, fund: ApiFundraising, bot_url: str) -> ApiFundraising | None:
+def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundraising | None:
+    """
+    Создать сбор
+    :param user_id: пользователь
+    :param fund: данные о создаваемом сборе
+    :param bot_url:
+    :return:
+    """
     session = get_session()
     account = _get_user_account(user_id, session)
     assert account is not None
 
     fund_data = fund.dict()
     fund_data.pop('account_id', None)
-    event: Fundraising = _insert_fundraising(account.id, session, **fund_data)
+    fund: Fundraising = _insert_fundraising(account.id, session, **fund_data)
 
-    invite_url = f'{bot_url}?start=fund_{event.id}'
-    event.invite_url = invite_url
+    bot_url = asyncio.run(get_bot_url())
+    invite_url = f'{bot_url}?start=fund_{fund.id}'
+    fund.invite_url = invite_url
     session.commit()
 
-    fund: ApiFundraising = ApiFundraising(id=event.id, reason=event.reason, target=event.target,
-                                          account_id=event.account_id, start=event.start, end=event.end,
-                                          event_date=event.event_date, transfer_info=event.transfer_info,
-                                          gift_info=event.gift_info, congratulation_date=event.congratulation_date,
-                                          congratulation_time=event.congratulation_time, event_place=event.event_place,
-                                          event_dresscode=event.event_dresscode, invite_url=invite_url)
+    fund: ApiFundraising = ApiFundraising(id=fund.id, reason=fund.reason, target=fund.target,
+                                          account_id=fund.account_id, start=fund.start, end=fund.end,
+                                          event_date=fund.event_date, transfer_info=fund.transfer_info,
+                                          gift_info=fund.gift_info, congratulation_date=fund.congratulation_date,
+                                          congratulation_time=fund.congratulation_time, event_place=fund.event_place,
+                                          event_dresscode=fund.event_dresscode, invite_url=invite_url)
     return fund
+
+
+def run_fun(fund_id: int) -> bool:
+    session = get_session()
+    fund: Fundraising = _get_fundraising(fund_id,session)
+    if fund is None:
+        return False
+    if fund.start is not None:
+        return False
+    if fund.owner.payed_events < 1:
+        return False
+
+    fund.start = date.today()
+    fund.owner.payed_events -= 1
+    session.commit()
+    return True
 
 
 def get_trial_fund_id(user_id) -> int | None:
