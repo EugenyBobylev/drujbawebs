@@ -1,12 +1,22 @@
+import asyncio
 import json
+import os
 from dataclasses import dataclass
+from pathlib import Path
 
+import anyio
+from anyio import from_thread
 from telethon import TelegramClient, password
-from telethon.errors import UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError
+from telethon.errors import UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError, SrpIdInvalidError
 from telethon.tl.functions.account import GetPasswordRequest
 from telethon.tl.functions.channels import CreateChannelRequest, GetParticipantsRequest, EditCreatorRequest
 from telethon.tl.functions.messages import ExportChatInviteRequest
 from telethon.tl.types import ChannelParticipantsSearch
+
+script_path = os.path.abspath(__file__)
+work_dir = str(Path(script_path).parent)
+files = os.listdir(work_dir)
+json_files = [work_dir + '/' + f for f in files if os.path.isfile(work_dir + '/' + f) if f.endswith('.json')]
 
 
 @dataclass
@@ -39,7 +49,7 @@ async def _send_message(client: TelegramClient):
     await client.send_message("@BobylevEA", 'Privet')
 
 
-async def get_channel_link(channel_id: int, client: TelegramClient)-> str:
+async def get_channel_link(channel_id: int, client: TelegramClient) -> str:
     invite = await client(ExportChatInviteRequest(peer=channel_id))
     channel_link = invite.link
     return channel_link
@@ -75,17 +85,20 @@ async def _get_all_channels(client: TelegramClient) -> list:
 async def _change_channel_owner(channel_id: int, owner_password: str, client: TelegramClient) -> bool:
     await client.connect()
     try:
-        users = await client(GetParticipantsRequest(channel_id, ChannelParticipantsSearch(''), limit=2, offset=0, hash=0))
+        users = await client(GetParticipantsRequest(channel_id,
+                                                    ChannelParticipantsSearch(''), limit=2, offset=0, hash=0))
         users = users.participants
         if len(users) > 1:
             user_id = users[0].user_id
             pwd = await client(GetPasswordRequest())
             pwd_2 = password.compute_check(pwd, owner_password)
 
-            update = await client(EditCreatorRequest(channel_id, user_id, pwd_2))
+            await client(EditCreatorRequest(channel_id, user_id, pwd_2))
             await client.delete_dialog(channel_id)
             return True
-    except(UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError):
+        else:
+            return False
+    except(UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError, SrpIdInvalidError):
         return False
     finally:
         await client.disconnect()
@@ -94,55 +107,71 @@ async def _change_channel_owner(channel_id: int, owner_password: str, client: Te
 # ******************************************************
 # Logic for works with user chats
 # ******************************************************
-def create_chat(chat_name: str, about: str = '') -> str:
+def get_json_file() -> str:
+    json_file = json_files.pop(0)
+    json_files.append(json_file)
+    return json_file
+
+
+def get_chat_config(json_file: str) -> ChatConfig:
+    """
+    Вернуть данные пользователя телеграмм, от имени которого будем производить действия в дальнейшем
+    :return:
+    """
+    chat_config = ChatConfig.from_json(json_file)
+    return chat_config
+
+
+async def async_create_chat2(chat_name: str, about: str = '') -> str:
+    """
+    Создать чат и удалить из чата создателя, передав права владельца первому пользователю чата
+    """
+    json_file = get_json_file()
+    _config: ChatConfig = get_chat_config(json_file)
+
+    chat_url = await async_create_chat(chat_name, about, _config)
+    cnt = await async_change_chats_owners(_config)
+    return chat_url
+
+
+async def async_create_chat(chat_name: str, about: str = '', config: ChatConfig = None) -> str:
     """
     Создать чат
-    :param chat_name: наименование чата
-    :param about: описани чата
-    :return:
     """
     if about == '':
         about = chat_name
-    _config = ChatConfig.from_json('12016637512.json')
-    _client = _config.get_telegram_client()
-    with _client:
-        _chat_url = _client.loop.run_until_complete(
-            _create_channel(chat_name, about, _client)
-        )
+
+    json_file = get_json_file()
+    if config is None:
+        config = get_chat_config(json_file)
+    _client = config.get_telegram_client()
+    # with _client:
+    _chat_url = await _create_channel(chat_name, about, _client)
     return _chat_url
 
 
-def get_all_chats() -> list[str]:
+async def async_change_chats_owners(chat_config: ChatConfig) -> int:
     """
-    Вернуть список всех чатов пользователя
+    Выполнить передачу прав на чат пользователям чата
+    :return: кол. чатов, права на которые были переданы пользователям этих чатов
+    """
+    _cnt = 0
+    all_chats = await async_get_chats(chat_config)
+    pwd = chat_config.pwd
+
+    _client = chat_config.get_telegram_client()
+    for chat_id, _, _ in all_chats:
+        ok = await _change_channel_owner(chat_id, pwd, _client)
+        if ok:
+            _cnt += 1
+    return _cnt
+
+
+async def async_get_chats(chat_config: ChatConfig) -> list[str]:
+    """
+    Вернуть список всех чатов созданных пользователем из chat_config
     :return: (chat_id, chat_name, chat_url)
     """
-    _config = ChatConfig.from_json('12016637512.json')
-    _client = _config.get_telegram_client()
-    with _client:
-        all_chats = _client.loop.run_until_complete(_get_all_channels(_client))
+    _client = chat_config.get_telegram_client()
+    all_chats = await _get_all_channels(_client)
     return all_chats
-
-
-def change_chat_owner(chat_id: int) -> bool:
-    """
-    Удалить себя из чата, пеередав права на чат другому пользователю (тому кто первый вошел в чат)
-    :param chat_id:
-    :return: True or False
-    """
-    _config = ChatConfig.from_json('12016637512.json')
-    _client = _config.get_telegram_client()
-    with _client:
-        ok = _client.loop.run_until_complete(_change_channel_owner(chat_id, _config.pwd, _client))
-    return ok
-
-
-if __name__ == '__main__':
-    # chat_url = create_chat('8 Друзей Оушена', 'Обсуждаем друзей Оушена')
-    # print(chat_url)
-
-    all_channels = get_all_chats()
-    print(all_channels)
-
-    # ok = change_chat_owner(-1001861785717)
-    # print(ok)
