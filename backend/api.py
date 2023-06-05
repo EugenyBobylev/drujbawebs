@@ -128,6 +128,16 @@ async def get_private_fundraising_html(request: Request):
                                       context={'request': request, 'host': host}, headers=headers)
 
 
+@app.get('/CreateFund')
+async def get_fundraising_html(request: Request):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+    }
+    host = Config().base_url
+    context = {'request': request, 'host': host}
+    return templates.TemplateResponse('feeCreation.html', context=context, headers=headers)
+
+
 @app.get('/EventSettings/{fund_id}')
 async def get_fund_info(fund_id: int, request: Request):
     # Здесь какая-то херня (писал во время обострения отита)
@@ -301,7 +311,7 @@ def get_user_card_info(user_id: int, authorization: str | None = Header(convert_
 
 @app.post('/api/user/fundraising/{user_id}/')
 @auth
-def create_private_event(user_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+def create_fundraising(user_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
     """
     Create new user's fundraising (event)
     """

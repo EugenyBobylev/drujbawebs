@@ -134,9 +134,10 @@ def trial_user_menu_keyboard():
 
 
 def user_menu_keyboard():
+    url2 = f'{bot_config.base_url}CreateFund'
     buttons = [
         InlineKeyboardButton(text="Ваши сборы", callback_data='funds_info'),
-        InlineKeyboardButton(text="Создать новый сбор", callback_data='create_fund'),
+        InlineKeyboardButton(text="Создать новый сбор", web_app=types.WebAppInfo(url=url2)),
         InlineKeyboardButton(text="Редактировать анкету", callback_data='edit_user'),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
