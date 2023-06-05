@@ -1,11 +1,8 @@
-import asyncio
 import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
 
-import anyio
-from anyio import from_thread
 from telethon import TelegramClient, password
 from telethon.errors import UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError, SrpIdInvalidError
 from telethon.tl.functions.account import GetPasswordRequest
