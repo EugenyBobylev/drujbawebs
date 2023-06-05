@@ -163,6 +163,3 @@ cython_debug/
 alembic/remote_versions/
 alembic/versions/
 postgres_data/
-
-/chat/
-*.session

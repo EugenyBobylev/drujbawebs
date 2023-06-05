@@ -1,11 +1,15 @@
 import asyncio
 import os
+import random
+import tempfile
 import urllib
+import uuid
 from datetime import datetime, date
 import json
 from pathlib import Path
 
 from backend.models import WebAppInitData
+from chat.user_chat import async_create_chat2, async_create_chat, async_change_chats_owners
 from config import Config
 from utils import re_search, check_webapp_signature, decode_base64_str, get_bot_url
 import urllib.parse
@@ -108,3 +112,41 @@ def test_get_bot_url():
     url = asyncio.run(get_bot_url())
     assert url is not None
     assert url == f'https://t.me/conceptuibot'
+
+
+def test_read_all_files():
+    path = os.path.abspath(__file__)
+    work_dir = str(Path(path).parent)
+    files = os.listdir(work_dir)
+    files = [work_dir + '/' + f for f in files if os.path.isfile(work_dir + '/' + f) if f.endswith('.py')]
+
+    assert len(files) > 0
+    print(*files, sep="\n")
+
+
+def test_add_lists():
+    common_list = [0]
+    other_list = [1,2,3,4]
+    common_list = common_list + other_list
+
+    assert len(common_list) == 5
+
+
+def test_new_or_append():
+    with open('temp.txt', mode='a+', encoding='utf-8') as f:
+        f.write('first line\n')
+
+    with open('temp.txt', mode='a+', encoding='utf-8') as f:
+        f.write('second line\n')
+
+
+def test_create_chat():
+    chat_name='Тест'
+    about = 'тестовый чат который нужно удалить после создания'
+    chat_url = async_create_chat(chat_name, about)
+
+    assert chat_url is not None
+    assert len(chat_url) > 0
+
+    with open('chats.txt', mode='a+', encoding='utf-8') as f:
+        f.write(f'{chat_url}\n')

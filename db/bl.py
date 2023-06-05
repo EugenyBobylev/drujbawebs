@@ -2,6 +2,7 @@ import asyncio
 from datetime import date, timedelta
 from enum import Enum
 
+from anyio import run
 from sqlalchemy import create_engine, Engine, select, func
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -11,6 +12,7 @@ from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import PaymentResult as ApiPaymentResult
 from backend import UserInfo as ApiUserInfo
+from chat.user_chat import async_create_chat2
 from config import Config
 from db import EntityNotExistsException
 from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
@@ -928,6 +930,10 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
     bot_url = asyncio.run(get_bot_url())
     invite_url = f'{bot_url}?start=fund_{fund.id}'
     fund.invite_url = invite_url
+
+    chat_name = f'{fund.reason} {fund.event_date.strftime("%d.%m.%Y")}'
+    chat_url = run(async_create_chat2, chat_name)
+    fund.chat_url = chat_url
     session.commit()
 
     fund: ApiFundraising = ApiFundraising(id=fund.id, reason=fund.reason, target=fund.target,
@@ -935,7 +941,8 @@ def create_private_fundraising(user_id: int, fund: ApiFundraising) -> ApiFundrai
                                           event_date=fund.event_date, transfer_info=fund.transfer_info,
                                           gift_info=fund.gift_info, congratulation_date=fund.congratulation_date,
                                           congratulation_time=fund.congratulation_time, event_place=fund.event_place,
-                                          event_dresscode=fund.event_dresscode, invite_url=invite_url)
+                                          event_dresscode=fund.event_dresscode, invite_url=invite_url,
+                                          chat_url=chat_url)
     return fund
 
 

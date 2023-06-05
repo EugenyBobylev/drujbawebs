@@ -4,6 +4,7 @@ import urllib
 import urllib.parse
 from functools import wraps
 
+from anyio import run
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.encoders import jsonable_encoder
 from starlette.middleware.cors import CORSMiddleware
@@ -11,11 +12,13 @@ from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
 from starlette.status import HTTP_204_NO_CONTENT
 from starlette.templating import Jinja2Templates
+from telethon.client.telegramclient import TelegramClient
 
 import db
 from backend import send_answer_web_app_query, send_message
 from backend.models import User, Fundraising, WebAppInitData, PaymentResult
 from backend.telegram_api import send_payment_message
+from chat.user_chat import async_create_chat2
 from config import Config
 from db import Account
 from utils import check_webapp_signature, decode_base64_str, get_bot_url
