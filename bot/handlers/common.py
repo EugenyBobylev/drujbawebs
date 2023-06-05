@@ -6,7 +6,6 @@ from aiogram.dispatcher import filters, FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from aiogram.utils.exceptions import MessageToDeleteNotFound
-from telethon.tl.types import Message
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult, UserInfo
@@ -757,6 +756,11 @@ async def query_reg_user(call: types.CallbackQuery, state: FSMContext):
     pass
 
 
+async def query_edit_user(call: types.CallbackQuery, state: FSMContext):
+    await call.message.delete()
+    await call.message.answer('Операция редактирования анкеты пользователя находится в разработке')
+
+
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
@@ -796,3 +800,5 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_sent_money, state=[Steps.s_3, Steps.s_6])
 
     dp.register_message_handler(sent_money_2, state=Steps.s_4)
+
+    dp.register_callback_query_handler(query_edit_user, lambda c: c.data == 'edit_user', state='*')
