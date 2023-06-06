@@ -8,7 +8,7 @@ from datetime import datetime, date
 import json
 from pathlib import Path
 
-from backend.models import WebAppInitData
+from backend.models import WebAppInitData, Fundraising
 from chat.user_chat import async_create_chat2, async_create_chat, async_change_chats_owners
 from config import Config
 from utils import re_search, check_webapp_signature, decode_base64_str, get_bot_url
@@ -150,3 +150,26 @@ def test_create_chat():
 
     with open('chats.txt', mode='a+', encoding='utf-8') as f:
         f.write(f'{chat_url}\n')
+
+
+def test_create_api_fundraising():
+    data = {
+        'reason': 'День рождения',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Семенычу',  # кому собираем
+        'event_date': '2023-07-16',  # дата события
+        'transfer_info': 'На карту Вадима Игоревича (3333-1144-3345-4444)',  # реквизиты перевода
+        # 'gift_info': 'Какую-нибудь фигню для его авто, потом решим'
+    }
+    fund = Fundraising(**data)
+    assert fund is not None
+
+
+def test_fund_from_json():
+    json_str = '{"reason": "qqq","target": "Www","event_date":"2023-07-12","transfer_info":"qwqwqwqw",' \
+               '"gift_info": "", "congratulation_date": null,"congratulation_time": null,"event_place": "",' \
+               '"event_dresscode": ""}'
+    data = json.loads(json_str)
+    fund = Fundraising(**data)
+
+    assert type(data) == dict
+    assert fund is not None

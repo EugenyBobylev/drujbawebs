@@ -14,25 +14,25 @@
     <p>Пожалуйста, заполните данные о сборе</p>
     <form action="" name="feeCreationForm" >
         <label for="reason">На что собираем:</label>
-        <input type="text" id='reason' placeholder="Тип события" value="День рождения">
+        <input type="text" id='reason' placeholder="Тип события" value="{{reason}}">
         <label for="target">Кому собираем:</label>
-        <input type="text" id="target" placeholder="Кому собираем" value="Сереге толстому">
+        <input type="text" id="target" placeholder="Кому собираем" value="{{target}}">
         <label for="eventDate">Дата события</label>
-        <input id="eventDate" type="date" value="2023-06-16">
+        <input id="eventDate" type="date" value="{{event_date}}">
 
-        <label for="transferInfo">Дата события</label>
-        <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="Кидаем на телефон Юры (8-921-345-8890)">
+        <label for="transferInfo">Куда переводим</label>
+        <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
         <label for="transferInfo">Варианты подарков:</label>
-        <input type="text" id="giftInfo" placeholder="" value="Хотел крутой спиннинг, если много соберем,то можно подарить палатку">
+        <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}">
 
         <div class="formFooter">
             <div class="formAdding">
                 <label for="addingCheckbox">Добавить данные о праздновании</label>
                 <div class="addingOptions">
-                    <input type="text" id="congratulationDate" placeholder="Дата события" value="2023-06-17">
-                    <input type="text" id="congratulationTime" placeholder="Время" value="10:30">
-                    <input type="text" id="eventPlace" placeholder="место празднования" value="Ресторан Сабантуй">
-                    <input type="text" id="dresscode" placeholder="Дресс-код" value="быть прилично одетыми">
+                    <input type="text" id="congratulationDate" placeholder="Дата события">
+                    <input type="text" id="congratulationTime" placeholder="Время">
+                    <input type="text" id="eventPlace" placeholder="место празднования" value="">
+                    <input type="text" id="dresscode" placeholder="Дресс-код" value="">
                 </div>
             </div>
             <div class="formButtons">
@@ -55,22 +55,30 @@
             let user_id = tg.initDataUnsafe.user.id;
             let url = `${api_url}api/user/fundraising/${user_id}/`;
             // создать сбор (fundraising)
+            let congratulations_date = document.getElementById("congratulationDate").value;
+            if(congratulations_date === "")
+                congratulations_date = null;
+
+            let congratulations_time = document.getElementById("congratulationTime").value;
+            if (congratulations_time === "")
+                congratulations_time = null;
+
             let fund = {
                 reason: document.getElementById("reason").value,
                 target: document.getElementById("target").value,
                 event_date: document.getElementById("eventDate").value,
                 transfer_info: document.getElementById("transferInfo").value,
                 gift_info: document.getElementById("giftInfo").value,
-                congratulation_date: document.getElementById("congratulationDate").value,
-                congratulation_time: document.getElementById("congratulationTime").value,
+                congratulation_date: congratulations_date,
+                congratulation_time: congratulations_time,
                 event_place: document.getElementById("eventPlace").value,
                 event_dresscode: document.getElementById("dresscode").value,
             };
-            // Отладочное сообщение
-            // tg.showAlert(url);
 
             // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(fund);
+            // Отладочное сообщение
+            tg.showAlert(body);
 
             let response = await fetch(url, {
                 method: 'POST',

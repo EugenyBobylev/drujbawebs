@@ -1,4 +1,5 @@
 import json
+import random
 import urllib
 import urllib.parse
 from functools import wraps
@@ -32,6 +33,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+funds = [
+    {
+        'reason': 'Юбилей Татьяны Осиповой',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Татьяне Алексеевне',  # кому собираем
+        'event_date': '2023-08-12',  # дата события
+        'transfer_info': 'На карту ее мужа, Михаила (5555-5555-4444-3333)',  # реквизиты перевода
+        'gift_info': 'Что-нибудь из ювелирки'
+    },
+    {
+        'reason': 'Проводы жены (едет к маме не месяц)',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Кольке',  # кому собираем
+        'event_date': '2023-07-12',  # дата события
+        'transfer_info': 'На карту Палыча (5555-5544-4455-4444)',  # реквизиты перевода
+        'gift_info': ''
+    },
+    {
+        'reason': 'День рождения',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Семенычу',  # кому собираем
+        'event_date': '2023-07-16',  # дата события
+        'transfer_info': 'На карту Вадима Игоревича (3333-1144-3345-4444)',  # реквизиты перевода
+        'gift_info': 'Какую-нибудь фигню для его авто, потом решим'
+    }
+]
 
 
 def auth(func):
@@ -123,9 +149,18 @@ async def get_private_fundraising_html(request: Request):
         'ngrok-skip-browser-warning': '100',
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
-    host = Config().base_url
-    return templates.TemplateResponse('feeCreation.html',
-                                      context={'request': request, 'host': host}, headers=headers)
+    fund = funds[random.randint(1, 2)]
+    context = {
+        'request': request,
+        'host': Config().base_url,
+        'reason': fund['reason'],
+        'target': fund['target'],  # кому собираем
+        'event_date': fund['event_date'],  # дата события
+        'transfer_info': fund['transfer_info'],  # реквизиты перевода
+        'gift_info': fund['gift_info']
+    }
+
+    return templates.TemplateResponse('feeCreation.html',  context=context, headers=headers)
 
 
 @app.get('/CreateFund')
@@ -134,7 +169,16 @@ async def get_fundraising_html(request: Request):
         'ngrok-skip-browser-warning': '100',
     }
     host = Config().base_url
-    context = {'request': request, 'host': host}
+    fund = funds[random.randint(1, 2)]
+    context = {
+        'request': request,
+        'host': host,
+        'reason': fund['reason'],
+        'target': fund['target'],  # кому собираем
+        'event_date': fund['event_date'],  # дата события
+        'transfer_info': fund['transfer_info'],  # реквизиты перевода
+        'gift_info': fund['gift_info']
+    }
     return templates.TemplateResponse('feeCreation.html', context=context, headers=headers)
 
 
