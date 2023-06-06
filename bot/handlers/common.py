@@ -774,7 +774,7 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
                                 state=Steps.tg_2)
     dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
-                                state=Steps.tg_3)
+                                state=[Steps.tg_3, Steps.tg_19])
     dp.register_message_handler(webapp_reg_user, filters.Text(startswith='webapp'),
                                 state=[Steps.s_11, Steps.s_2])
 

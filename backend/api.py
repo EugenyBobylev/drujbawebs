@@ -359,7 +359,7 @@ def create_fundraising(user_id: int, fund: Fundraising, authorization: str | Non
     """
     Create new user's fundraising (event)
     """
-    fund: Fundraising = db.create_private_fundraising(user_id, fund)
+    fund: Fundraising = db.create_fundraising(user_id, fund)
     assert fund is not None
     db.run_fun(fund.id)
 
