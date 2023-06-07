@@ -12,7 +12,7 @@
 <body>
     <h3>Создание сбора</h3>
     <p>Пожалуйста, заполните данные о сборе</p>
-    <form action="" name="feeCreationForm" >
+    <div class="myform">
         <label for="reason">На что собираем:</label>
         <input type="text" id='reason' placeholder="Тип события" value="{{reason}}">
         <label for="target">Кому собираем:</label>
@@ -36,34 +36,38 @@
                 </div>
             </div>
             <div class="formButtons">
-                <button type="button">Отмена</button>
-                <button class="middleBtn" onclick="postFund()">Запустить</button>
+                <button type="button">Отменить</button>
+                <button class="middleBtn" onclick="postFund()">Сохранить</button>
             </div>
         </div>
-    </form>
+    </div>
     <script>
         let tg = window.Telegram.WebApp;  //получаем объект webapp
-        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
-        tg.MainButton.show();
-        tg.MainButton.enable();
-        Telegram.WebApp.onEvent("mainButtonClicked", postFund);
-
-        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+        // let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
 
         let api_url = "{{host}}";
         async function postFund(){
-            let user_id = tg.initDataUnsafe.user.id;
+            //let user_id = tg.initDataUnsafe.user.id;
             let fund_id = "{{fund_id}}"
             let url = `${api_url}api/fundraising/${fund_id}/`;
+
             // создать сбор (fundraising)
+            let congratulations_date = document.getElementById("congratulationDate").value;
+            if (congratulations_date === "")
+                congratulations_date = null;
+
+            let congratulations_time = document.getElementById("congratulationTime").value;
+            if (congratulations_time === "")
+                congratulations_time = null;
+
             let fund = {
                 reason: document.getElementById("reason").value,
                 target: document.getElementById("target").value,
                 event_date: document.getElementById("eventDate").value,
                 transfer_info: document.getElementById("transferInfo").value,
                 gift_info: document.getElementById("giftInfo").value,
-                congratulation_date: document.getElementById("congratulationDate").value,
-                congratulation_time: document.getElementById("congratulationTime").value,
+                congratulation_date: congratulations_date,
+                congratulation_time: congratulations_time,
                 event_place: document.getElementById("eventPlace").value,
                 event_dresscode: document.getElementById("dresscode").value,
             };

@@ -206,8 +206,8 @@ async def get_fund(fund_id: int, request: Request):
         'event_date': fund.event_date,
         'transfer_info': fund.transfer_info,
         'gift_info': fund.gift_info,
-        'congratulation_date': fund.congratulation_date,
-        'congratulation_time': fund.congratulation_time,
+        'congratulation_date': fund.congratulation_date if fund.congratulation_date is not None else '',
+        'congratulation_time': fund.congratulation_time if fund.congratulation_time is not None else '',
         'event_place': fund.event_place,
         'event_dresscode': fund.event_dresscode
     }
@@ -373,7 +373,7 @@ def get_api_fund(fund_id):
 
 
 @app.put('/api/fundraising/{fund_id}/')
-@auth
+# @auth
 def edit_api_fund(fund_id: int, fund: Fundraising):
     """
     Edit fundraising (event)
