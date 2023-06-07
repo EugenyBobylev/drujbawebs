@@ -214,6 +214,25 @@ async def get_fund(fund_id: int, request: Request):
     return templates.TemplateResponse('editFund.html', context=context, headers=headers)
 
 
+@app.get('/user/{user_id}')
+async def get_user(user_id: int, request: Request):
+    host = Config().base_url
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    user: User = db.get_user(user_id)
+    context = {
+        'request': request,
+        'host': host,
+        'user_id': user_id,
+        'name': user.name,
+        'birthdate': user.birthdate.strftime('%Y-%m-%d'),
+        'timezone': user.timezone,
+    }
+    return templates.TemplateResponse('editUser.html', context=context, headers=headers)
+
+
 @app.get('/donors/{fund_id}')
 async def get_donors(fund_id: int, request: Request):
     host = Config().base_url
@@ -373,7 +392,7 @@ def get_api_fund(fund_id):
 
 
 @app.put('/api/fundraising/{fund_id}/')
-# @auth
+@auth
 def edit_api_fund(fund_id: int, fund: Fundraising):
     """
     Edit fundraising (event)
@@ -382,6 +401,20 @@ def edit_api_fund(fund_id: int, fund: Fundraising):
     return {
         'operation': 'edit fundraising',
         'fund_id': fund_id,
+        'result': ok,
+    }
+
+
+@app.put('/api/user/{user_id}/')
+@auth
+def edit_api_user(user_id: int, user: User):
+    """
+    Edit user
+    """
+    ok: bool = db.update_user(user_id, user)
+    return {
+        'operation': 'edit fundraising',
+        'fund_id': user_id,
         'result': ok,
     }
 

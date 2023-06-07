@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000" />
+    <title>Document</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!--
+    <link rel="stylesheet" href="registration.css">
+    -->
+</head>
+<body>
+    <!--
+    <img src="woman.svg" alt="">
+    -->
+    <h3>Регистрация</h3>
+    <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
+    <div class="myform">
+        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="{{name}}" size="40"/>
+        <div class="dateInput">
+            <input type="date" id="birthday" name="birthday" value="{{birthdate}}"/>
+            <label for="birthday">Дата рождения!</label>
+        </div>
+        <select class="timezone" name="timezone" id="timezone" style="max-width:90%;">
+            <option value=-12> (GMT -12:00) Эниветок, Кваджалейн </option>
+            <option value=-11> (GMT -11:00) Остров Мидуэй, Самоа </option>
+            <option value=-10> (GMT -10:00) Гавайи </option>
+            <option value=-9> (GMT -9:00) Аляска </option>
+            <option value=-8> (GMT -8:00) Тихоокеанское время (США и Канада) </option>
+            <option value=-7> (GMT -7:00) Горное время (США и Канада) </option>
+            <option value=-6> (GMT -6:00) Центральное время (США и Канада), Мехико</option>
+            <option value=-5> (GMT -5:00) Восточное время (США и Канада), Богота, Лима </option>
+            <option value=-4> (GMT -4:00) Атлантическое время (Канада), Каракас, Ла-Пас </option>
+            <option value=-3> (GMT -3:30) Ньюфаундленд </option>
+            <option value=-3> (GMT -3:00) Бразилия, Буэнос-Айрес, Джорджтаун </option>
+            <option value=-2> (GMT -2:00) Срединно-Атлантического </option>
+            <option value=-1> (GMT -1:00 час) Азорские острова, острова Зеленого Мыса </option>
+            <option value=0> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
+            <option value=1> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
+            <option value=2> (GMT +2:00) Киев, Калининград, Южная Африка </option>
+            <option value=3> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
+            <option value=4> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
+            <option value=5> (GMT +5:00) Екатеринбург, Исламабад, Карачи, Ташкент</option>
+            <option value=6> (GMT +6:00) Алматы, Дакке, Коломбо </option>
+            <option value=7> (GMT +7:00) Бангкок, Ханой, Джакарта</option>
+            <option value=8> (GMT +8:00) Пекин, Перт, Сингапур, Гонконг</option>
+            <option value=9> (GMT +9:00) Токио, Сеул, Осака, Саппоро, Якутск</option>
+            <option value=10> (GMT +10:00) Восточная Австралия, Гуам, Владивосток </option>
+            <option value=11> (GMT +11:00) Магадан, Соломоновы острова, Новая Каледония</option>
+            <option value=12> (GMT +12:00) Окленд, Веллингтон, Фиджи, Камчатка</option>
+        </select>
+    </div>
+    <div class="formFooter">
+        <button onclick="postUser()">Сохранить</button>
+        <button onclick="">Закрыть</button>
+    </div>
+    <script>
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
+
+        let api_url = "{{host}}";
+        let user_id = "{{user_id}}";
+
+        let timezone = document.getElementById("timezone");
+        timezone.value = {{timezone}};
+
+        async function postUser(){
+            // tg.showAlert(user_id)
+            let url = `${api_url}api/user/${user_id}/`;
+
+            // создать пользователя
+            let user = {
+                id: tg.initDataUnsafe.user.id,
+                name: document.getElementById("uname").value,
+                birthdate: document.getElementById("birthday").value,
+                timezone: document.getElementById("timezone").value,
+            };
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(user);
+
+            let response = await fetch(url, {
+                method: 'PUT',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+                body: body,
+            }).then(response => response.json())
+              .then((data) =>{
+                  tg.close();
+              });
+            console.info(response.status)
+        }
+    </script>
+</body>
+</html>

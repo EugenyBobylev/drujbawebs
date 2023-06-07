@@ -133,12 +133,13 @@ def trial_user_menu_keyboard():
     return keyboard
 
 
-def user_menu_keyboard(account_id: int, payed_events: int):
+def user_menu_keyboard(user_id: int, account_id: int, payed_events: int):
     url2 = f'{bot_config.base_url}CreateFund/?account_id={account_id}&payed_events={payed_events}'
+    url3 = f'{bot_config.base_url}user/{user_id}'
     buttons = [
         InlineKeyboardButton(text="Ваши сборы", callback_data='funds_info'),
         InlineKeyboardButton(text="Создать новый сбор", web_app=types.WebAppInfo(url=url2)),
-        InlineKeyboardButton(text="Редактировать анкету", callback_data='edit_user'),
+        InlineKeyboardButton(text="Редактировать анкету", web_app=types.WebAppInfo(url=url3)),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
         InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
@@ -296,7 +297,7 @@ async def start_user(chat_id: str, state: FSMContext):
           f'Открытые сборы: {user_info.open_funds}\n' \
           f'Администратор компаний: {user_info.admin_count}'
     account: Account = db.get_api_user_account(user_id)
-    keyboard = user_menu_keyboard(account.id, account.payed_events)
+    keyboard = user_menu_keyboard(user_id, account.id, account.payed_events)
 
     await state.set_state(Steps.tg_19)
     _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)

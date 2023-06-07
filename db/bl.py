@@ -994,6 +994,18 @@ def update_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
     return fund is not None
 
 
+def update_user(user_id: int, api_user: ApiUser) -> bool:
+    """
+    Обновить информацию о пользователе
+    :param user_id: уникальный код пользователя
+    :param api_user: данные для корректировки
+    """
+    session = get_session()
+    kvargs: dict = api_user.dict()
+    user = _update_user(user_id, session, **kvargs)
+    return user is not None
+
+
 def get_fund_info(fund_id: int) -> FundraisingInfo:
     """
     Вернуть статистику по
