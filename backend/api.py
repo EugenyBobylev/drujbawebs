@@ -143,36 +143,18 @@ async def get_user_registration_html(request: Request):
                                       context={'request': request, 'host': host}, headers=headers)
 
 
-@app.get('/FeeCreation')
-async def get_private_fundraising_html(request: Request):
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
-    }
-    fund = funds[random.randint(1, 2)]
-    context = {
-        'request': request,
-        'host': Config().base_url,
-        'reason': fund['reason'],
-        'target': fund['target'],  # кому собираем
-        'event_date': fund['event_date'],  # дата события
-        'transfer_info': fund['transfer_info'],  # реквизиты перевода
-        'gift_info': fund['gift_info']
-    }
-
-    return templates.TemplateResponse('feeCreation.html',  context=context, headers=headers)
-
-
-@app.get('/CreateFund')
-async def get_fundraising_html(request: Request):
+@app.get('/CreateFund/')
+async def get_fundraising_html(request: Request, account_id: int, payed_events: int):
     headers = {
         'ngrok-skip-browser-warning': '100',
     }
     host = Config().base_url
-    fund = funds[random.randint(1, 2)]
+    fund = funds[random.randint(0, 2)]
     context = {
         'request': request,
         'host': host,
+        'account_id': account_id,
+        'payed_events': payed_events,
         'reason': fund['reason'],
         'target': fund['target'],  # кому собираем
         'event_date': fund['event_date'],  # дата события
@@ -353,18 +335,19 @@ def get_user_card_info(user_id: int, authorization: str | None = Header(convert_
     pass
 
 
-@app.post('/api/user/fundraising/{user_id}/')
+@app.post('/api/user/fundraising/{account_id}/')
 @auth
-def create_fundraising(user_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+def create_fundraising(account_id: int, fund: Fundraising,
+                       authorization: str | None = Header(convert_underscores=True)):
     """
     Create new user's fundraising (event)
     """
-    fund: Fundraising = db.create_fundraising(user_id, fund)
+    fund: Fundraising = db.create_fundraising(account_id, fund)
     assert fund is not None
-    db.run_fun(fund.id)
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
+        'account_id': account_id,
         'fund_id': fund.id,
         'target': fund.target,  # кому собираем
         'invite_url': fund.invite_url,

@@ -165,9 +165,9 @@ def test_create_api_fundraising():
 
 
 def test_fund_from_json():
-    json_str = '{"reason": "qqq","target": "Www","event_date":"2023-07-12","transfer_info":"qwqwqwqw",' \
-               '"gift_info": "", "congratulation_date": null,"congratulation_time": null,"event_place": "",' \
-               '"event_dresscode": ""}'
+    json_str = '{"reason":"Проводы жены (едет к маме не месяц)","target":"Кольке","start":"2023-06-07",' \
+               '"event_date":"2023-07-12","transfer_info":"На карту Палыча (5555-5544-4455-4444)","gift_info":"",' \
+               '"congratulation_date":null,"congratulation_time":null,"event_place":"","event_dresscode":""}'
     data = json.loads(json_str)
     fund = Fundraising(**data)
 

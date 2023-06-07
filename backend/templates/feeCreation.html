@@ -12,7 +12,7 @@
 <body>
     <h3>Создание сбора</h3>
     <p>Пожалуйста, заполните данные о сборе</p>
-    <form action="" name="feeCreationForm" >
+    <div class="myform" >
         <label for="reason">На что собираем:</label>
         <input type="text" id='reason' placeholder="Тип события" value="{{reason}}">
         <label for="target">Кому собираем:</label>
@@ -37,26 +37,34 @@
             </div>
             <div class="formButtons">
                 <button type="button">Отмена</button>
-                <button class="middleBtn" onclick="postFund()">Запустить</button>
+                <button id="runbtn" class="btn" onclick="postFund()">Запустить</button>
+                <button id="paybtn" class="bnt" onclick="postFund()">Оплатить и запустить  сбор</button>
             </div>
         </div>
-    </form>
+    </div>
     <script>
         let tg = window.Telegram.WebApp;  //получаем объект webapp
-        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
-        tg.MainButton.show();
-        tg.MainButton.enable();
-        Telegram.WebApp.onEvent("mainButtonClicked", postFund);
-
-        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
-
         let api_url = "{{host}}";
+        let account_id = {{account_id}};
+        let payed_events = {{payed_events}};
+
+        let run_btn = document.getElementById("runbtn");
+        let pay_btn = document.getElementById("paybtn");
+
+        let need_pay = payed_events < 1;
+        if(need_pay)
+            run_btn.style.display = "none";
+        else
+            pay_btn.style.display = "none";
+        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
         async function postFund(){
-            let user_id = tg.initDataUnsafe.user.id;
-            let url = `${api_url}api/user/fundraising/${user_id}/`;
+            // let user_id = tg.initDataUnsafe.user.id;
+            let url = `${api_url}api/user/fundraising/${account_id}/`;
+
             // создать сбор (fundraising)
             let congratulations_date = document.getElementById("congratulationDate").value;
-            if(congratulations_date === "")
+            if (congratulations_date === "")
                 congratulations_date = null;
 
             let congratulations_time = document.getElementById("congratulationTime").value;
@@ -66,6 +74,7 @@
             let fund = {
                 reason: document.getElementById("reason").value,
                 target: document.getElementById("target").value,
+                start: need_pay ? null : new Date().toJSON().slice(0, 10),
                 event_date: document.getElementById("eventDate").value,
                 transfer_info: document.getElementById("transferInfo").value,
                 gift_info: document.getElementById("giftInfo").value,
@@ -75,10 +84,10 @@
                 event_dresscode: document.getElementById("dresscode").value,
             };
 
-            // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(fund);
             // Отладочное сообщение
-            tg.showAlert(body);
+            // tg.showAlert(fund.reason);
+            // alert(body);
 
             let response = await fetch(url, {
                 method: 'POST',
