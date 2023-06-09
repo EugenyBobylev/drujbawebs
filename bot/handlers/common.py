@@ -134,10 +134,11 @@ def trial_user_menu_keyboard():
 
 
 def user_menu_keyboard(user_id: int, account_id: int, payed_events: int):
+    url1 = f'{bot_config.base_url}account/{account_id}/funds/'
     url2 = f'{bot_config.base_url}CreateFund/?account_id={account_id}&payed_events={payed_events}'
     url3 = f'{bot_config.base_url}user/{user_id}'
     buttons = [
-        InlineKeyboardButton(text="Ваши сборы", callback_data='funds_info'),
+        InlineKeyboardButton(text="Ваши сборы", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Создать новый сбор", web_app=types.WebAppInfo(url=url2)),
         InlineKeyboardButton(text="Редактировать анкету", web_app=types.WebAppInfo(url=url3)),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
@@ -485,8 +486,25 @@ async def webapp_create_user_account(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
+async def webapp_user_operation(message: types.Message, state: FSMContext):
+    # state == [Steps.tg_19]
+    items = message.text.split('&')
+    answer = json.loads(items[1])
+    operation = answer.get('operation', '')
+    if operation == 'create_fund':
+        return await webapp_create_user_fund(message, state)
+    elif operation == 'open_fund':
+        fund_id = answer.get('fund_id', '')
+        account_id = answer.get('account_id', '')
+        await state.update_data(fund_id=fund_id)
+        await state.update_data(account_id=account_id)
+
+        return await open_fund_info(message, fund_id, state)
+    await _remove_all_messages(message.from_user.id)
+
+
 async def webapp_create_user_fund(message: types.Message, state: FSMContext):
-    # state == [Steps.tg_3, Steps.tg_19]
+    # state == [Steps.tg_3]
     await _remove_all_messages(message.from_user.id)
 
     items = message.text.split('&')
@@ -817,8 +835,10 @@ def register_handlers_common(dp: Dispatcher):
 
     dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
                                 state=Steps.tg_2)
-    dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
-                                state=[Steps.tg_3, Steps.tg_19])
+    dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'), state=[Steps.tg_3])
+
+    dp.register_message_handler(webapp_user_operation, filters.Text(startswith='webapp'), state=[Steps.tg_19])
+
     dp.register_message_handler(webapp_reg_user, filters.Text(startswith='webapp'),
                                 state=[Steps.s_11, Steps.s_2])
 

@@ -164,31 +164,6 @@ async def get_fundraising_html(request: Request, account_id: int, payed_events: 
     return templates.TemplateResponse('feeCreation.html', context=context, headers=headers)
 
 
-@app.get('/EventSettings/{fund_id}')
-async def get_fund_info(fund_id: int, request: Request):
-    # Здесь какая-то херня (писал во время обострения отита)
-    host = Config().base_url
-    fund_info = db.get_fund(fund_id)
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
-    }
-    context = {
-        'request': request,
-        'host': host,
-        'reason': fund_info.reason,
-        'target': fund_info.target,
-        'event_date': fund_info.event_date,
-        'transfer_info': fund_info.transfer_info,
-        'gift_info': fund_info.gift_info,
-        'congratulation_date': fund_info.congratulation_date,
-        'congratulation_time': fund_info.congratulation_time,
-        'event_place': fund_info.event_place,
-        'event_dresscode': fund_info.event_dresscode
-    }
-    return templates.TemplateResponse('editFund.html', context=context, headers=headers)
-
-
 @app.get('/fundraising/{fund_id}')
 async def get_fund(fund_id: int, request: Request):
     host = Config().base_url
@@ -231,6 +206,24 @@ async def get_user(user_id: int, request: Request):
         'timezone': user.timezone,
     }
     return templates.TemplateResponse('editUser.html', context=context, headers=headers)
+
+
+@app.get('/account/{account_id}/funds/')
+async def get_user_funds(account_id: int, request: Request):
+    host = Config().base_url
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+
+    data = db.get_account_funds_info(account_id)
+    context = {
+        'request': request,
+        'host': host,
+        'account_id': account_id,
+        'funds_info': data
+    }
+    return templates.TemplateResponse('feeHistory3.html', context=context, headers=headers)
 
 
 @app.get('/donors/{fund_id}')
@@ -366,6 +359,7 @@ def create_fundraising(account_id: int, fund: Fundraising,
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
+        'operation': 'create_fund',
         'account_id': account_id,
         'fund_id': fund.id,
         'target': fund.target,  # кому собираем
@@ -380,15 +374,23 @@ def create_fundraising(account_id: int, fund: Fundraising,
     }
 
 
-@app.get('/api/fundraising/{fund_id}/')
+@app.get('/api/fundraising/{fund_id}/open/')
 @auth
-def get_api_fund(fund_id):
+def get_api_fund_open(fund_id: int, authorization: str | None = Header(convert_underscores=True)):
     """
-    Get fundraising (event)
+    Open fundraising (event)
     """
+    web_init = WebAppInitData.form_auth_header(authorization)
     fund: Fundraising = db.get_fund(fund_id)
-    fund_json = jsonable_encoder(fund)
-    return JSONResponse(content=fund_json, status_code=200)
+    data = {
+        'operation': 'open_fund',
+        'account_id': fund.account_id,
+        'fund_id': fund_id,
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, data_json)
+    assert 200 == r.status_code
+    return {'ok': True}
 
 
 @app.put('/api/fundraising/{fund_id}/')

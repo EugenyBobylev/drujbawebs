@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from backend import User as ApiUser, FundraisingInfo
 from backend import Fundraising as ApiFundraising
+from backend import FundraisingSmallInfo as ApiFundSmallInfo
 from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import UserInfo as ApiUserInfo
@@ -384,7 +385,7 @@ def _get_fundraising(fund_id: int, session: Session) -> Fundraising | None:
     return result
 
 
-def _get_all_fundraisings(account_id: int, session: Session) -> [Fundraising]:
+def _get_all_fundraisings(account_id: int, session: Session) -> list[Fundraising]:
     if account_id is None:
         raise ValueError('account_id can not be None')
     if session is None:
@@ -849,6 +850,12 @@ def get_user(user_id: int) -> User | None:
     return api_user
 
 
+def get_user_name(user_id) -> str:
+    session = get_session()
+    user = _get_user(user_id, session)
+    return user.name if user is not None else ''
+
+
 def get_api_user_account(user_id: int) -> ApiAccount | None:
     session = get_session()
     account: Account = _get_user_account(user_id, session)
@@ -857,6 +864,18 @@ def get_api_user_account(user_id: int) -> ApiAccount | None:
         api_account = ApiAccount(id=account.id, user_id=account.user_id, company_id=account.company_id,
                                  payed_events=account.payed_events)
     return api_account
+
+
+def update_user(user_id: int, api_user: ApiUser) -> bool:
+    """
+    Обновить информацию о пользователе
+    :param user_id: уникальный код пользователя
+    :param api_user: данные для корректировки
+    """
+    session = get_session()
+    kvargs: dict = api_user.dict()
+    user = _update_user(user_id, session, **kvargs)
+    return user is not None
 
 
 def remove_user(user_id: int):
@@ -890,6 +909,69 @@ def remove_user(user_id: int):
     session.delete(account)
     session.delete(user)
     session.commit()
+
+
+def get_user_info(user_id: int) -> ApiUserInfo:
+    session = get_session()
+    account = _get_user_account(user_id, session)
+    funds = _get_all_fundraisings(account.id, session)
+    open_fundraisings = _get_all_open_fundraising(account.id, session)
+    companies = _get_user_companies(user_id, session)
+    admins = [company for company in companies if company.admin_id == user_id]
+
+    donors_count = _get_donors_count_by_user(user_id, session)
+    funds_count = len(funds) if funds is not None else 0
+    open_funds = len(open_fundraisings) if open_fundraisings is not None else 0
+    company_count = len(companies) if companies is not None else 0
+    admin_count = len(admins) if account is not None else 0
+
+    user_info = ApiUserInfo(donors_count=donors_count, funds_count=funds_count, open_funds=open_funds,
+                            company_count=company_count, admin_count=admin_count)
+    return user_info
+
+
+def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool = False) -> UserStatus:
+    """
+    Определить статус пользователя
+    :param user_id: телеграм id
+    :param account_id: id аккаунта
+    :param has_invite_url: признак входа по приглашению
+    :return: статус пользователя телеграм (UserStatus)
+    """
+    session = get_session()
+    is_registered: bool = _is_user_registered(user_id, session)
+
+    if not is_registered and has_invite_url:
+        return UserStatus.AnonymousDonor
+    if is_registered and has_invite_url:
+        return UserStatus.Donor
+
+    if not is_registered and not has_invite_url:
+        return UserStatus.Visitor
+
+    user_account = _get_user_account(user_id, session)
+    if user_account is not None:
+        payment_count = _get_payments_count(user_account.id, session)
+        if payment_count > 0:
+            return UserStatus.User
+        return UserStatus.TrialUser
+
+    companies = _get_user_companies(user_id, session)
+
+    if account_id is None:
+        return UserStatus.Visitor
+
+    account = _get_account(account_id, session)
+    assert account is not None
+
+    if account.user_id is not None and account.company_id is None:  # TrialUser or User
+        payments_count = _get_payments_count(account_id, session)
+        return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
+
+    if account.user_id is None and account.company_id is not None:
+        return UserStatus.Admin
+
+    return UserStatus.Unknown
 
 
 def remove_user_payments(user_id: int):
@@ -994,18 +1076,6 @@ def update_fund(fund_id: int, api_fund: ApiFundraising) -> bool:
     return fund is not None
 
 
-def update_user(user_id: int, api_user: ApiUser) -> bool:
-    """
-    Обновить информацию о пользователе
-    :param user_id: уникальный код пользователя
-    :param api_user: данные для корректировки
-    """
-    session = get_session()
-    kvargs: dict = api_user.dict()
-    user = _update_user(user_id, session, **kvargs)
-    return user is not None
-
-
 def get_fund_info(fund_id: int) -> FundraisingInfo:
     """
     Вернуть статистику по
@@ -1030,75 +1100,6 @@ def get_fund_info(fund_id: int) -> FundraisingInfo:
         fund_info.invite_url = fund.invite_url
 
     return fund_info
-
-
-def get_user_info(user_id: int) -> ApiUserInfo:
-    session = get_session()
-    account = _get_user_account(user_id, session)
-    funds = _get_all_fundraisings(account.id, session)
-    open_fundraisings = _get_all_open_fundraising(account.id, session)
-    companies = _get_user_companies(user_id, session)
-    admins = [company for company in companies if company.admin_id == user_id]
-
-    donors_count = _get_donors_count_by_user(user_id, session)
-    funds_count = len(funds) if funds is not None else 0
-    open_funds = len(open_fundraisings) if open_fundraisings is not None else 0
-    company_count = len(companies) if companies is not None else 0
-    admin_count = len(admins) if account is not None else 0
-
-    user_info = ApiUserInfo(donors_count=donors_count, funds_count=funds_count, open_funds=open_funds,
-                            company_count=company_count, admin_count=admin_count)
-    return user_info
-
-
-def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool = False) -> UserStatus:
-    """
-    Определить статус пользователя
-    :param user_id: телеграм id
-    :param account_id: id аккаунта
-    :param has_invite_url: признак входа по приглашению
-    :return: статус пользователя телеграм (UserStatus)
-    """
-    session = get_session()
-    is_registered: bool = _is_user_registered(user_id, session)
-
-    if not is_registered and has_invite_url:
-        return UserStatus.AnonymousDonor
-    if is_registered and has_invite_url:
-        return UserStatus.Donor
-
-    if not is_registered and not has_invite_url:
-        return UserStatus.Visitor
-
-    user_account = _get_user_account(user_id, session)
-    if user_account is not None:
-        payment_count = _get_payments_count(user_account.id, session)
-        if payment_count > 0:
-            return UserStatus.User
-        return UserStatus.TrialUser
-
-    companies = _get_user_companies(user_id, session)
-
-    if account_id is None:
-        return UserStatus.Visitor
-
-    account = _get_account(account_id, session)
-    assert account is not None
-
-    if account.user_id is not None and account.company_id is None:  # TrialUser or User
-        payments_count = _get_payments_count(account_id, session)
-        return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
-
-    if account.user_id is None and account.company_id is not None:
-        return UserStatus.Admin
-
-    return UserStatus.Unknown
-
-
-def get_user_name(user_id) -> str:
-    session = get_session()
-    user = _get_user(user_id, session)
-    return user.name if user is not None else ''
 
 
 def delete_donor(fund_id: int, user_id: int) -> bool:
@@ -1139,6 +1140,24 @@ def is_fund_open(fund_id) -> bool:
     return _is_fundraising_open(fund_id, session)
 
 
+async def start_fund(fund_id: int) -> Fundraising:
+    session = get_session()
+    fund = _get_fundraising(fund_id, session)
+    fund.start = date.today()
+
+    bot_url = await get_bot_url()
+    invite_url = f'{bot_url}?start=fund_{fund_id}'
+    fund.invite_url = invite_url
+
+    chat_name = f'{fund.reason} {fund.event_date.strftime("%d.%m.%Y")}'
+    # chat_url = run(async_create_chat2, chat_name)
+    # fund.chat_url = chat_url
+    fund.chat_url = 'временно не доступен'
+    fund.owner.payed_events -= 1
+    session.commit()
+    return fund
+
+
 def get_available_funds(account_id) -> int:
     """
     Вернуть количество доступных сборов
@@ -1166,22 +1185,25 @@ def get_not_started_fund_id(account_id: int) -> int | None:
     return result.id if result is not None else None
 
 
-async def start_fund(fund_id: int) -> Fundraising:
+def get_account_funds_info(account_id) -> list[ApiFundSmallInfo]:
     session = get_session()
-    fund = _get_fundraising(fund_id, session)
-    fund.start = date.today()
+    data = []
+    funds = _get_all_fundraisings(account_id, session)
+    for fund in funds:
+        id = fund.id
+        target = fund.target
+        event_date = fund.event_date.strftime('%d.%m.%Y')
 
-    bot_url = await get_bot_url()
-    invite_url = f'{bot_url}?start=fund_{fund_id}'
-    fund.invite_url = invite_url
+        days_left = get_days_left(fund.event_date)
+        is_open = True if days_left > -7 else False
 
-    chat_name = f'{fund.reason} {fund.event_date.strftime("%d.%m.%Y")}'
-    # chat_url = run(async_create_chat2, chat_name)
-    # fund.chat_url = chat_url
-    fund.chat_url = 'временно не доступен'
-    fund.owner.payed_events -= 1
-    session.commit()
-    return fund
+        total_sum = _get_fund_total_sum(id, session)
+        is_success = True if total_sum > 0 else False
+
+        fund_small_info = ApiFundSmallInfo(id=id, target=target, event_date=event_date, is_open=is_open,
+                                           is_success=is_success)
+        data.append(fund_small_info)
+    return data
 
 
 def get_message_text(text_name: str) -> str:
