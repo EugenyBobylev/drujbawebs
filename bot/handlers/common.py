@@ -515,11 +515,13 @@ async def webapp_create_user_fund(message: types.Message, state: FSMContext):
     await state.update_data(fund_id=fund_id)
 
     if 'fund_id' in answer:
-        invite_url = answer['invite_url']
-        target = answer['target']
+        invite_url = answer.get('invite_url', '')
+        target = answer.get('target', '')
+        reason = answer.get('reason', '')
         if len(invite_url) > 0:
             await state.update_data(invite_url=invite_url)
             await state.update_data(target=target)
+            await state.update_data(reason=reason)
             await show_fund_success(message, state)
         else:
             await start_payment(message, state)
@@ -555,9 +557,10 @@ async def show_fund_link(message: types.Message, state: FSMContext):
 
     invite_url = user_data['invite_url']
     target = user_data['target']
+    reason = user_data['reason']
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+    msg = f'Здравствуйте! У {target} скоро {reason}.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
           f'{invite_url}'
 
     await state.set_state(Steps.tg_5)
@@ -640,7 +643,7 @@ async def start_payment(message: types.Message, state: FSMContext):
     available_funds = db.get_available_funds(account_id)
     tariff_name = db.get_current_tariff(account_id)
     msg = f'Сейчас у вас подключен тариф: {tariff_name} \n\nДоступные сборы: {available_funds}\n\n\n' \
-          f'Введите количество сборов, которые хотите оплатить:'
+          f'Введите количество сборов, которые хотите оплатить'
     await state.set_state(Steps.tg_8)
     _msg = await message.answer(msg, reply_markup=keyboard)
     msgs.put(_msg)

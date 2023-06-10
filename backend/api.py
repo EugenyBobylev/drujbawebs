@@ -362,6 +362,7 @@ def create_fundraising(account_id: int, fund: Fundraising,
         'operation': 'create_fund',
         'account_id': account_id,
         'fund_id': fund.id,
+        'reason': fund.reason,  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
         'target': fund.target,  # кому собираем
         'invite_url': fund.invite_url,
     }
