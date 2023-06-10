@@ -638,7 +638,8 @@ async def start_payment(message: types.Message, state: FSMContext):
 
     keyboard = go_menu_keyboard()
     available_funds = db.get_available_funds(account_id)
-    msg = f'Сейчас у вас подключен тариф: \n\nДоступные сборы: {available_funds}\n\n\n' \
+    tariff_name = db.get_current_tariff(account_id)
+    msg = f'Сейчас у вас подключен тариф: {tariff_name} \n\nДоступные сборы: {available_funds}\n\n\n' \
           f'Введите количество сборов, которые хотите оплатить:'
     await state.set_state(Steps.tg_8)
     _msg = await message.answer(msg, reply_markup=keyboard)
