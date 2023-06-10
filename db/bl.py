@@ -792,6 +792,18 @@ def _get_payments_count(account_id: int, session: Session) -> int:
     return count
 
 
+def _get_last_payment(account_id, session) -> Payment | None:
+    """
+    Количество платежей с аккаунта
+    """
+    if account_id is None:
+        raise ValueError('account can not be None')
+
+    query = session.query(Payment, account_id).where(Payment.account_id == account_id).order_by(Payment.id.desc())
+    payment: Payment = session.execute(query).scalars().first()
+    return payment
+
+
 # **********************************************************************
 # Call from backend
 # **********************************************************************
@@ -1204,6 +1216,27 @@ def get_account_funds_info(account_id) -> list[ApiFundSmallInfo]:
                                            is_success=is_success)
         data.append(fund_small_info)
     return data
+
+
+def get_current_tariff(account_id) -> str:
+    """
+    вернуть название тарифа, который был последний оплачен, либо Пробный тариф если оплат еще не было
+    :param account_id:
+    :return:
+    """
+    session = get_session()
+    payment: Payment = _get_last_payment(account_id, session)
+    if payment is None:
+        return 'Пробный тариф'
+    cnt = payment.payed_events
+    if 1 <= cnt <= 5:
+        return 'Знакомый'
+    elif 6 <= cnt <= 49:
+        return 'Приятель'
+    elif 50 <= cnt <= 99:
+        return 'Напарник'
+    elif cnt >= 100:
+        return 'Лучший друг'
 
 
 def get_message_text(text_name: str) -> str:

@@ -295,3 +295,9 @@ def test_init_texts_tbl():
     session = get_session()
     db.init_texts_tbl(session)
     assert True
+
+
+def test_get_current_tariff():
+    account_id = 138
+    tariff_name = db.get_current_tariff(account_id)
+    assert tariff_name == 'Приятель'
