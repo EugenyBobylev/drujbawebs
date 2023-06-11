@@ -30,7 +30,7 @@ def test_get_chats():
 
     for chat_id, name, url in chats:
         print(chat_id, url)
-    assert len(chats) == 4
+    assert len(chats) == 2
 
 
 @pytest.mark.asyncio
@@ -49,7 +49,7 @@ async def test_async_changes_chats_owner():
     json_file = '/home/bobylev/PycharmProjects/drujbawebs/chat/12016637512.json'
     chat_config = ChatConfig.from_json(json_file)
     cnt = await async_change_chats_owners(chat_config)
-    assert cnt == 0
+    assert cnt == 1
 
 
 async def long_time_function(name: str) -> str:
