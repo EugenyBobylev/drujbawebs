@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from dataclasses import dataclass
@@ -157,11 +158,16 @@ async def async_change_chats_owners(chat_config: ChatConfig) -> int:
     pwd = chat_config.pwd
 
     _client = chat_config.get_telegram_client()
+    all_tasks = []
     for chat_id, _, _ in all_chats:
-        ok = await _change_channel_owner(chat_id, pwd, _client)
-        if ok:
-            _cnt += 1
-    return _cnt
+        t = asyncio.create_task(_change_channel_owner(chat_id, pwd, _client))
+        all_tasks.append(t)
+
+    await asyncio.sleep(0.2)
+    done, pending = await asyncio.wait(all_tasks, timeout=5, return_when=asyncio.ALL_COMPLETED)
+    for t in pending:
+        t.cancel()   # отменить все задачи
+    return len(done)
 
 
 async def async_get_chats(chat_config: ChatConfig) -> list[str]:
