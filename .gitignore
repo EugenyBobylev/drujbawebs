@@ -165,3 +165,4 @@ alembic/versions/
 postgres_data/
 /chat/*.json
 /chat/*.session
+/chat/*_json

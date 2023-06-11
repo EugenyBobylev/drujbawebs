@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from dataclasses import dataclass
@@ -80,7 +81,6 @@ async def _get_all_channels(client: TelegramClient) -> list:
 
 
 async def _change_channel_owner(channel_id: int, owner_password: str, client: TelegramClient) -> bool:
-    await client.connect()
     try:
         users = await client(GetParticipantsRequest(channel_id,
                                                     ChannelParticipantsSearch(''), limit=2, offset=0, hash=0))
@@ -97,8 +97,6 @@ async def _change_channel_owner(channel_id: int, owner_password: str, client: Te
             return False
     except(UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError, SrpIdInvalidError):
         return False
-    finally:
-        await client.disconnect()
 
 
 # ******************************************************
@@ -147,6 +145,31 @@ async def async_create_chat(chat_name: str, about: str = '', config: ChatConfig 
     return _chat_url
 
 
+async def async_change_channel_owner(channel_id: int, chat_config: ChatConfig) -> bool:
+    owner_password = chat_config.pwd
+    client = chat_config.get_telegram_client()
+    await client.connect()
+
+    try:
+        users = await client(GetParticipantsRequest(channel_id,
+                                                    ChannelParticipantsSearch(''), limit=2, offset=0, hash=0))
+        users = users.participants
+        if len(users) > 1:
+            user_id = users[0].user_id
+            pwd = await client(GetPasswordRequest())
+            pwd_2 = password.compute_check(pwd, owner_password)
+
+            await client(EditCreatorRequest(channel_id, user_id, pwd_2))
+            await client.delete_dialog(channel_id)
+            return True
+        else:
+            return False
+    except(UserRestrictedError, UserDeactivatedBanError, ChannelPrivateError, SrpIdInvalidError):
+        return False
+    finally:
+        await client.disconnect()
+
+
 async def async_change_chats_owners(chat_config: ChatConfig) -> int:
     """
     Выполнить передачу прав на чат пользователям чата
@@ -157,10 +180,22 @@ async def async_change_chats_owners(chat_config: ChatConfig) -> int:
     pwd = chat_config.pwd
 
     _client = chat_config.get_telegram_client()
-    for chat_id, _, _ in all_chats:
-        ok = await _change_channel_owner(chat_id, pwd, _client)
-        if ok:
-            _cnt += 1
+    all_tasks = []
+    await _client.connect()
+    try:
+        for chat_id, _, _ in all_chats:
+            t = asyncio.create_task(_change_channel_owner(chat_id, pwd, _client))
+            all_tasks.append(t)
+        await asyncio.sleep(0.2)
+        done, pending = await asyncio.wait(all_tasks, timeout=5, return_when=asyncio.ALL_COMPLETED)
+        for t in done:
+            ok = await t
+            if ok:
+                _cnt += 1
+        for t in pending:
+            t.cancel()
+    finally:
+        await _client.disconnect()
     return _cnt
 
 

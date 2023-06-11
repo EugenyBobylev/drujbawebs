@@ -118,16 +118,6 @@ def test_create_user_fundraising():
     assert r.status_code == 200
 
 
-# def test_create_user_with_wrong_auth():
-#     url = 'http://127.0.0.1:8000/user/'
-#     headers = {
-#         'Authorization': 'all nonsense'
-#     }
-#     user = User(name='test_user', timezone=1)
-#     r = requests.post(url, headers=headers, json=user.__dict__)
-#     assert r.status_code == 401
-
-
 def test_api_bot_send_me():
     token = Config().token
     url = f'https://api.telegram.org/bot{token}/getMe'

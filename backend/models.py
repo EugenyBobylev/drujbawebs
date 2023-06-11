@@ -137,6 +137,14 @@ class FundraisingInfo(BaseModel):
                f'Сумма сбора: {self.total_sum} руб.\nСредний чек: {self.avg_sum} руб.'
 
 
+class FundraisingSmallInfo(BaseModel):
+    id: int = None            # используется для передачи в feeHistory3.html
+    target: str = ''          # кому собираем
+    event_date: str = None    # дата события в виде строки вида "dd.mm.yyyy"
+    is_open: bool = True      # открыт или закрыт сбор
+    is_success: bool = True   # успешный или неуспешный сбор
+
+
 class Donor(BaseModel):
     fund_id: int
     user_id: int

@@ -71,8 +71,8 @@ def visitor_keyboard():
     return keyboard
 
 
-def create_fund_keyboard():
-    url1 = f'{bot_config.base_url}FeeCreation'
+def create_fund_keyboard(account_id: int, payed_events: int):
+    url1 = f'{bot_config.base_url}CreateFund/?account_id={account_id}&payed_events={payed_events}'
     url2 = f'{bot_config.base_url}/webapp/templates/index'
     buttons = [
         InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
@@ -133,12 +133,14 @@ def trial_user_menu_keyboard():
     return keyboard
 
 
-def user_menu_keyboard():
-    url2 = f'{bot_config.base_url}CreateFund'
+def user_menu_keyboard(user_id: int, account_id: int, payed_events: int):
+    url1 = f'{bot_config.base_url}account/{account_id}/funds/'
+    url2 = f'{bot_config.base_url}CreateFund/?account_id={account_id}&payed_events={payed_events}'
+    url3 = f'{bot_config.base_url}user/{user_id}'
     buttons = [
-        InlineKeyboardButton(text="Ваши сборы", callback_data='funds_info'),
+        InlineKeyboardButton(text="Ваши сборы", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Создать новый сбор", web_app=types.WebAppInfo(url=url2)),
-        InlineKeyboardButton(text="Редактировать анкету", callback_data='edit_user'),
+        InlineKeyboardButton(text="Редактировать анкету", web_app=types.WebAppInfo(url=url3)),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
         InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
@@ -201,8 +203,8 @@ def sent_money_menu():
     return keyboard
 
 
-def new_private_fund_keyboard():
-    url1 = f'{bot_config.base_url}FeeCreation'
+def new_private_fund_keyboard(account_id: int, payed_events: int):
+    url1 = f'{bot_config.base_url}CreateFund/?account_id={account_id}&payed_events={payed_events}'
     buttons = [
         InlineKeyboardButton(text="Создать сбор", web_app=types.WebAppInfo(url=url1)),
     ]
@@ -242,7 +244,7 @@ async def closed_fund_info_keyboard(state: FSMContext):
     return keyboard
 
 
-async  def send_message(chat_id, text, **kwargs):
+async def send_message(chat_id, text, **kwargs):
     bot = Bot.get_current()
     _msg = await bot.send_message(chat_id, text, **kwargs)
     return _msg
@@ -275,7 +277,8 @@ async def start_trial_user(chat_id, state: FSMContext):
         msg = db.get_message_text('trial_menu').format(name=name)
         await state.set_state(Steps.tg_13)
     else:
-        keyboard = create_fund_keyboard()   # идем по пути Посетителя
+        account: Account = db.get_api_user_account(user_id)
+        keyboard = create_fund_keyboard(account.id, account.payed_events)   # идем по пути Посетителя
         msg = db.get_message_text('start_message')
         await state.set_state(Steps.tg_3)
 
@@ -294,7 +297,8 @@ async def start_user(chat_id: str, state: FSMContext):
           f'Участвуете в компаниях: {user_info.company_count}\n' \
           f'Открытые сборы: {user_info.open_funds}\n' \
           f'Администратор компаний: {user_info.admin_count}'
-    keyboard = user_menu_keyboard()
+    account: Account = db.get_api_user_account(user_id)
+    keyboard = user_menu_keyboard(user_id, account.id, account.payed_events)
 
     await state.set_state(Steps.tg_19)
     _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
@@ -437,17 +441,22 @@ async def closed_fund_info(message: types.Message, fund_id: int, state: FSMConte
 
 
 async def query_fund_info(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    user_id = call.from_user.id
     user_data = await state.get_data()
-    user_status = user_data['user_status']
+    user_status = user_data.get('user_status')
 
     if user_status == UserStatus.TrialUser:
-        user_id = call.from_user.id
-        fund_id = db.get_trial_fund_id(user_id)
-        if fund_id is None:
-            await call.message.delete()
-            return await call.message.answer(f'Ошибка. Пробный сбор не найден (user_id={user_id}, fund_id={fund_id}).')
+        fund_id = user_data.get('fund_id')
 
-        await state.update_data(fund_id=fund_id)
+        is_fund_open = db.is_fund_open(fund_id)
+        if is_fund_open:
+            return await open_fund_info(call.message, fund_id, state)
+        return await closed_fund_info(call.message, fund_id, state)
+
+    if user_status == UserStatus.User:
+        fund_id = user_data.get('fund_id')
+
+        await db.start_fund(fund_id)
         is_fund_open = db.is_fund_open(fund_id)
         if is_fund_open:
             return await open_fund_info(call.message, fund_id, state)
@@ -466,7 +475,7 @@ async def webapp_create_user_account(message: types.Message, state: FSMContext):
         await state.update_data(account_id=account_id)
         await state.update_data(user_status=UserStatus.TrialUser)
 
-        keyboard = new_private_fund_keyboard()
+        keyboard = new_private_fund_keyboard(account_id, 1)
         msg = 'Ура, вы успешно зарегистрировались!\nДавайте перейдем к созданию сбора на подарок'
         _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
         msgs.put(_msg)
@@ -477,36 +486,68 @@ async def webapp_create_user_account(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
+async def webapp_user_operation(message: types.Message, state: FSMContext):
+    # state == [Steps.tg_19]
+    items = message.text.split('&')
+    answer = json.loads(items[1])
+    operation = answer.get('operation', '')
+    if operation == 'create_fund':
+        return await webapp_create_user_fund(message, state)
+    elif operation == 'open_fund':
+        fund_id = answer.get('fund_id', '')
+        account_id = answer.get('account_id', '')
+        await state.update_data(fund_id=fund_id)
+        await state.update_data(account_id=account_id)
+
+        return await open_fund_info(message, fund_id, state)
+    await _remove_all_messages(message.from_user.id)
+
+
 async def webapp_create_user_fund(message: types.Message, state: FSMContext):
-    # state == Steps.tg_3
-    await message.delete()
+    # state == [Steps.tg_3]
     await _remove_all_messages(message.from_user.id)
 
     items = message.text.split('&')
     answer = json.loads(items[1])
-    if 'fund_id' in answer:
-        fund_id = answer['fund_id']
-        invite_url = answer['invite_url']
-        target = answer['target']
-        await state.update_data(fund_id=fund_id)
-        await state.update_data(invite_url=invite_url)
+    account_id = answer['account_id']
+    fund_id = answer['fund_id']
+    await state.update_data(account_id=account_id)
+    await state.update_data(fund_id=fund_id)
 
-        msg = f'Поздравляю, вы успешно создали сбор!\nСкопируйте эту ссылку и текст сообщения и отправьте ' \
-              f'друзьям или коллегам.\nПусть каждый внесёт свой вклад в поздравление {target}\n\n'
-        await state.set_state(Steps.tg_4)
-        _msg = await message.answer(msg, parse_mode=ParseMode.HTML)
+    if 'fund_id' in answer:
+        invite_url = answer.get('invite_url', '')
+        target = answer.get('target', '')
+        reason = answer.get('reason', '')
+        if len(invite_url) > 0:
+            await state.update_data(invite_url=invite_url)
+            await state.update_data(target=target)
+            await state.update_data(reason=reason)
+            await show_fund_success(message, state)
+        else:
+            await start_payment(message, state)
+    else:
+        _msg = await message.answer("Не удалось зарегистрировать пробный сбор.")
         msgs.put(_msg)
 
-        keyboard = go_menu_keyboard()
-        msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
-              f'{invite_url}'
 
-        await state.set_state(Steps.tg_5)
-        await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-        return
+async def show_fund_success(message: types.Message, state: FSMContext):
+    await message.delete()
+    user_data = await state.get_data()
+    invite_url = user_data.get('invite_url', '')
+    target = user_data.get('target')
 
-    _msg = await message.answer("Не удалось зарегистрировать пробный сбор.")
+    msg = f'Поздравляю, вы успешно создали сбор!\nСкопируйте эту ссылку и текст сообщения и отправьте ' \
+          f'друзьям или коллегам.\nПусть каждый внесёт свой вклад в поздравление {target}\n\n'
+    await state.set_state(Steps.tg_4)
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML)
     msgs.put(_msg)
+
+    keyboard = go_menu_keyboard()
+    msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+          f'{invite_url}'
+
+    await state.set_state(Steps.tg_5)
+    await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
 
 async def show_fund_link(message: types.Message, state: FSMContext):
@@ -516,9 +557,10 @@ async def show_fund_link(message: types.Message, state: FSMContext):
 
     invite_url = user_data['invite_url']
     target = user_data['target']
+    reason = user_data['reason']
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+    msg = f'Здравствуйте! У {target} скоро {reason}.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
           f'{invite_url}'
 
     await state.set_state(Steps.tg_5)
@@ -599,8 +641,9 @@ async def start_payment(message: types.Message, state: FSMContext):
 
     keyboard = go_menu_keyboard()
     available_funds = db.get_available_funds(account_id)
-    msg = f'Сейчас у вас подключен тариф: \n\nДоступные сборы: {available_funds}\n\n\n' \
-          f'Введите количество сборов, которые хотите оплатить:'
+    tariff_name = db.get_current_tariff(account_id)
+    msg = f'Сейчас у вас подключен тариф: {tariff_name} \n\nДоступные сборы: {available_funds}\n\n\n' \
+          f'Введите количество сборов, которые хотите оплатить'
     await state.set_state(Steps.tg_8)
     _msg = await message.answer(msg, reply_markup=keyboard)
     msgs.put(_msg)
@@ -637,19 +680,42 @@ async def payment_step_2(message: types.Message, state: FSMContext):
 
 
 async def payment_step_3(message: types.Message, state: FSMContext):
+    result: PaymentResult = json.loads(message.text)
+    if result.success:
+        user_data = await state.get_data()
+        await state.update_data(payed_events=result.payed_events)
+        await show_payment_success(message, state)
+    else:
+        await show_payment_error(message, state)
+
+
+async def show_payment_success(message: types.Message, state: FSMContext):
+    await message.delete()
+    await _remove_all_messages(message.from_user.id)
+    keyboard = go_menu_keyboard()
+
+    user_data = await state.get_data()
+    payed_events = user_data.get('payed_events')
+    msg = f'Поздравляю! Вы успешно приобрели пакет из: {payed_events} сборов. ' \
+          f'Теперь можно начинать готовиться к праздникам :)\n\nСпасибо, что выбрали Дружбу!'
+    await state.set_state(Steps.tg_11)
+
+    _msg = await message.answer(msg, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
+async def show_payment_error(message: types.Message, state: FSMContext):
     await message.delete()
     await _remove_all_messages(message.from_user.id)
 
-    result: PaymentResult = json.loads(message.text)
-    if result.success:
-        keyboard = go_menu_keyboard()
-        msg = f'Поздравляю! Вы успешно приобрели пакет из: {result.payed_events} сборов. ' \
-              f'Теперь можно начинать готовиться к праздникам :)\n\nСпасибо, что выбрали Дружбу!'
-        await state.set_state(Steps.tg_11)
-    else:
-        keyboard = payment_keyboard(result.account_id, result.payed_events)
-        msg = f'К сожалению, оплата не прошла. Давайте попробуем ещё раз.'
-        await state.set_state(Steps.tg_9)
+    user_data = await state.get_data()
+    account_id = user_data.get('account_id')
+    payed_events = user_data.get('payed_events')
+
+    keyboard = payment_keyboard(account_id, payed_events)
+    msg = f'К сожалению, оплата не прошла. Давайте попробуем ещё раз.'
+    await state.set_state(Steps.tg_9)
+
     _msg = await message.answer(msg, reply_markup=keyboard)
     msgs.put(_msg)
 
@@ -769,12 +835,14 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")
-    dp.register_callback_query_handler(query_fund_info, lambda c: c.data == 'fund_info', state="*")
+    dp.register_callback_query_handler(query_fund_info, lambda c: str(c.data).startswith('fund_info'), state="*")
 
     dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
                                 state=Steps.tg_2)
-    dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'),
-                                state=Steps.tg_3)
+    dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'), state=[Steps.tg_3])
+
+    dp.register_message_handler(webapp_user_operation, filters.Text(startswith='webapp'), state=[Steps.tg_19])
+
     dp.register_message_handler(webapp_reg_user, filters.Text(startswith='webapp'),
                                 state=[Steps.s_11, Steps.s_2])
 

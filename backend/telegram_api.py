@@ -5,6 +5,7 @@ import aiohttp
 import requests
 from requests import Response
 
+import db
 from backend import PaymentResult
 from config import Config
 
@@ -86,7 +87,6 @@ async def send_payment_ok_msg(chat_id: int, payed_events: int):
     Создать сообщение с кнопкой об успешном платеже
     :param chat_id:  пользователь
     :param payed_events: количество оплаченных сборов
-    :return:
     """
     token = Config().token
     _txt = f'Поздравляю! Вы успешно приобрели пакет из: {payed_events} сборов. ' \
@@ -112,11 +112,45 @@ async def send_payment_ok_msg(chat_id: int, payed_events: int):
             assert code == 200
 
 
+async def send_payment_start_msg(chat_id: int, payed_events: int, fund_id: int):
+    """
+    Создать сообщение с уведомлением о запуске сбора
+    :param chat_id:  пользователь
+    :param payed_events: количество оплаченных сборов
+    :param fund_id: сбор для запуска
+    """
+    token = Config().token
+    _txt = f'Вижу, что вы уже создали сбор, но пока не запустили. Хотите запустить сбор сейчас?'
+    callback_data = f"fund_info {fund_id} {payed_events}"
+    data = {
+        "chat_id": chat_id,
+        "text": _txt,
+        "reply_markup": {
+            "inline_keyboard": [
+                [
+                    {'text': 'Перейти к сбору', 'callback_data': callback_data},
+                    {'text': 'В меню', 'callback_data': 'go_menu'}
+                ]
+            ]
+        },
+    }
+
+    url = f'https://api.telegram.org/bot{token}/sendMessage'
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=data) as r:
+            code = r.status
+            assert code == 200
+
+
 def send_payment_message(chat_id: int, result: PaymentResult):
     """
     Отправить пользователю в чат сообщение о результатах платежа
     """
     if result.success:
-        asyncio.run(send_payment_ok_msg(chat_id, result.payed_events))
+        fund_id = db.get_not_started_fund_id(result.account_id)
+        if fund_id is None:
+            asyncio.run(send_payment_ok_msg(chat_id, result.payed_events))
+        else:
+            asyncio.run(send_payment_start_msg(chat_id, result.payed_events, fund_id))
     else:
         asyncio.run(send_payment_fail_msg(chat_id, result.account_id, result.payed_events))

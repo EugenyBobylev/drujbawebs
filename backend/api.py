@@ -1,4 +1,5 @@
 import json
+import random
 import urllib
 import urllib.parse
 from functools import wraps
@@ -32,6 +33,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+funds = [
+    {
+        'reason': 'Юбилей Татьяны Осиповой',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Татьяне Алексеевне',  # кому собираем
+        'event_date': '2023-08-12',  # дата события
+        'transfer_info': 'На карту ее мужа, Михаила (5555-5555-4444-3333)',  # реквизиты перевода
+        'gift_info': 'Что-нибудь из ювелирки'
+    },
+    {
+        'reason': 'Проводы жены (едет к маме не месяц)',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Кольке',  # кому собираем
+        'event_date': '2023-07-12',  # дата события
+        'transfer_info': 'На карту Палыча (5555-5544-4455-4444)',  # реквизиты перевода
+        'gift_info': ''
+    },
+    {
+        'reason': 'День рождения',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+        'target': 'Семенычу',  # кому собираем
+        'event_date': '2023-07-16',  # дата события
+        'transfer_info': 'На карту Вадима Игоревича (3333-1144-3345-4444)',  # реквизиты перевода
+        'gift_info': 'Какую-нибудь фигню для его авто, потом решим'
+    }
+]
 
 
 def auth(func):
@@ -117,50 +143,25 @@ async def get_user_registration_html(request: Request):
                                       context={'request': request, 'host': host}, headers=headers)
 
 
-@app.get('/FeeCreation')
-async def get_private_fundraising_html(request: Request):
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
-    }
-    host = Config().base_url
-    return templates.TemplateResponse('feeCreation.html',
-                                      context={'request': request, 'host': host}, headers=headers)
-
-
-@app.get('/CreateFund')
-async def get_fundraising_html(request: Request):
+@app.get('/CreateFund/')
+async def get_fundraising_html(request: Request, account_id: int, payed_events: int):
     headers = {
         'ngrok-skip-browser-warning': '100',
     }
     host = Config().base_url
-    context = {'request': request, 'host': host}
-    return templates.TemplateResponse('feeCreation.html', context=context, headers=headers)
-
-
-@app.get('/EventSettings/{fund_id}')
-async def get_fund_info(fund_id: int, request: Request):
-    # Здесь какая-то херня (писал во время обострения отита)
-    host = Config().base_url
-    fund_info = db.get_fund(fund_id)
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
-    }
+    fund = funds[random.randint(0, 2)]
     context = {
         'request': request,
         'host': host,
-        'reason': fund_info.reason,
-        'target': fund_info.target,
-        'event_date': fund_info.event_date,
-        'transfer_info': fund_info.transfer_info,
-        'gift_info': fund_info.gift_info,
-        'congratulation_date': fund_info.congratulation_date,
-        'congratulation_time': fund_info.congratulation_time,
-        'event_place': fund_info.event_place,
-        'event_dresscode': fund_info.event_dresscode
+        'account_id': account_id,
+        'payed_events': payed_events,
+        'reason': fund['reason'],
+        'target': fund['target'],  # кому собираем
+        'event_date': fund['event_date'],  # дата события
+        'transfer_info': fund['transfer_info'],  # реквизиты перевода
+        'gift_info': fund['gift_info']
     }
-    return templates.TemplateResponse('editFund.html', context=context, headers=headers)
+    return templates.TemplateResponse('feeCreation.html', context=context, headers=headers)
 
 
 @app.get('/fundraising/{fund_id}')
@@ -180,12 +181,49 @@ async def get_fund(fund_id: int, request: Request):
         'event_date': fund.event_date,
         'transfer_info': fund.transfer_info,
         'gift_info': fund.gift_info,
-        'congratulation_date': fund.congratulation_date,
-        'congratulation_time': fund.congratulation_time,
+        'congratulation_date': fund.congratulation_date if fund.congratulation_date is not None else '',
+        'congratulation_time': fund.congratulation_time if fund.congratulation_time is not None else '',
         'event_place': fund.event_place,
         'event_dresscode': fund.event_dresscode
     }
     return templates.TemplateResponse('editFund.html', context=context, headers=headers)
+
+
+@app.get('/user/{user_id}')
+async def get_user(user_id: int, request: Request):
+    host = Config().base_url
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+    user: User = db.get_user(user_id)
+    context = {
+        'request': request,
+        'host': host,
+        'user_id': user_id,
+        'name': user.name,
+        'birthdate': user.birthdate.strftime('%Y-%m-%d'),
+        'timezone': user.timezone,
+    }
+    return templates.TemplateResponse('editUser.html', context=context, headers=headers)
+
+
+@app.get('/account/{account_id}/funds/')
+async def get_user_funds(account_id: int, request: Request):
+    host = Config().base_url
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
+    }
+
+    data = db.get_account_funds_info(account_id)
+    context = {
+        'request': request,
+        'host': host,
+        'account_id': account_id,
+        'funds_info': data
+    }
+    return templates.TemplateResponse('feeHistory3.html', context=context, headers=headers)
 
 
 @app.get('/donors/{fund_id}')
@@ -309,19 +347,22 @@ def get_user_card_info(user_id: int, authorization: str | None = Header(convert_
     pass
 
 
-@app.post('/api/user/fundraising/{user_id}/')
+@app.post('/api/user/fundraising/{account_id}/')
 @auth
-def create_fundraising(user_id: int, fund: Fundraising, authorization: str | None = Header(convert_underscores=True)):
+def create_fundraising(account_id: int, fund: Fundraising,
+                       authorization: str | None = Header(convert_underscores=True)):
     """
     Create new user's fundraising (event)
     """
-    fund: Fundraising = db.create_private_fundraising(user_id, fund)
+    fund: Fundraising = db.create_fundraising(account_id, fund)
     assert fund is not None
-    db.run_fun(fund.id)
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
+        'operation': 'create_fund',
+        'account_id': account_id,
         'fund_id': fund.id,
+        'reason': fund.reason,  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
         'target': fund.target,  # кому собираем
         'invite_url': fund.invite_url,
     }
@@ -334,15 +375,23 @@ def create_fundraising(user_id: int, fund: Fundraising, authorization: str | Non
     }
 
 
-@app.get('/api/fundraising/{fund_id}/')
+@app.get('/api/fundraising/{fund_id}/open/')
 @auth
-def get_api_fund(fund_id):
+def get_api_fund_open(fund_id: int, authorization: str | None = Header(convert_underscores=True)):
     """
-    Get fundraising (event)
+    Open fundraising (event)
     """
+    web_init = WebAppInitData.form_auth_header(authorization)
     fund: Fundraising = db.get_fund(fund_id)
-    fund_json = jsonable_encoder(fund)
-    return JSONResponse(content=fund_json, status_code=200)
+    data = {
+        'operation': 'open_fund',
+        'account_id': fund.account_id,
+        'fund_id': fund_id,
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, data_json)
+    assert 200 == r.status_code
+    return {'ok': True}
 
 
 @app.put('/api/fundraising/{fund_id}/')
@@ -355,6 +404,20 @@ def edit_api_fund(fund_id: int, fund: Fundraising):
     return {
         'operation': 'edit fundraising',
         'fund_id': fund_id,
+        'result': ok,
+    }
+
+
+@app.put('/api/user/{user_id}/')
+@auth
+def edit_api_user(user_id: int, user: User):
+    """
+    Edit user
+    """
+    ok: bool = db.update_user(user_id, user)
+    return {
+        'operation': 'edit fundraising',
+        'fund_id': user_id,
         'result': ok,
     }
 

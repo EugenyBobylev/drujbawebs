@@ -16,10 +16,10 @@
     -->
     <h3>Регистрация</h3>
     <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
-    <div id="myform" class="userRegistrationForm">
-        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="" size="40"/>
+    <div class="myform">
+        <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="{{name}}" size="40"/>
         <div class="dateInput">
-            <input type="date" id="birthday" name="birthday" value="1974-11-03"/>
+            <input type="date" id="birthday" name="birthday" value="{{birthdate}}"/>
             <label for="birthday">Дата рождения!</label>
         </div>
         <select class="timezone" name="timezone" id="timezone" style="max-width:90%;">
@@ -39,7 +39,7 @@
             <option value=0> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
             <option value=1> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
             <option value=2> (GMT +2:00) Киев, Калининград, Южная Африка </option>
-            <option value=3 selected> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
+            <option value=3> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
             <option value=4> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
             <option value=5> (GMT +5:00) Екатеринбург, Исламабад, Карачи, Ташкент</option>
             <option value=6> (GMT +6:00) Алматы, Дакке, Коломбо </option>
@@ -53,25 +53,20 @@
     </div>
     <div class="formFooter">
         <button onclick="postUser()">Сохранить</button>
+        <button onclick="">Закрыть</button>
     </div>
     <script>
         let tg = window.Telegram.WebApp;  //получаем объект webapp
-        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
-        tg.MainButton.show();
-        tg.MainButton.enable();
-        Telegram.WebApp.onEvent("mainButtonClicked", postUser);
 
-        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
-        document.getElementById("uname").value = user_name;
         let api_url = "{{host}}";
+        let user_id = "{{user_id}}";
+
+        let timezone = document.getElementById("timezone");
+        timezone.value = {{timezone}};
 
         async function postUser(){
-            let url = `${api_url}api/user/`;
-
-            // вывести отладочное сообещние
-            // msg = `user_id=${tg.initDataUnsafe.user.id}`
-            // if(tg.initData !== '')
-            //      Telegram.WebApp.showAlert(msg);
+            let url = `${api_url}api/user/${user_id}/`;
+            // tg.showAlert(url)
 
             // создать пользователя
             let user = {
@@ -84,7 +79,7 @@
             let body = JSON.stringify(user);
 
             let response = await fetch(url, {
-                method: 'POST',
+                method: 'PUT',
                 mode: 'cors',
                 headers: {
                     'ngrok-skip-browser-warning': '100',
@@ -93,7 +88,10 @@
                     'Authorization': btoa(tg.initData),
                 },
                 body: body,
-            });
+            }).then(response => response.json())
+              .then((data) =>{
+                  tg.close();
+              });
             console.info(response.status)
         }
     </script>

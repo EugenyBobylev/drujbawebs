@@ -6,7 +6,7 @@ from config import Config
 
 import db
 from db import get_session
-from db.models import User, Account, Company
+from db.models import User, Account, Company, Fundraising
 
 
 def test_connect_to_postgres():
@@ -146,4 +146,15 @@ def test_users_timezone_sum():
     )
 
     assert total_sum == 6
+
+
+def test_get_not_started_fund():
+    account_id = 1333
+    session = get_session()
+    query = select(Fundraising)\
+        .where(Fundraising.account_id == account_id) \
+        .where(Fundraising.start == None) \
+        .order_by(Fundraising.id)
+    result = session.execute(query).scalars().first()
+    assert result is None
 
