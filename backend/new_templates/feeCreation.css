@@ -1,0 +1,121 @@
+@font-face {
+  font-family: "SF UI Display";
+  src: url("sf-ui-display-light-58646b33e0551.otf");
+}
+h1 {
+  padding-top: 48px;
+}
+
+.formFooter input {
+  vertical-align: middle !important;
+}
+
+body {
+  background-image: url("feeCreation.png");
+  font-family: "SF UI Display", sans-serif;
+}
+
+label {
+  font-size: 14px !important;
+  vertical-align: middle !important;
+  padding-left: 10px !important;
+}
+
+.presents {
+  margin-bottom: 200px;
+}
+/* .presents  */
+.present {
+  padding: 0 24px;
+  font-size: 0;
+  margin-bottom: 8px;
+}
+/* .presents÷ */
+.present input {
+  line-height: 38px;
+  border-radius: 8px;
+  font-family: "SF UI Display", sans-serif;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #BDBDBD;
+  display: inline-block;
+  outline: none;
+  width: calc(100% - 48px);
+  margin-right: 8px;
+  vertical-align: middle;
+}
+/* .presents */
+.present input:focus {
+  border: 1px solid #282C32;
+}
+/* .presents  */
+.present button {
+  background-image: url("add-link-button.svg");
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+  background-size: contain;
+  border: none;
+  vertical-align: middle;
+}
+
+.formFooter {
+  font-size: 0;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #fff;
+  padding: 24px 0;
+}
+.formFooter button {
+  width: calc(33.3333333333% - 1px);
+  display: inline-block;
+}
+.formFooter .middleBtn {
+  border: 1px solid #788BF0;
+  background: rgba(0, 0, 0, 0);
+  color: #788BF0;
+  border-radius: 32px 4px 4px 32px;
+}
+.formFooter button:first-of-type {
+  width: calc(33.3333333333% - 8px);
+  margin-right: 8px;
+  background: transparent;
+  color: #788BF0;
+}
+.formFooter button:last-of-type {
+  border: 1px solid #788BF0;
+  margin-left: 2px;
+  border-radius: 4px 32px 32px 4px;
+}
+.formFooter .formButtons {
+  border-top: 1px solid rgba(120, 139, 240, 0.1333333333);
+  padding: 0 24px;
+  margin-top: 24px;
+}
+.formFooter .formAdding {
+  padding: 0 24px;
+}
+
+.addingOptions {
+  display: none;
+}
+.addingOptions input {
+  line-height: 40px;
+  border-radius: 8px;
+  font-family: "SF UI Display", sans-serif;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #BDBDBD;
+  display: inline-block;
+  margin: auto;
+  width: 100%;
+  margin-top: 16px;
+}
+.addingOptions input:first-child {
+  width: calc(100% - 76px);
+}
+.addingOptions input:nth-child(2) {
+  width: 66px;
+  margin-left: 10px;
+}/*# sourceMappingURL=feeCreation.css.map */

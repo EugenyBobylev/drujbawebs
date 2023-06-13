@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="participantList.css">
+    <style>
+        .copy__wrapper{
+            display: flex;
+            background: #F4F6FF;
+            border-radius: 8px;
+            justify-content: space-between;
+            padding: 8px;
+            align-items: center;
+
+        }
+        .copy__wrapper input{
+            background-color: transparent;
+            border: none;
+            outline: none;
+        }
+        .copy__wrapper button{
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #7879F1;
+            border: none;
+        }
+        .copy__wrapper button img{
+            width: 16px;
+            height: 18px;
+        }
+        footer{
+            padding-bottom: 80px;
+        }
+        ul{
+            margin-bottom: 150px;
+        }
+        .participant__footer__top{
+            background-color: #FFF;
+            margin-top: 120px;
+
+        }
+        .participant__footer__top p{
+            padding: 0 24px;
+            margin-left: 0;margin-right: 0;
+        }
+        .participant__footer__top span{
+            padding: 0 24px;
+            font-weight: 300;
+            font-size: 10px;
+            line-height: 140%;
+        }
+        .participant__footer__top textarea{
+            text-align: left !important;
+            width: 100%;
+            margin: 0 !important;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+        <h1>Список <br> участников</h1>
+      
+        <div class="participant__footer__top">
+            <p>
+                Вы можете также передать права администратора компании человеку, которого нет в списке. Для этого отправьте ему ссылку на компанию и попросите зарегистрироваться.
+Ссылка на подключение для вашей команды:
+            </p>
+            <span>
+                Ссылка на подключение для вашей команды
+            </span>
+            <div class="copy__wrapper">
+                <!-- <input class="linkParagraph" type="text" value="https://t.me/drugba_bot/23ag49x2"/>  -->
+                <textarea class="linkParagraph" value='Здравствуйте! У имя и фамилия именинника скоро день рождения. Это ссылка для сбора на подарок. Присоединяйтесь! https://t.me/drugba_bot/23ag49x2'  cols="50" rows="6">Здравствуйте! "имя и фамилия" из компании "название" приглашает вас в сервис Дружба, чтобы вместе участвовать в сборах на подарки друзьям и коллегам. Присоединяйтесь! https://t.me/drugba_bot/23ag49x2
+                </textarea>
+                <button onclick="myCopyFn()">
+                    <img 
+                     src="./img/1621635-removebg-preview.png" alt="">
+                </button>
+            </div>
+        </div>
+        <ul>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Инна Ивановна</p>
+                        <span>Бухгалтер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1999</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+            <li>
+                <div class="participantInfo">
+                    <section>
+                        <p id="p">Василий Петрович</p>
+                        <span>Инженер</span>
+                    </section>
+                    <section>
+                        <p>15.11.1990</p>
+                        <a href="">Назначить админом</a>
+                    </section>
+                </div>
+                <a href=""></a>
+            </li>
+        </ul>
+        
+        <footer>
+            <a href="" class="bottomBtn">Назад</a>
+        </footer>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).on('click','a', function(event){
+            event.preventDefault()
+            var url = $(this).attr('href');
+            $('#container').load(url)
+        })
+    </script>
+    <script>
+        function myCopyFn() {
+        // Get the text field
+        var copyText = document.querySelector(".linkParagraph");
+
+        // Select the text field
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+
+        // Copy the text inside the text field
+        // navigator.clipboard.writeText(copyText.value);
+        document.execCommand("copy");
+
+        // Alert the copied text
+        alert("Copied the text: " + copyText.value);
+        }
+    </script>
+    <script src="participantList.js"></script>
+</body>
+
+</html>
