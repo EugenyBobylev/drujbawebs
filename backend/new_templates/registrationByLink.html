@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="registration.css">
+    <style>
+        .copy__wrapper{
+            display: flex;
+            background: #F4F6FF;
+            border-radius: 8px;
+            justify-content: space-between;
+            padding: 8px;
+            align-items: center;
+
+        }
+        .copy__wrapper input{
+            background-color: transparent;
+            border: none;
+            outline: none;
+        }
+        .copy__wrapper button{
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #7879F1;
+            border: none;
+        }
+        .copy__wrapper button img{
+            width: 16px;
+            height: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+        <img src="pic.svg" alt="">
+        <h1>Регистрация</h1>
+        <p>Пожалуйста, заполните анкету. Так я буду знать, кого и когда поздравлять</p>
+        <form action="" class="registerByLink" name="registrationByLinkForm">
+            <input type="text" placeholder="Имя и фамилия" class="required" name="username" required>
+            <div class="dateInput">
+                <input id="dateInput" type="date"
+                    onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата рождения' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]"
+                    id="birthday" name="birthday" name="birthday" required>
+                <label for="birthday">Дата рождения</label>
+            </div>
+            <!-- <input type="text" id="timeZoneInput" placeholder="Часовой пояс" class="required" required> -->
+            <select class="timezone" name="timezone" id="timezone">
+                <option value="-12.0"> (GMT -12:00) Эниветок, Кваджалейн </option>
+                <option value="-11.0"> (GMT -11:00) Остров Мидуэй, Самоа </option>
+                <option value="-10.0"> (GMT -10:00) Гавайи </option>
+                <option value="-9.0"> (GMT -9:00) Аляска </option>
+                <option value="-8.0"> (GMT -8:00) Тихоокеанское время (США и Канада) </option>
+                <option value="-7.0"> (GMT -7:00) Горное время (США и Канада) </option>
+                <option value="-6.0"> (GMT -6:00) Центральное время (США и Канада), Мехико</option>
+                <option value="-5.0"> (GMT -5:00) Восточное время (США и Канада), Богота, Лима </option>
+                <option value="-4.0"> (GMT -4:00) Атлантическое время (Канада), Каракас, Ла-Пас </option>
+                <option value="-3.5"> (GMT -3:30) Ньюфаундленд </option>
+                <option value="-3.0"> (GMT -3:00) Бразилия, Буэнос-Айрес, Джорджтаун </option>
+                <option value="-2.0"> (GMT -2:00) Срединно-Атлантического </option>
+                <option value="-1.0"> (GMT -1:00 час) Азорские острова, острова Зеленого Мыса </option>
+                <option value="0.0"> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
+                <option value="1.0"> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
+                <option value="2.0"> (GMT +2:00) Киев, Калининград, Южная Африка </option>
+                <option value="3.0"> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
+                <option value="3.5"> (GMT +3:30) Тегеран </option>
+                <option value="4.0"> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
+                <option value="4.5"> (GMT +4:30) Кабул </option>
+                <option value="5.0"> (GMT +5:00) Екатеринбург, Исламабад, Карачи, Ташкент</option>
+                <option value="5.5"> (GMT +5:30) Бомбей, Калькутта, Мадрас, Нью-Дели</option>
+                <option value="5.75"> (GMT +5:45) Катманду</option>
+                <option value="6.0"> (GMT +6:00) Алматы, Дакке, Коломбо </option>
+                <option value="7.0"> (GMT +7:00) Бангкок, Ханой, Джакарта</option>
+                <option value="8.0"> (GMT +8:00) Пекин, Перт, Сингапур, Гонконг</option>
+                <option value="9.0"> (GMT +9:00) Токио, Сеул, Осака, Саппоро, Якутск</option>
+                <option value="9.5"> (GMT +9:30) Аделаида, Дарвин </option>
+                <option value="10.0"> (GMT +10:00) Восточная Австралия, Гуам, Владивосток </option>
+                <option value="11.0"> (GMT +11:00) Магадан, Соломоновы острова, Новая Каледония</option>
+                <option value="12.0"> (GMT +12:00) Окленд, Веллингтон, Фиджи, Камчатка</option>
+            </select>
+            <input type="text" placeholder="Должность" name="job">
+            <input type="text" placeholder="Компания" name="company" class="required" required>
+            <div class="formFooter">
+                <input type="checkbox" name="check" id="" required>
+                <label for="">Я согласен на обработку моих персональных данных в соответствии с Политикой и
+                    Пользовательским
+                    соглашением</label>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
+        let timeSelect = document.getElementById("timezone")
+        const date = new Date();
+        const offset = date.getTimezoneOffset() / 60 * -1;
+        let timeOption = document.querySelector('option[value="' + (offset).toFixed(1) + '"]').selected = true;
+        // document.getElementById("timeZoneInput").value = "Часовой пояс: " + Intl.DateTimeFormat().resolvedOptions().timeZone
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).on('click', 'a', function (event) {
+            event.preventDefault()
+            var url = $(this).attr('href');
+            $('#container').load(url)
+        })
+    </script>
+    <script src="./js/_api.js"></script>
+    <script src="./js/registrationByLink.js"></script>
+</body>
+
+</html>

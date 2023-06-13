@@ -1,0 +1,92 @@
+@font-face
+    font-family: "SF UI Display"
+    src: url('sf-ui-display-light-58646b33e0551.otf')
+*
+    margin: 0
+    padding: 0
+body
+    font-family: "SF UI Display", sans-serif
+a
+    text-decoration: none
+    color: #121212
+    font-family: "SF UI Display", sans-serif
+h1
+    color: #282C32
+    padding: 48px 24px 0px
+    background-color: white
+    width: 100%
+    line-height: 24px
+    font-size: 24px
+    top: 0
+    box-sizing: border-box
+.companyInfo
+    padding: 24px
+    box-sizing: border-box
+    a
+        background: #fff
+        border: 1px solid #788BF000
+        border-radius: 36px
+        line-height: 24px
+        height: 24px
+        display: inline-block
+        padding: 0 8px
+        font-size: 10px
+        box-sizing: border-box
+        vertical-align: middle
+        width: calc((100% - 40px) / 4)
+        text-align: center
+    .active
+        border: 1px solid #788BF0
+    .calendar
+        display: inline-block
+        width: 24px
+        position: relative
+        overflow: hidden
+        vertical-align: middle
+    input
+        top: 0
+        left: 50%
+        width: 10px
+        height: 24px
+        position: absolute
+        transform: scaleX(3)
+        opacity: 0
+    .calendarButton
+        width: 24px
+        background-image: url("calendar.svg")
+        background-repeat: no-repeat
+        background-size: 60%
+        background-position: center
+table
+    border-spacing: 0
+    border-collapse: separate
+    border-spacing: 0 5px
+    margin-top: 24px
+    tr
+        // margin-bottom: 5px
+        // &:last-child
+            // margin-bottom: 0
+        td
+            vertical-align: top
+            padding-right: 8px
+            // background-color: gold
+            &:first-child
+                color: #788BF0
+            &:last-child
+                padding-right: 0
+footer
+    background-color: #fff
+    padding: 24px
+    position: fixed
+    width: 100%
+    bottom: 0
+    z-index: 10
+    box-sizing: border-box
+    .bottomBtn
+        font-size: 14px
+        text-align: center
+        background-color: #F4F6FF
+        display: block
+        border-radius: 32px
+        line-height: 16px
+        padding: 16px

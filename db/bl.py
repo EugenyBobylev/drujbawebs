@@ -12,7 +12,7 @@ from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import UserInfo as ApiUserInfo
 from backend import PaymentResult as ApiPaymentResult
-from chat.user_chat import async_create_chat2
+from chat.user_chat import async_create_chat
 from config import Config
 from db.models import Msg, User, Company, Account, Fundraising, Donor, Payment
 from utils import get_days_left, get_bot_url
@@ -1163,7 +1163,7 @@ async def start_fund(fund_id: int) -> Fundraising:
     fund.invite_url = invite_url
 
     chat_name = f'{fund.reason} {fund.event_date.strftime("%d.%m.%Y")}'
-    chat_url = await async_create_chat2(chat_name)
+    chat_url = await async_create_chat(chat_name)
     fund.chat_url = chat_url
     # fund.chat_url = 'временно не доступен'
 
