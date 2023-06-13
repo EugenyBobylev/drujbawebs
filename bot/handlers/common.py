@@ -1,3 +1,4 @@
+import asyncio
 import json
 from queue import Queue
 
@@ -9,6 +10,7 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult, UserInfo
+from chat.user_chat import get_json_file, ChatConfig, async_get_chats, async_change_chats_owners
 from config import Config
 from db.bl import UserStatus
 from utils import is_number, calc_payment_sum
@@ -403,6 +405,28 @@ async def cmd_reset_payments(message: types.Message, state: FSMContext):
     db.remove_user_payments(user_id)
     msg = f'Данные о платежах пользователя @{user_name} ({first_name} {last_name}) ' \
           f'были удалены из базы данных бота Дружба'
+    await message.answer(msg)
+
+
+async def cmd_get_all_chats(message: types.Message, state: FSMContext):
+    await message.delete()
+    await state.finish()
+    json_file = get_json_file()
+    chat_config = ChatConfig.from_json(json_file)
+    data = await async_get_chats(chat_config)
+    msg = ''
+    for chat in data:
+        msg = f'{msg}{chat[1]} {chat[2]}\n'
+    await message.answer(msg)
+
+
+async def cmd_change_chats_owners(message: types.Message, state: FSMContext):
+    await message.delete()
+    await state.finish()
+    json_file = get_json_file()
+    chat_config = ChatConfig.from_json(json_file)
+    cnt = await async_change_chats_owners(chat_config)
+    msg = f'Успешно изменено {cnt} чатов'
     await message.answer(msg)
 
 
@@ -832,6 +856,9 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_reset, commands="reset", state="*")
     dp.register_message_handler(cmd_reset_payments, commands="reset_payments", state="*")
+    dp.register_message_handler(cmd_get_all_chats, commands="get_all_chats", state="*")
+    dp.register_message_handler(cmd_change_chats_owners, commands='change_chats_owners', state="*")
+
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")
