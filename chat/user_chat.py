@@ -136,8 +136,8 @@ async def async_create_chat(chat_name: str, about: str = '', config: ChatConfig 
     if about == '':
         about = chat_name
 
-    json_file = get_json_file()
     if config is None:
+        json_file = get_json_file()
         config = get_chat_config(json_file)
     _client = config.get_telegram_client()
     # with _client:
