@@ -23,7 +23,7 @@ from utils import check_webapp_signature, decode_base64_str
 config = Config()
 app = FastAPI()
 
-templates = Jinja2Templates(directory="backend/templates")
+templates = Jinja2Templates(directory=config.templates_dir)
 
 origins = ["*"]
 app.add_middleware(
