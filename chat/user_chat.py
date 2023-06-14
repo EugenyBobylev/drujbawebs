@@ -23,12 +23,27 @@ class ChatConfig:
     app_hash: str
     pwd: str
     session_path: str
+    proxy_host: str
+    proxy_port: int
+    proxy_login: str
+    proxy_pwd: str
 
     def __repr__(self):
         return f'app_id={self.app_id}; app_hash="{self.app_hash}"; pwd="{self.pwd}"; session_path="{self.session_path}"'
 
     def get_telegram_client(self) -> TelegramClient:
-        client = TelegramClient(self.session_path, self.app_id, self.app_hash,)
+        proxy = None
+        if self.proxy_host and self.proxy_port:
+            proxy = {
+                'proxy_type': 'socks5',
+                'addr': self.proxy_host,
+                'port': self.proxy_port,
+                'rdns': True
+            }
+            if self.proxy_login and self.proxy_pwd:
+                proxy['login'] = self.proxy_login
+                proxy['password'] = self.proxy_pwd
+        client = TelegramClient(self.session_path, self.app_id, self.app_hash, proxy=proxy)
         return client
 
     @classmethod
@@ -39,7 +54,11 @@ class ChatConfig:
             instance = cls(app_id=data.get('app_id', None),
                            app_hash=data.get('app_hash', None),
                            pwd=data.get('twoFA', None),
-                           session_path=path[0:-4]+'session')
+                           session_path=path[0:-4]+'session',
+                           proxy_port=data.get('proxy_port', None),
+                           proxy_host=data.get('proxy_host', None),
+                           proxy_login=data.get('proxy_login', None),
+                           proxy_pwd=data.get('proxy_pwd', None),)
             return instance
 
 
