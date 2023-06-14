@@ -42,6 +42,7 @@ def test_create_config():
     assert config.db is not None
     assert config.db_user is not None
     assert config.db_password is not None
+    assert config.templates_dir != ''
 
 
 def test_decode_webapp_init_data():
