@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="registration.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         .birthday{
             text-align: left;
@@ -81,7 +82,7 @@
         let timeSelect = document.getElementById("timezone")
         const date = new Date();
         const offset = date.getTimezoneOffset()/ 60 * -1;
-        let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
+        // let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
         // document.getElementById("timeZoneInput").value = "Часовой пояс: " + Intl.DateTimeFormat().resolvedOptions().timeZone
     </script>
     <script>
@@ -93,10 +94,10 @@
 
         let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
         document.getElementById("uname").value = user_name;
-        let api_url = "{{host}}";
-
+        // let api_url = "{{host}}";
+        // console.log(api_url);
         async function postUser(){
-            let url = `${api_url}api/user/`;
+            let url = `https://panel.druzhba.io/api/user/`;
 
             // вывести отладочное сообещние
             // msg = `user_id=${tg.initDataUnsafe.user.id}`
