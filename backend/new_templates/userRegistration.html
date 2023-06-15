@@ -30,17 +30,17 @@
                 <label for="birthday">Дата рождения</label>
             </div>
             <select class="timezone" name="timezone" id="timezone">
-                <option value=-12> (GMT -12:00) Эниветок, Кваджалейн </option>
-                <option value=-11> (GMT -11:00) Остров Мидуэй, Самоа </option>
-                <option value=-10> (GMT -10:00) Гавайи </option>
-                <option value=-9> (GMT -9:00) Аляска </option>
-                <option value=-8> (GMT -8:00) Тихоокеанское время (США и Канада) </option>
-                <option value=-7> (GMT -7:00) Горное время (США и Канада) </option>
-                <option value=-6> (GMT -6:00) Центральное время (США и Канада), Мехико</option>
-                <option value=-5> (GMT -5:00) Восточное время (США и Канада), Богота, Лима </option>
-                <option value=-4> (GMT -4:00) Атлантическое время (Канада), Каракас, Ла-Пас </option>
-                <option value=-3> (GMT -3:30) Ньюфаундленд </option>
-                <option value=-3> (GMT -3:00) Бразилия, Буэнос-Айрес, Джорджтаун </option>
+                <option value=-1> Калининград (Мск-1).</option>
+                <option value=0> Москва (Мск)</option>
+                <option value=+1> Самара (МСК+1) </option>
+                <option value=+2> Екатеринбург (МСК+2).</option>
+                <option value=+3> Омск (МСК+3)</option>
+                <option value=+4> Красноярск (МСК+4)</option>
+                <option value=+5> Иркутск (МСК+5)</option>
+                <option value=+6> Якутск (МСК+6)</option>
+                <option value=+7> Владивосток (МСК+7) </option>
+                <option value=+8> Магадан (МСК+8)</option>
+                <option value=+9> Камчатка (МСК+9)</option>
                 <option value=-2> (GMT -2:00) Срединно-Атлантического </option>
                 <option value=-1> (GMT -1:00 час) Азорские острова, острова Зеленого Мыса </option>
                 <option value=0> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
@@ -87,9 +87,9 @@
     </script>
     <script>
         let tg = window.Telegram.WebApp;  //получаем объект webapp
-        tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
-        tg.MainButton.show();
-        tg.MainButton.enable();
+        // tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
+        // tg.MainButton.show();
+        // tg.MainButton.enable();
         Telegram.WebApp.onEvent("mainButtonClicked", postUser);
 
         let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
