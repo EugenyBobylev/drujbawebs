@@ -85,7 +85,7 @@ async def _create_channel(chat_name, chat_about, client: TelegramClient) -> str:
     return channel_link
 
 
-async def _get_all_channels(client: TelegramClient) -> list:
+async def _get_all_channels(client: TelegramClient) -> list|str:
     channels = []
     try:
         await client.connect()
@@ -94,6 +94,9 @@ async def _get_all_channels(client: TelegramClient) -> list:
                 link = await get_channel_link(dialog.id, client)
                 data = (dialog.id, dialog.title, link)
                 channels.append(data)
+    except (UserRestrictedError, UserDeactivatedBanError) as ex:
+        msg = ex.args[0]
+        return msg
     finally:
         await client.disconnect()
     return channels
@@ -218,7 +221,7 @@ async def async_change_chats_owners(chat_config: ChatConfig) -> int:
     return _cnt
 
 
-async def async_get_chats(chat_config: ChatConfig) -> list[str]:
+async def async_get_chats(chat_config: ChatConfig) -> list[str]|str:
     """
     Вернуть список всех чатов созданных пользователем из chat_config
     :return: (chat_id, chat_name, chat_url)

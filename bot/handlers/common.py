@@ -10,7 +10,7 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult, UserInfo
-from chat.user_chat import get_json_file, ChatConfig, async_get_chats, async_change_chats_owners
+from chat.user_chat import get_json_file, ChatConfig, async_get_chats, async_change_chats_owners, async_create_chat
 from config import Config
 from db.bl import UserStatus
 from utils import is_number, calc_payment_sum
@@ -46,6 +46,8 @@ class Steps(StatesGroup):
     s_4 = State()    # экран для ввода суммы перевода
     s_5 = State()    # экран где благодарим за перевод
     s_6 = State()    # экран после регистрации анонимного донора
+
+    cmd_create_chat = State()
 
     fund_info = State()
     reg_company = State()
@@ -415,8 +417,11 @@ async def cmd_get_all_chats(message: types.Message, state: FSMContext):
     chat_config = ChatConfig.from_json(json_file)
     data = await async_get_chats(chat_config)
     msg = ''
-    for chat in data:
-        msg = f'{msg}{chat[1]} {chat[2]}\n'
+    if type(data) is list:
+        for chat in data:
+            msg = f'{msg}{chat[1]} {chat[2]}\n'
+    else:
+        msg = data
     await message.answer(msg)
 
 
@@ -427,6 +432,27 @@ async def cmd_change_chats_owners(message: types.Message, state: FSMContext):
     chat_config = ChatConfig.from_json(json_file)
     cnt = await async_change_chats_owners(chat_config)
     msg = f'Успешно изменено {cnt} чатов'
+    await message.answer(msg)
+
+
+async def cmd_create_chat(message: types.Message, state: FSMContext):
+    await message.delete()
+    await state.finish()
+    await state.set_state(Steps.cmd_create_chat)
+    msg = 'Введите название чата и нажмите Enter'
+    await message.answer(msg)
+
+
+async def create_chat(message: types.Message, state: FSMContext):
+    await message.delete()
+    chat_name = message.text
+    if not chat_name:
+        await message.answer('Введите название чата и нажмите Enter')
+        return
+
+    await state.finish()
+    chat_url = await async_create_chat(chat_name)
+    msg = f'Чат {chat_name} создан ссылка: "{chat_url}"'
     await message.answer(msg)
 
 
@@ -858,6 +884,7 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_reset_payments, commands="reset_payments", state="*")
     dp.register_message_handler(cmd_get_all_chats, commands="get_all_chats", state="*")
     dp.register_message_handler(cmd_change_chats_owners, commands='change_chats_owners', state="*")
+    dp.register_message_handler(cmd_create_chat, commands='create_chat', state="*")
 
     dp.register_callback_query_handler(query_start, lambda c: c.data == 'home', state="*")
     dp.register_callback_query_handler(query_show_fund_link, lambda c: c.data == 'show_fund_link', state="*")
@@ -898,3 +925,5 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(sent_money_2, state=Steps.s_4)
 
     dp.register_callback_query_handler(query_edit_user, lambda c: c.data == 'edit_user', state='*')
+
+    dp.register_message_handler(create_chat, state=Steps.cmd_create_chat)

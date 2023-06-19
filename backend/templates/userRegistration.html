@@ -66,7 +66,7 @@
         let api_url = "{{host}}";
 
         async function postUser(){
-            let url = `https://panel.druzhba.io/api/user/`;
+            let url = `${api_url}api/user/`;
 
             // вывести отладочное сообещние
             // msg = `user_id=${tg.initDataUnsafe.user.id}`
@@ -75,7 +75,7 @@
 
             // создать пользователя
             let user = {
-                id: 100,
+                id: tg.initDataUnsafe.user.id,
                 name: document.getElementById("uname").value,
                 birthdate: document.getElementById("birthday").value,
                 timezone: document.getElementById("timezone").value,
@@ -94,7 +94,7 @@
                 },
                 body: body,
             });
-            console.info(response)
+            console.info(response.status)
         }
     </script>
 </body>
