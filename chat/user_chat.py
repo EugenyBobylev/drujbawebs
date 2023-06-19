@@ -41,7 +41,7 @@ class ChatConfig:
                 'rdns': True
             }
             if self.proxy_login and self.proxy_pwd:
-                proxy['login'] = self.proxy_login
+                proxy['username'] = self.proxy_login
                 proxy['password'] = self.proxy_pwd
         client = TelegramClient(self.session_path, self.app_id, self.app_hash, proxy=proxy)
         return client
