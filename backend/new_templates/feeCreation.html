@@ -30,8 +30,8 @@
         <h1>Создание сбора</h1>
         <p>Пожалуйста, заполните данные о сборе</p>
         <form action="" name="feeCreationForm" class="feeCreation">
-            <input type="text" id='reason' placeholder="Тип события" name="type" >
-            <input type="text" id="target" placeholder="Кому собираем" name="collect" >
+            <input type="text" id='reason' placeholder="Тип события" name="type"  value="{{reason}}">
+            <input type="text" id="target" placeholder="Кому собираем" name="collect"  value="{{target}}">
             <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
             <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}">
             <div class="dateInput">
@@ -133,21 +133,27 @@
     </script>
      <script>
         let tg = window.Telegram.WebApp;  //получаем объект webapp
+        
+
+        
+
+        
+        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+        async function postFund(){
         let api_url = "https://panel.druzhba.io/";
         let account_id = "{{account_id}}";
         let payed_events = "{{payed_events}}";
-
-        let run_btn = document.getElementById("runbtn");
-        let pay_btn = document.getElementById("paybtn");
 
         let need_pay = payed_events < 1;
         if(need_pay)
             run_btn.style.display = "none";
         else
             pay_btn.style.display = "none";
-        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
 
-        async function postFund(){
+        let run_btn = document.getElementById("runbtn");
+        let pay_btn = document.getElementById("paybtn");
+
             // let user_id = tg.initDataUnsafe.user.id;
             let url = `${api_url}api/user/fundraising/${account_id}/`;
 
@@ -173,6 +179,7 @@
                 event_dresscode: document.getElementById("dresscode").value,
             };
 
+            console.log(fund);
             let body = JSON.stringify(fund);
             // Отладочное сообщение
             // tg.showAlert(fund.reason);
