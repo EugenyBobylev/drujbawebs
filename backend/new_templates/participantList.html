@@ -8,6 +8,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="participantList.css">
+    <link rel="stylesheet" href="https://drugba-test.netlify.app/participantList.css">
     <style>
         .copy__wrapper{
             display: flex;
@@ -145,7 +146,7 @@
         Telegram.WebApp.onEvent("mainButtonClicked", postFund);
 
         let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
-        let api_url = "{{host}}";
+        let api_url = "https://panel.druzhba.io/";
         let fund_id = "{{fund_id}}";
 
         async function deleteDonor(user_id){

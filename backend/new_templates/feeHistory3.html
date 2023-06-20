@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="feeHistory3.css">
+    <link rel="stylesheet" href="https://drugba-test.netlify.app/feeHistory3.css">
     <style>
         footer{
             padding-bottom: 90px;
@@ -187,7 +188,7 @@
     </script>
       <script>
         let tg = window.Telegram.WebApp; //получаем объект webapp
-        let api_url = "{{host}}";
+        let api_url = "https://panel.druzhba.io/";
         let account_id = "{{account_id}}";
 
         async function openFund(fund_id){
