@@ -87,7 +87,6 @@ def auth(func):
 async def get_test(request: Request):
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     host = Config().base_url
     courses = ['C', 'C++', 'Python', 'Java']
@@ -123,7 +122,6 @@ async def get_query_id(query_id: str):
 async def get_payment_html(request: Request, account_id: int, cnt: int):
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     host = Config().base_url
     context = {
@@ -139,7 +137,6 @@ async def get_payment_html(request: Request, account_id: int, cnt: int):
 async def get_user_registration_html(request: Request):
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     host = Config().base_url
     return templates.TemplateResponse('userRegistration.html',
@@ -172,7 +169,6 @@ async def get_fund(fund_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     fund: Fundraising = db.get_fund(fund_id)
     context = {
@@ -197,7 +193,6 @@ async def get_user(user_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     user: User = db.get_user(user_id)
     context = {
@@ -216,7 +211,6 @@ async def get_user_funds(account_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        # 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
 
     data = db.get_account_funds_info(account_id)
@@ -234,7 +228,6 @@ async def get_donors(fund_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     data = db.get_fund_donors(fund_id)
     donors = []
@@ -261,7 +254,6 @@ async def get_donors(fund_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     data = db.get_fund_donors(fund_id)
     donors = []
