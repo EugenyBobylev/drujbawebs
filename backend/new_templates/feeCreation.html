@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="feeCreation.css">
     <link rel="stylesheet" href="https://drugba-test.netlify.app/feeCreation.css">
     <link rel="stylesheet" href="https://drugba-test.netlify.app/registration.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         .presents{
             margin-bottom: 280px;
@@ -43,7 +44,7 @@
             <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
             <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}">
             <div class="dateInput">
-                <input id="dateInput eventDate" type="date"  value="{{event_date}}" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата события' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
+                <input id="eventDate" type="date"  value="{{event_date}}" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата события' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
                 <label for="birthday">Дата рождения</label>
             </div>
             <input type="text" placeholder="Ссылка на внешнюю копилку/карту" name="url_card" required>
@@ -152,17 +153,19 @@
         let account_id = "{{account_id}}";
         let payed_events = "{{payed_events}}";
 
+        let run_btn = document.getElementById("runbtn");
+        // let pay_btn = document.getElementById("paybtn");
+
         let need_pay = payed_events < 1;
         if(need_pay)
             run_btn.style.display = "none";
-        else
-            pay_btn.style.display = "none";
+        // else
+        //     pay_btn.style.display = "none";
 
-        let run_btn = document.getElementById("runbtn");
-        let pay_btn = document.getElementById("paybtn");
+        
 
             // let user_id = tg.initDataUnsafe.user.id;
-            let url = `${api_url}api/user/fundraising/${account_id}/`;
+            let urll = `${api_url}api/user/fundraising/${account_id}/`;
 
             // создать сбор (fundraising)
             let congratulations_date = document.getElementById("congratulationDate").value;
@@ -186,13 +189,12 @@
                 event_dresscode: document.getElementById("dresscode").value,
             };
 
-            console.log(fund);
             let body = JSON.stringify(fund);
             // Отладочное сообщение
             // tg.showAlert(fund.reason);
             // alert(body);
 
-            let response = await fetch(url, {
+            let response = await fetch(urll, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -203,7 +205,8 @@
                 },
                 body: body,
             });
-            console.info(response.status)
+
+
         }
     </script>
     <script src="./js/_api.js"></script>
