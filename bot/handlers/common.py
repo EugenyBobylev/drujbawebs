@@ -695,7 +695,9 @@ async def start_payment(message: types.Message, state: FSMContext):
     msg = f'Сейчас у вас подключен тариф: {tariff_name} \n\nДоступные сборы: {available_funds}\n\n\n' \
           f'Введите количество сборов, которые хотите оплатить'
     await state.set_state(Steps.tg_8)
-    _msg = await message.answer(msg, reply_markup=keyboard)
+
+    photo = open('bot/images/tariffs.jpg', 'rb')
+    _msg = await message.answer_photo(photo, caption=msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 

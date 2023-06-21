@@ -3,9 +3,11 @@ import random
 import urllib
 import urllib.parse
 from functools import wraps
+from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.encoders import jsonable_encoder
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
@@ -33,7 +35,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+static_dir = config.app_dir + '/backend/static'
+app.mount('/static', StaticFiles(directory=static_dir), name='static')
 
 funds = [
     {
@@ -84,7 +87,6 @@ def auth(func):
 async def get_test(request: Request):
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     host = Config().base_url
     courses = ['C', 'C++', 'Python', 'Java']
@@ -114,13 +116,12 @@ async def get_query_id(query_id: str):
 
 
 # ****************************************
-# Вызов WebApps
+# Вызовы WebApps
 # ****************************************
 @app.get('/payment/{account_id}/{cnt}')
 async def get_payment_html(request: Request, account_id: int, cnt: int):
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     host = Config().base_url
     context = {
@@ -136,7 +137,6 @@ async def get_payment_html(request: Request, account_id: int, cnt: int):
 async def get_user_registration_html(request: Request):
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     host = Config().base_url
     return templates.TemplateResponse('userRegistration.html',
@@ -169,7 +169,6 @@ async def get_fund(fund_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     fund: Fundraising = db.get_fund(fund_id)
     context = {
@@ -194,7 +193,6 @@ async def get_user(user_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     user: User = db.get_user(user_id)
     context = {
@@ -213,7 +211,6 @@ async def get_user_funds(account_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
 
     data = db.get_account_funds_info(account_id)
@@ -231,7 +228,6 @@ async def get_donors(fund_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     data = db.get_fund_donors(fund_id)
     donors = []
@@ -258,7 +254,6 @@ async def get_donors(fund_id: int, request: Request):
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'
     }
     data = db.get_fund_donors(fund_id)
     donors = []
@@ -279,7 +274,7 @@ async def get_donors(fund_id: int, request: Request):
 
 
 # ****************************************
-# API for PrivateUser
+# API
 # ****************************************
 @app.post('/api/user/')
 @auth
