@@ -38,29 +38,29 @@ app.add_middleware(
 static_dir = config.app_dir + '/backend/static'
 app.mount('/static', StaticFiles(directory=static_dir), name='static')
 
-funds = [
-    {
-        'reason': 'Юбилей Татьяны Осиповой',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
-        'target': 'Татьяне Алексеевне',  # кому собираем
-        'event_date': '2023-08-12',  # дата события
-        'transfer_info': 'На карту ее мужа, Михаила (5555-5555-4444-3333)',  # реквизиты перевода
-        'gift_info': 'Что-нибудь из ювелирки'
-    },
-    {
-        'reason': 'Проводы жены (едет к маме не месяц)',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
-        'target': 'Кольке',  # кому собираем
-        'event_date': '2023-07-12',  # дата события
-        'transfer_info': 'На карту Палыча (5555-5544-4455-4444)',  # реквизиты перевода
-        'gift_info': ''
-    },
-    {
-        'reason': 'День рождения',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
-        'target': 'Семенычу',  # кому собираем
-        'event_date': '2023-07-16',  # дата события
-        'transfer_info': 'На карту Вадима Игоревича (3333-1144-3345-4444)',  # реквизиты перевода
-        'gift_info': 'Какую-нибудь фигню для его авто, потом решим'
-    }
-]
+# funds = [
+#     {
+#         'reason': 'Юбилей Татьяны Осиповой',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+#         'target': 'Татьяне Алексеевне',  # кому собираем
+#         'event_date': '2023-08-12',  # дата события
+#         'transfer_info': 'На карту ее мужа, Михаила (5555-5555-4444-3333)',  # реквизиты перевода
+#         'gift_info': 'Что-нибудь из ювелирки'
+#     },
+#     {
+#         'reason': 'Проводы жены (едет к маме не месяц)',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+#         'target': 'Кольке',  # кому собираем
+#         'event_date': '2023-07-12',  # дата события
+#         'transfer_info': 'На карту Палыча (5555-5544-4455-4444)',  # реквизиты перевода
+#         'gift_info': ''
+#     },
+#     {
+#         'reason': 'День рождения',  # основание для сбора (ДР, юбилей, свадьба, 8-е марта)
+#         'target': 'Семенычу',  # кому собираем
+#         'event_date': '2023-07-16',  # дата события
+#         'transfer_info': 'На карту Вадима Игоревича (3333-1144-3345-4444)',  # реквизиты перевода
+#         'gift_info': 'Какую-нибудь фигню для его авто, потом решим'
+#     }
+# ]
 
 
 def auth(func):
@@ -149,17 +149,17 @@ async def get_fundraising_html(request: Request, account_id: int, payed_events: 
         'ngrok-skip-browser-warning': '100',
     }
     host = Config().base_url
-    fund = funds[random.randint(0, 2)]
+    # fund = funds[random.randint(0, 2)]
     context = {
         'request': request,
         'host': host,
         'account_id': account_id,
         'payed_events': payed_events,
-        'reason': fund['reason'],
-        'target': fund['target'],  # кому собираем
-        'event_date': fund['event_date'],  # дата события
-        'transfer_info': fund['transfer_info'],  # реквизиты перевода
-        'gift_info': fund['gift_info']
+        # 'reason': fund['reason'],
+        # 'target': fund['target'],  # кому собираем
+        # 'event_date': fund['event_date'],  # дата события
+        # 'transfer_info': fund['transfer_info'],  # реквизиты перевода
+        # 'gift_info': fund['gift_info']
     }
     return templates.TemplateResponse('feeCreation.html', context=context, headers=headers)
 
