@@ -106,9 +106,9 @@
         function addPresent(e) {
             
             if (e.target.className != "removeButton") {
-                console.log('okkkkk');
                 e.target.className = "removeButton"
-                e.target.style.backgroundImage = 'url("delete.svg")'
+                e.target.style.backgroundColor = 'red'
+                e.target.style.backgroundImage = 'url("./delete.svg")'
                 let newDiv = document.createElement('div')
                 newDiv.innerHTML = `
                 <div class="present" id="present">
