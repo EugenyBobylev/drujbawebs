@@ -29,6 +29,10 @@
             border-radius: 32px !important;
             margin-top: 0 !important;
         }
+        .removeButton{
+            background-image: url('./delete.svg') !important;
+            background-size: cover;
+        }
     </style>
 
 </head>
@@ -107,8 +111,6 @@
             
             if (e.target.className != "removeButton") {
                 e.target.className = "removeButton"
-                e.target.style.backgroundColor = 'red'
-                e.target.style.backgroundImage = 'url("./delete.svg")'
                 let newDiv = document.createElement('div')
                 newDiv.innerHTML = `
                 <div class="present" id="present">
