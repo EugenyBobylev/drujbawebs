@@ -30,7 +30,7 @@
             margin-top: 0 !important;
         }
         .presents .present .removeButton{
-            background-image: url('./delete.svg') !important;
+            background-image: url({{ host }}static/delete.svg) !important;
             background-size: cover;
         }
     </style>
@@ -51,9 +51,6 @@
                 <input id="eventDate"  type="date"  value="{{event_date}}" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата события' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
                 <label for="birthday">Дата рождения</label>
             </div>
-            <input type="text" placeholder="Ссылка на внешнюю копилку/карту" name="url_card" required>
-            <p class="smallParagraph">Ссылки на желаемый подарок
-                *</p>
                 <div class="present " id="present0">
                     <input  class="present__value " type="text" placeholder="Ссылка"
                          name="urls_gifts" required>
@@ -197,7 +194,7 @@
                 congratulation_time: congratulations_time,
                 event_place: document.getElementById("eventPlace").value,
                 event_dresscode: document.getElementById("dresscode").value,
-                presents: DataPresents,
+                url_card: DataPresents,
             };
 
             console.log(fund);

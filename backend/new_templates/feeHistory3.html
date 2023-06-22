@@ -173,7 +173,7 @@
 
         <table>
             {% for fi in funds_info %}
-                <tr><td><button id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})">{{fi.target}} {{fi.event_date}}</button></td></tr>
+            <tr><td><button id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})">{{fi.target}} {{fi.event_date}}</button></td></tr>
             {% endfor %}
         </table>
         <br>
