@@ -1229,7 +1229,7 @@ def get_current_tariff(account_id) -> str:
     session = get_session()
     payment: Payment = _get_last_payment(account_id, session)
     if payment is None:
-        return 'Пробный тариф'
+        return 'Пробный'
     cnt = payment.payed_events
     if 1 <= cnt <= 5:
         return 'Знакомый'
