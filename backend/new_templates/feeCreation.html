@@ -195,7 +195,7 @@
                 start: need_pay ? null : new Date().toJSON().slice(0, 10),
                 event_date: document.getElementById("eventDate").value,
                 transfer_info: document.getElementById("transferInfo").value,
-                gift_info: DataPresents,
+                gift_info: DataPresents.join(' '),
                 congratulation_date: congratulations_date,
                 congratulation_time: congratulations_time,
                 event_place: document.getElementById("eventPlace").value,
