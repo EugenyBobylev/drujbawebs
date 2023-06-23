@@ -2,6 +2,17 @@
 базовый url это BASE_URL
 путь ка шаблонам jinja2 это TEMPLATES_DIR
 
+структура:
+ - **alembic**           инф. для миграции БД
+- **backend**            FastApi (работа с webapp)
+- **backend/templates**  шаблоны html тут должны лежать в итоге, сейчас лежат голые html без верстки
+- **backend/new_templates**  шаблоны с версткой, сейчас переносится логика из шаблонов лежащих в template
+- **backend/static**         статический контент html, по итогу вся статика должна быть тут
+- **bot**      telegram bot
+- **db**       модели для БД
+- **logs**     логи
+- **srv**      версии скриптов котоые используются на сервере, для информации
+- **tests**    тесты (это не unit tests)         
 
 #### requirements
 ```shell
