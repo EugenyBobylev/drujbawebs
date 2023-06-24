@@ -27,6 +27,36 @@
         .companyInfo a{
             width: 100%;
         }
+                table.blueTable {
+        border: 1px solid #1C6EA4;
+        background-color: #EEEEEE;
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
+        }
+        table.blueTable td, table.blueTable th {
+        border: 1px solid #AAAAAA;
+        padding: 3px 10px;
+        }
+        table.blueTable tbody td {
+        font-size: 11px;
+        }
+        table.blueTable tr:nth-child(even) {
+        background: #D0E4F5;
+        }
+        table.blueTable tfoot td {
+        font-size: 14px;
+        }
+        table.blueTable tfoot .links {
+        text-align: right;
+        }
+        table.blueTable tfoot .links a{
+        display: inline-block;
+        background: #1C6EA4;
+        color: #FFFFFF;
+        padding: 2px 8px;
+        border-radius: 5px;
+        }
     </style>
 </head>
 
@@ -178,10 +208,11 @@
         </ul> -->
     
 
-        <table>
+        <table class="blueTable">
             {% for fi in funds_info %}
             <tr><td><button id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})">{{fi.target}} {{fi.event_date}}</button></td></tr>
             {% endfor %}
+            
         </table>
         <br>
         <footer class="formFooter">
