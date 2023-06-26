@@ -210,7 +210,7 @@
             {% for fi in funds_info %}
             <li>
                 <div class="info" >
-                    <p>Открытие офиса {{fi.target}}</p>
+                    <p>{{fi.target}}</p>
                     <p>{{fi.event_date}}</p>
                 </div>
                 <a href="#" id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})"></a>
