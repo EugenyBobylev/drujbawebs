@@ -21,6 +21,10 @@
         a{
             text-decoration: none;
         }
+        .formButtons{
+            display: flex;
+            justify-content: space-between;
+        }
         .formButtons > button{
             margin-top: 0 !important;
 
@@ -46,7 +50,7 @@
         <form action="" name="feeCreationForm" class="feeCreation">
             <input type="text" id='reason' placeholder="Тип события" name="type"  value="{{reason}}">
             <input type="text" id="target" placeholder="Кому собираем" name="collect"  value="{{target}}">
-            <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
+            <!-- <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}"> -->
             <!-- <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}"> -->
             <!-- <div class="dateInput">
                 <input id="eventDate"  type="date"  value="{{event_date}}" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата события' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
@@ -100,7 +104,8 @@
             $('#container').load(url)
         })
         function loadFn (){
-            window.location.reload()
+            // window.location.reload()
+            window.close()
         }
     </script>
     <script>
@@ -194,12 +199,16 @@
                 target: document.getElementById("target").value,
                 start: need_pay ? null : new Date().toJSON().slice(0, 10),
                 event_date: document.getElementById("eventDate").value,
-                transfer_info: document.getElementById("transferInfo").value,
+                // transfer_info: document.getElementById("transferInfo").value,
+                transfer_info: 'aaaaaa',
                 gift_info: DataPresents.join(' '),
                 congratulation_date: congratulations_date,
                 congratulation_time: congratulations_time,
                 event_place: document.getElementById("eventPlace").value,
                 event_dresscode: document.getElementById("dresscode").value,
+                start: "2023-06-26",
+                end: "2023-06-26",
+                account_id:10
             };
 
             console.log(fund);
@@ -224,7 +233,7 @@
         }
     </script>
     <script src="./js/_api.js"></script>
-    <script src="./js/feeCreation.js"></script>
+    <!-- <script src="./js/feeCreation.js"></script> -->
 </body>
 
 </html>

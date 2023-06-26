@@ -20,6 +20,43 @@
             width: 100%;
             border: none;
         }
+        .companyInfo{
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .companyInfo a{
+            width: 100%;
+        }
+                table.blueTable {
+        border: 1px solid #1C6EA4;
+        background-color: #EEEEEE;
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
+        }
+        table.blueTable td, table.blueTable th {
+        border: 1px solid #AAAAAA;
+        padding: 3px 10px;
+        }
+        table.blueTable tbody td {
+        font-size: 11px;
+        }
+        table.blueTable tr:nth-child(even) {
+        background: #D0E4F5;
+        }
+        table.blueTable tfoot td {
+        font-size: 14px;
+        }
+        table.blueTable tfoot .links {
+        text-align: right;
+        }
+        table.blueTable tfoot .links a{
+        display: inline-block;
+        background: #1C6EA4;
+        color: #FFFFFF;
+        padding: 2px 8px;
+        border-radius: 5px;
+        }
     </style>
 </head>
 
@@ -169,13 +206,24 @@
                 <a href=""></a>
             </li>
         </ul> -->
-    
+       <ul>
+            {% for fi in funds_info %}
+            <li>
+                <div class="info" >
+                    <p>{{fi.target}}</p>
+                    <p>{{fi.event_date}}</p>
+                </div>
+                <a href="#" id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})"></a>
+            </li>
+            {% endfor %}
+       </ul>
 
-        <table>
+        <!-- <table class="blueTable">
             {% for fi in funds_info %}
             <tr><td><button id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})">{{fi.target}} {{fi.event_date}}</button></td></tr>
             {% endfor %}
-        </table>
+            
+        </table> -->
         <br>
         <footer class="formFooter">
             <button onclick="closeHtml()" class="bottomBtn">Назад</button>
@@ -196,7 +244,7 @@
         let account_id = "{{account_id}}";
 
         async function openFund(fund_id){
-            let url = `${api_url}api/fundraising/${fund_id}/open/`;
+            let url = `${api_url}api/fundraising/4/open/`;
             // tg.showAlert(url)
             let response = await fetch(url, {
                 method: 'GET',

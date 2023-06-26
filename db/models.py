@@ -44,7 +44,7 @@ class Company(Base):
     name = mapped_column(String, nullable=False, unique=True)  # название компании
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
-    admin_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    admin_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     admin = relationship('User', foreign_keys=[admin_id], back_populates='companies_admin', uselist=False)
     account = relationship('Account', back_populates='company', cascade="all, delete-orphan", uselist=False)
@@ -76,7 +76,7 @@ class Account(Base):
 
 class MC(Base):
     __tablename__ = 'mc'
-    user_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
     company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), primary_key=True)
     phone = mapped_column(String, default='')
     email = mapped_column(String, default='')
@@ -121,7 +121,7 @@ class Fundraising(Base):
 class Donor(Base):
     __tablename__: str = 'donors'
     fund_id = mapped_column(Integer, ForeignKey('fundraising.id', ondelete='CASCADE'), primary_key=True)
-    user_id = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
     payed_date = mapped_column(Date)
     payed = mapped_column(Integer, nullable=False, default=0)
 
