@@ -206,14 +206,22 @@
                 <a href=""></a>
             </li>
         </ul> -->
-    
+        {% for fi in funds_info %}
+        <li>
+            <div class="info" >
+                <p>Открытие офиса {{fi.target}}</p>
+                <p>{{fi.event_date}}</p>
+            </div>
+            <a href="#" id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})"></a>
+        </li>
+        {% endfor %}
 
-        <table class="blueTable">
+        <!-- <table class="blueTable">
             {% for fi in funds_info %}
             <tr><td><button id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})">{{fi.target}} {{fi.event_date}}</button></td></tr>
             {% endfor %}
             
-        </table>
+        </table> -->
         <br>
         <footer class="formFooter">
             <button onclick="closeHtml()" class="bottomBtn">Назад</button>
@@ -234,7 +242,7 @@
         let account_id = "{{account_id}}";
 
         async function openFund(fund_id){
-            let url = `${api_url}api/fundraising/${fund_id}/open/`;
+            let url = `${api_url}api/fundraising/4/open/`;
             // tg.showAlert(url)
             let response = await fetch(url, {
                 method: 'GET',
