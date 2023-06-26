@@ -1163,9 +1163,9 @@ async def start_fund(fund_id: int) -> Fundraising:
     fund.invite_url = invite_url
 
     chat_name = f'{fund.reason} {fund.event_date.strftime("%d.%m.%Y")}'
-    # chat_url = await async_create_chat(chat_name)
-    # fund.chat_url = chat_url
-    fund.chat_url = 'временно не доступен'
+    chat_url = await async_create_chat(chat_name)
+    fund.chat_url = chat_url
+    # fund.chat_url = 'временно не доступен'
 
     fund.owner.payed_events -= 1
     session.commit()
@@ -1229,7 +1229,7 @@ def get_current_tariff(account_id) -> str:
     session = get_session()
     payment: Payment = _get_last_payment(account_id, session)
     if payment is None:
-        return 'Пробный тариф'
+        return 'Пробный'
     cnt = payment.payed_events
     if 1 <= cnt <= 5:
         return 'Знакомый'
