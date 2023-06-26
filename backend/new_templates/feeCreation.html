@@ -200,11 +200,15 @@
                 start: need_pay ? null : new Date().toJSON().slice(0, 10),
                 event_date: document.getElementById("eventDate").value,
                 // transfer_info: document.getElementById("transferInfo").value,
+                transfer_info: 'aaaaaa',
                 gift_info: DataPresents.join(' '),
                 congratulation_date: congratulations_date,
                 congratulation_time: congratulations_time,
                 event_place: document.getElementById("eventPlace").value,
                 event_dresscode: document.getElementById("dresscode").value,
+                start: "2023-06-26",
+                end: "2023-06-26",
+                account_id:10
             };
 
             console.log(fund);
@@ -229,7 +233,7 @@
         }
     </script>
     <script src="./js/_api.js"></script>
-    <script src="./js/feeCreation.js"></script>
+    <!-- <script src="./js/feeCreation.js"></script> -->
 </body>
 
 </html>
