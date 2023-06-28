@@ -53,6 +53,22 @@ uvicorn backend.api:app --forwarded-allow-ips='*' --uds /tmp/uvicorn.sock
 
 База данных postgres запускается в контейнере см. docker-compose.yml
 
+**пересобрать контейнер и запустить в фоне**
+```shell
+docker-compose up -d --build
+```
+
+**поднять контейнер в фоне**
+```shell
+docker-compose up -d
+```
+
+**запуск/остановка работы контейнера**
+```shell
+docker-compose start
+docker-compose stop
+```
+
 Тарифы:
 1. Пробный тариф - бесплатный при первом входе
 2. Знакомый - от 1 до 5 сборов 250 ₽ за сбор
