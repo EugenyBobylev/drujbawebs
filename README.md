@@ -1,6 +1,6 @@
 Файл переменных окружения называется .env
 базовый url это BASE_URL
-путь ка шаблонам jinja2 это TEMPLATES_DIR
+путь к шаблонам jinja2 это TEMPLATES_DIR
 
 структура:
  - **alembic**           инф. для миграции БД
@@ -69,6 +69,9 @@ docker-compose start
 docker-compose stop
 ```
 
+**Важно! После создания БД необходимо залить информацию в табл. text, запустив тест**
+tests/bl_tests.py/test_init_texts_tbl()
+
 Тарифы:
 1. Пробный тариф - бесплатный при первом входе
 2. Знакомый - от 1 до 5 сборов 250 ₽ за сбор
@@ -79,5 +82,12 @@ docker-compose stop
 
 
 прокси для аккаунтов с которых создаются чаты должны прописываться
-в файлах json
+в файлах json.
 
+Если нужно вкл/выкл. создание чатов, то это делается в 
+bl/start_fund(fund_id: int)
+
+
+**ngrock win**
+
+Authtoken saved to configuration file: C:\Users\xxx\AppData\Local/ngrok/ngrok.yml
