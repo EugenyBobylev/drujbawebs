@@ -124,7 +124,9 @@ async def _change_channel_owner(channel_id: int, owner_password: str, client: Te
 # ******************************************************
 # Logic for works with user chats
 # ******************************************************
-def get_json_file() -> str:
+def get_json_file() -> str|None:
+    if len(json_files) == 0:
+        return None
     json_file = json_files.pop(0)
     json_files.append(json_file)
     return json_file
@@ -160,6 +162,8 @@ async def async_create_chat(chat_name: str, about: str = '', config: ChatConfig 
 
     if config is None:
         json_file = get_json_file()
+        if json_file is None:
+            return 'временно не доступен (нет файлов json)'
         config = get_chat_config(json_file)
     _client = config.get_telegram_client()
     # with _client:
