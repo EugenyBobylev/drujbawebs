@@ -1,0 +1,186 @@
+@font-face {
+    font-family: "SF UI Display";
+    src: url("../font/sf-ui-display-light-58646b33e0551.otf");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*::selection {
+    display: none;
+}
+
+body {
+    font-family: "SF UI Display", sans-serif;
+    color: #262626;
+    background-color: white;
+}
+
+.wrapper {
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+
+
+.container {
+    min-height: 100%;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.content {
+    width: 100%;
+}
+
+h1 {
+    margin: 48px 24px 24px;
+    font-size: 24px;
+}
+
+.list {
+
+}
+
+.list .item {
+    overflow: hidden;
+    border-top: 1px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to left, #cbd7ff, #aeb7ff);
+    font-size: 12px;
+    position: relative;
+    background: white;
+}
+
+.list .item:hover {
+    background: #fdfdff;
+}
+
+
+.list .item:last-child {
+    border-bottom: 1px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to left, #cbd7ff, #aeb7ff);
+}
+
+.item .itemContent {
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+
+    position: relative;
+    z-index: 6;
+    background-color: white;
+}
+
+.item .deleteItemButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 48px;
+    height: 48px;
+    z-index: 5;
+
+    background-color: #EB5757;
+    background-image: url("../img/delete.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+
+    cursor: pointer;
+}
+
+.list .item .name {
+    /*font-size: 15px;*/
+}
+
+.list .item .control {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.setAdminButton {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 85px;
+    height: 28px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 10px;
+    background: #F4F6FF;
+}
+
+.setAdminButton:active {
+    background: #dbe4ff;
+}
+
+
+footer {
+    z-index: 8;
+    background: white;
+    position: fixed;
+    bottom: 0;
+
+    height: 96px;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 24px;
+}
+
+.backButton {
+    width: 100%;
+    height: 48px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F4F6FF;
+    cursor: pointer;
+}
+
+.backButton:active {
+    background: #dbe4ff;
+}
+
+.copyLinkContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 24px 24px 100px 24px;
+}
+
+.copyLinkContainer .label {
+    font-size: 10px;
+}
+
+.copyLinkPlatform {
+    border-radius: 8px;
+    background: #F4F6FF;
+    width: 100%;
+    height: 56px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+a {
+    font-size: 12px;
+    color: #0e0f75;
+    text-decoration: none;
+}
