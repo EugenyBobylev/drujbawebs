@@ -234,7 +234,7 @@ async def get_user_funds(account_id: int, request: Request):
         'funds_info': data,
         'funds_amounts': amounts
     }
-    return templates.TemplateResponse('feeHistory.html', context=context, headers=headers)
+    return templates.TemplateResponse('new-feeHistory.html', context=context, headers=headers)
 
 
 @app.get('/donors/{fund_id}')
@@ -284,7 +284,7 @@ async def get_donors(fund_id: int, request: Request):
         'fund_id': fund_id,
         'donors_info': donors
     }
-    return templates.TemplateResponse('participantList.html', context=context, headers=headers)
+    return templates.TemplateResponse('new-participantList.html', context=context, headers=headers)
 
 
 # ****************************************
