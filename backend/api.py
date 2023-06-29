@@ -214,13 +214,27 @@ async def get_user_funds(account_id: int, request: Request):
     }
 
     data = db.get_account_funds_info(account_id)
+
+    open_funds = len([fi for fi in data if fi.is_open])
+    closed_funds = len([fi for fi in data if not fi.is_open])
+    successful_funds = len([fi for fi in data if fi.is_success])
+    unsuccessful_funds = len([fi for fi in data if not fi.is_success])
+
+    amounts = {
+        'open': open_funds,
+        'closed': closed_funds,
+        'success': successful_funds,
+        'unsuccessful': unsuccessful_funds
+    }
+
     context = {
         'request': request,
         'host': host,
         'account_id': account_id,
-        'funds_info': data
+        'funds_info': data,
+        'funds_amounts': amounts
     }
-    return templates.TemplateResponse('feeHistory3.html', context=context, headers=headers)
+    return templates.TemplateResponse('feeHistory.html', context=context, headers=headers)
 
 
 @app.get('/donors/{fund_id}')
