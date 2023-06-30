@@ -27,24 +27,22 @@ body {
     height: 100vh;
 }
 
+
 .container {
     min-height: 100%;
 
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding: 40px 24px;
 }
 
 .content {
     width: 100%;
-    flex: 1 1 auto;
-    max-width: 1080px;
 }
 
 h1 {
+    margin: 48px 24px 24px;
     font-size: 24px;
-    margin-bottom: 20px;
 }
 
 label {
@@ -97,6 +95,7 @@ input[type="radio"] {
     display: flex;
     gap: 3px;
     margin-bottom: 15px;
+    padding: 0 24px;
 }
 
 .filter > div {
@@ -110,6 +109,7 @@ input[type="radio"] {
     width: 100%;
     display: flex;
     flex-direction: column;
+    padding: 0 24px;
 }
 
 .fund * {
@@ -135,8 +135,25 @@ input[type="radio"] {
     background: #fffdfd;
 }
 
+footer {
+    z-index: 8;
+    background: white;
+    position: fixed;
+    bottom: 0;
+
+    height: 96px;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 24px;
+}
+
 .backButton {
-    height: 50px;
+    width: 100%;
+    height: 48px;
     border-radius: 25px;
     display: flex;
     align-items: center;
@@ -147,8 +164,4 @@ input[type="radio"] {
 
 .backButton:active {
     background: #dbe4ff;
-}
-
-footer {
-    width: 100%;
 }

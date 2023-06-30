@@ -39,7 +39,11 @@
             <div class="copyLinkContainer">
                 <div class="label">Ссылка на подключение к сбору</div>
                 <div class="copyLinkPlatform">
-                    <a href="https://t.me/drugba_bot/23ag49x2">https://t.me/drugba_bot/23ag49x2</a>
+                    <a id="copy-link" href="https://t.me/drugba_bot/23ag49x2">https://t.me/drugba_bot/23ag49x2</a>
+                    <div id="copy-button" class="copyButton">
+                        <img style="width: 20px; height: 20px" src="{{ url_for('static', path='/img/copy.png') }}"
+                             alt="">
+                    </div>
                 </div>
             </div>
         </div>
@@ -53,11 +57,6 @@
 <script src="{{ url_for('static', path='/js/participantList.js') }}"></script>
 <script>
     let tg = window.Telegram.WebApp;
-    tg.MainButton.text = "Закрыть";
-    tg.MainButton.show();
-    tg.MainButton.enable();
-    Telegram.WebApp.onEvent("mainButtonClicked", closeWebApp);
-
     let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
     let api_url = "{{host}}";
     let fund_id = "{{fund_id}}";
@@ -95,6 +94,23 @@
     function closeWebApp() {
         tg.close();
     }
+
+    const link = document.getElementById('copy-link');
+    const button = document.getElementById('copy-button');
+
+    button.addEventListener('click', () => {
+        const href = link.href;
+        navigator.clipboard.writeText(href);
+        const message = document.createElement('div');
+        message.innerText = 'Скопировано';
+        message.style.fontSize = '12px';
+        message.style.color = '#0e0f75';
+        const parent = link.parentNode;
+        parent.replaceChild(message, link);
+        setTimeout(() => {
+            parent.replaceChild(link, message);
+        }, 2000);
+    });
 </script>
 </body>
 </html>
