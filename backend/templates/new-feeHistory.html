@@ -138,7 +138,27 @@
         radio.addEventListener('change', filterFunds);
     });
 </script>
-<script src="{{ url_for('static', path='/js/feeHistory.js') }}"></script>
+<script>
+    let tg = window.Telegram.WebApp;
+
+    async function openFund(id) {
+        await fetch("{{ host }}" + `api/fundraising/${id}/open/`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'ngrok-skip-browser-warning': '100',
+                'Content-Type': 'application/json',
+                'Authorization': btoa(tg.initData),
+            },
+        }).then(r => {
+            tg.close()
+        }).catch(err => tg.showAlert('err'))
+    }
+
+    function closeWebApp() {
+        tg.close()
+    }
+</script>
 </body>
 </html>
 
