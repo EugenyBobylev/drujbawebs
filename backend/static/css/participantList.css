@@ -177,10 +177,24 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 a {
     font-size: 12px;
     color: #0e0f75;
     text-decoration: none;
+}
+
+.copyButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background-color: #e6e9ff;
+    border-radius: 4px;
+
+    position: absolute;
+    right: 4px;
 }

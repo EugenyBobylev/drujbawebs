@@ -1,5 +1,6 @@
 let tg = window.Telegram.WebApp;
 let api_url = "https://panel.druzhba.io/";
+// let api_url = "https://49dc-178-66-156-95.ngrok-free.app/";
 
 async function openFund(id) {
     await fetch(`${api_url}api/fundraising/${id}/open/`, {
@@ -11,8 +12,9 @@ async function openFund(id) {
             'Authorization': btoa(tg.initData),
         },
     }).then(r => {
-        tg.close();
-    }).catch(err => console.log('Ошибка запроса'))
+        tg.showAlert(JSON.stringify(r))
+        tg.close()
+    }).catch(err => tg.showAlert('err'))
 }
 
 function closeWebApp() {
