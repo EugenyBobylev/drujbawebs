@@ -97,3 +97,18 @@ bl/start_fund(fund_id: int)
 **ngrock win**
 
 Authtoken saved to configuration file: C:\Users\xxx\AppData\Local/ngrok/ngrok.yml
+
+**web-app routes**
+
+| Route | web-app | html tempate |
+| -- | -- | -- |
+| /UserRegistration | webapp_1 | userRegistration.html |
+| /CompanyRegistration | webapp_3 | companyRegistration2.html |
+
+**вызовы api из web-app**
+
+| web-app | html template | api route   | notes |
+| -- | -- | --- | --- |
+| webapp_1 | userRegistration.html | /api/user/  |
+| webapp_3 | companyRegistration2.html | api/company/ | 
+

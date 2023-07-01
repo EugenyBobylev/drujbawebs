@@ -158,7 +158,7 @@ def test_insert_company():
         'person_count': 1,
     }
 
-    company = db._insert_company('Muvon', 124471751, session, **data)
+    company = db.insert_company('Muvon', 124471751, session, **data)
     assert company is not None
     assert 'Muvon' == company.name
     assert 1 == company.person_count
@@ -184,6 +184,61 @@ def test_create_user():
     assert user is not None
     assert 'Popov' == user.name
 
+
+# *********************************************
+# MC
+# *********************************************
+def test_get_mc():
+    session = get_session()
+    mc = db.get_company_user(100, 1, session)
+
+    assert mc is not None
+    assert mc.phone == '04'
+    assert mc.email == 'santa@local'
+    assert mc.title == 'Дед мороз'
+
+
+def test_insert_exists_mc():
+    session = get_session()
+    data = {'phone': '03', 'email': 'qqq@host.my', 'title': 'Чебурашка'}
+    mc = db.insert_company_user(100, 1, session, **data)
+
+    assert mc is not None
+    assert mc.phone == '04'
+    assert mc.email == 'santa@local'
+    assert mc.title == 'Дед мороз'
+
+
+def test_insert_mc():
+    session = get_session()
+    data = {'phone': '03', 'email': 'qqq@host.my', 'title': 'Чебурашка'}
+    mc = db.insert_company_user(124471751, 1, session, **data)
+
+    assert mc is not None
+    assert mc.phone == '03'
+    assert mc.email == 'qqq@host.my'
+    assert mc.title == 'Чебурашка'
+
+
+def test_update_mc():
+    session = get_session()
+    data = {'phone': '03', 'email': 'qqq@host.my', 'title': 'Чебурашка'}
+    mc = db.update_company_user(124471751, 1, session, **data)
+
+    assert mc is not None
+    assert mc.phone == '03'
+    assert mc.email == 'qqq@host.my'
+    assert mc.title == 'Чебурашка'
+
+
+def test_delete_mc():
+    session = get_session()
+    mc = db.get_company_user(124471751, 1, session)
+
+    # assert mc is not None
+    db.delete_company_user(124471751, 1, session)
+    mc = db.get_company_user(124471751, 1, session)
+    assert mc is None
 
 # *********************************************
 # Fundraising
