@@ -16,7 +16,7 @@
         <form action="" name="companyRegistrationForm" class="companyRegister">
             <input type="text" placeholder="Название компании *" class="required" id="company_name" size="40" required><br>
             <input type="text" placeholder="Сфера деятельности *" class="required" id="activity" size="40" required><br>
-            <input type="number" placeholder="Количество человек в компании *" class="required" id="peoples" size="40" required><br><br>
+            <input type="number" placeholder="Количество человек в компании *" class="required" id="person_count" size="40" required><br><br>
             <input type="text" placeholder="Ваши имя и фамилия *" class="required" id="uname" size="40" required><br>
             <input type="date" id="birthday" ><br>
             <select class="timezone" name="timezone" id="timezone" style="max-width:90%;" >
@@ -35,7 +35,7 @@
 
             <input type="text" placeholder="Должность" class="required" id="job" required size="40"><br>
             <input type="tel" placeholder="Контактный телефон *" class="required" id="phone" required size="40"><br>
-            <input type="email" placeholder="E-mail *" class="required" id="mail" required size="40"><br><br>
+            <input type="email" placeholder="E-mail *" class="required" id="email" required size="40"><br><br>
     
             <footer>
                 <button onclick="postCompany()">Сохранить</button>
@@ -47,13 +47,43 @@
         let api_url = "{{host}}";
 
         async function postCompany(){
-            let url = `${api_url}api/user/`;
+            let url = `${api_url}api/company/`;
 
             // вывести отладочное сообещние
             // msg = `user_id=${tg.initDataUnsafe.user.id}`
             // if(tg.initData !== '')
             //      Telegram.WebApp.showAlert(msg);
-            alert('Нажата кнопка')
+
+            // Создать company_user
+            let company_user = {
+                // информация о компании
+                company_name: document.getElementById("company_name").value,
+                activity: document.getElementById("activity").value,
+                person_count: document.getElementById("person_count").value,
+                // ниформация о пользователе
+                user_id: tg.initDataUnsafe.user.id,
+                user_name: document.getElementById("uname").value,
+                birthdate: document.getElementById("birthday").value,
+                timezone: document.getElementById("timezone").value,
+                // информация о работнике компании
+                job: document.getElementById("job").value,
+                phone: document.getElementById("phone").value,
+                email: document.getElementById("email").value,
+            }
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(company_user);
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+                body: body,
+            });
+            alert(body)
         }
     </script>
 </body>
