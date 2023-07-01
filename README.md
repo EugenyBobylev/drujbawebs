@@ -39,6 +39,12 @@ alembic revision --autogenerate -m "..."
 ```shell
 alembic upgrade head
 ```
+
+** if you received message "alembic target database is not up to date"
+```shell
+alembic stamp head
+```
+
 **Running uvicorn:**
 ```shell
 uvicorn backend.api:app --forwarded-allow-ips='*' --uds /tmp/uvicorn.sock
