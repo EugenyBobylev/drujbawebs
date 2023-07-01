@@ -132,13 +132,13 @@ class Donor(Base):
 class Payment(Base):
     __tablename__ = 'payments'
     id = mapped_column(Integer, primary_key=True)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id'))
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)
     payment_date = mapped_column(Date)
     payment_sum = mapped_column(Integer)
     payed_events = mapped_column(Integer)
     transaction_id = mapped_column(Integer)
 
-    relationship('Account', back_populates='payments')
+    relationship('Account', foreign_keys=[account_id], back_populates='payments')
 
 
 class Msg(Base):
