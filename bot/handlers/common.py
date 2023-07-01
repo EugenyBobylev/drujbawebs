@@ -65,7 +65,7 @@ async def _remove_all_messages(chat_id: int):
 
 def visitor_keyboard():
     url1 = f'{bot_config.base_url}UserRegistration'
-    url2 = f'{bot_config.base_url}/webapp/templates/index'
+    url2 = f'{bot_config.base_url}CompanyRegistration'
     buttons = [
         InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Зарегистрировать компанию", web_app=types.WebAppInfo(url=url2)),
