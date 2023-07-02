@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <h1>Регистрация <br> компании</h1>
+        <form action="" name="companyRegistrationForm" class="companyRegister">
+            <input type="text" placeholder="Название компании *" class="required" id="company_name" size="40" required><br>
+            <input type="text" placeholder="Сфера деятельности *" class="required" id="industry" size="40" required><br>
+            <input type="number" placeholder="Количество человек в компании *" class="required" id="person_count" size="40" required><br><br>
+            <input type="text" placeholder="Ваши имя и фамилия *" class="required" id="uname" size="40" required><br>
+            <input type="date" id="birthday" ><br>
+            <select class="timezone" name="timezone" id="timezone" style="max-width:90%;" >
+            <option value=2> (GMT +2:00) Калининград</option>
+            <option value=3 selected> (GMT +3:00) Москва, Санкт-Петербург</option>
+            <option value=4> (GMT +4:00) Астрахань, Волгоград, Самара </option>
+            <option value=5> (GMT +5:00) Екатеринбург, Уфа</option>
+            <option value=6> (GMT +6:00) Омск, </option>
+            <option value=7> (GMT +7:00) Новосибирск, Красноякск</option>
+            <option value=8> (GMT +8:00) Ирктск, Улан-Удэ</option>
+            <option value=9> (GMT +9:00) Чита, Якутск, Благовещенск</option>
+            <option value=10> (GMT +10:00) Хабаровск, Владивосток </option>
+            <option value=11> (GMT +11:00) Магадан</option>
+            <option value=12> (GMT +12:00) Петропавловск-Камчатский</option>
+        </select><br>
+
+            <input type="text" placeholder="Должность" class="required" id="job" required size="40"><br>
+            <input type="tel" placeholder="Контактный телефон *" class="required" id="phone" required size="40"><br>
+            <input type="email" placeholder="E-mail *" class="required" id="email" required size="40"><br><br>
+    
+            <footer>
+                <button onclick="postCompany()">Сохранить</button>
+            </footer>
+        </form>
+    </div>
+    <script>
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
+        let api_url = "{{host}}";
+
+        async function postCompany(){
+            let url = `${api_url}api/company/`;
+
+            // вывести отладочное сообещние
+            // msg = `user_id=${tg.initDataUnsafe.user.id}`
+            // if(tg.initData !== '')
+            //      Telegram.WebApp.showAlert(msg);
+
+            // Создать company_user
+            let company_user = {
+                // информация о компании
+                company_name: document.getElementById("company_name").value,
+                industry: document.getElementById("industry").value,
+                person_count: document.getElementById("person_count").value,
+                // ниформация о пользователе
+                user_id: tg.initDataUnsafe.user.id,
+                user_name: document.getElementById("uname").value,
+                birthdate: document.getElementById("birthday").value,
+                timezone: document.getElementById("timezone").value,
+                // информация о работнике компании
+                job: document.getElementById("job").value,
+                phone: document.getElementById("phone").value,
+                email: document.getElementById("email").value,
+            }
+            // подготовить к отправке и отправить запрос на server
+            let body = JSON.stringify(company_user);
+            let response = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+                body: body,
+            });
+        }
+    </script>
+</body>
+
+</html>

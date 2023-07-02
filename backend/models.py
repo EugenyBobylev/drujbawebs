@@ -79,6 +79,22 @@ class UserInfo(BaseModel):
     admin_count: int = 0    # администратор компаний
 
 
+class CompanyUser(BaseModel):
+    """
+    создается при регистрации компании
+    """
+    company_name: str       # название компании
+    industry: str           # сферадеятельности
+    person_count: int       # количество человек в компании
+    user_id: int            # id пользователя, совпадает с id телеграм пользователя
+    user_name: str          # имя и фамилия
+    birthdate: date         # день рождения
+    timezone: int           # часовой пояс
+    job: str                # должность
+    phone: str              # телефон
+    email: str              # адрес электронной почты
+
+
 class Account(BaseModel):
     id: int
     user_id: int = None

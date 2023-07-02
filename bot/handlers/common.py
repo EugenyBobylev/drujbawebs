@@ -65,7 +65,7 @@ async def _remove_all_messages(chat_id: int):
 
 def visitor_keyboard():
     url1 = f'{bot_config.base_url}UserRegistration'
-    url2 = f'{bot_config.base_url}/webapp/templates/index'
+    url2 = f'{bot_config.base_url}CompanyRegistration'
     buttons = [
         InlineKeyboardButton(text="Организовать сбор на подарок", web_app=types.WebAppInfo(url=url1)),
         InlineKeyboardButton(text="Зарегистрировать компанию", web_app=types.WebAppInfo(url=url2)),
@@ -100,6 +100,18 @@ def payment_keyboard(account_id: int, cnt: int):
     buttons = [
         InlineKeyboardButton(text="Оплатить", url=url),
         InlineKeyboardButton(text="В меню", callback_data='go_menu')
+    ]
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def payment_keyboard_1():
+    """
+    вызывается из tg_7
+    """
+    buttons = [
+        InlineKeyboardButton(text="Оплатить", callback_data='start_pay')
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -309,6 +321,15 @@ async def start_user(chat_id: str, state: FSMContext):
     msgs.put(_msg)
 
 
+async def start_admin(chat_id: str, state: FSMContext):
+    user_id = chat_id
+    await _remove_all_messages(user_id)
+    msg = db.get_message_text('start_message')
+    keyboard = admin_menu_keyboard()
+    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+
+
 async def start_anonymous_donor(chat_id: str, args: str, state: FSMContext):
     user_id = chat_id
     await _remove_all_messages(user_id)
@@ -513,27 +534,63 @@ async def query_fund_info(call: types.CallbackQuery, state: FSMContext) -> types
         return await closed_fund_info(call.message, fund_id, state)
 
 
-async def webapp_create_user_account(message: types.Message, state: FSMContext):
+async def create_user_account(message: types.Message, account_id: int, state: FSMContext):
+    await state.update_data(account_id=account_id)
+    await state.update_data(user_status=UserStatus.TrialUser)
+
+    keyboard = new_private_fund_keyboard(account_id, 1)
+    msg = 'Ура, вы успешно зарегистрировались!\nДавайте перейдем к созданию сбора на подарок'
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+    await state.set_state(Steps.tg_3)
+
+
+async def create_company_account(message: types.Message, company_id: int, company_account_id: int, state: FSMContext):
+    await state.update_data(account_id=company_account_id)
+    await state.update_data(user_status=UserStatus.TrialUser)
+
+    company = db.get_company(company_id)
+    company_url = await db.create_company_url(company_id)
+    user_id = message.from_user.id
+    user_name = db.get_user_name(user_id)
+
+    msg = f'Поздравляю, вы успешно подключили компанию к сервису. Теперь мы дружим:) \n\n' \
+          f'Скопируйте эту ссылку вместе с текстом сообщения и отправьте друзьям или коллегам, которые будут ' \
+          f'участвовать в сборах вашей компании. Они внесут свои данные, и я смогу автоматически напоминать ' \
+          f'им о событиях, получать информацию о переводах и передавать её вам.'
+    _msg = await message.answer(msg)
+    msgs.put(_msg)
+
+    keyboard = payment_keyboard_1()
+    msg = f'Здравствуйте! <b>{user_name}</b> из компании <b>{company.name}</b>  приглашает вас в сервис Дружба, ' \
+          f'чтобы вместе участвовать в сборах на подарки друзьям и коллегам. Присоединяйтесь! \n' \
+          f'{company_url}'
+    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    msgs.put(_msg)
+    await state.set_state(Steps.tg_7)
+
+
+async def webapp_visitors(message: types.Message, state: FSMContext):
     # state == Steps.reg_visitor
     await message.delete()
     await _remove_all_messages(message.from_user.id)
 
     items = message.text.split('&')
     answer = json.loads(items[1])
-    if 'account_id' in answer:
-        account_id = answer['account_id']
-        await state.update_data(account_id=account_id)
-        await state.update_data(user_status=UserStatus.TrialUser)
-
-        keyboard = new_private_fund_keyboard(account_id, 1)
-        msg = 'Ура, вы успешно зарегистрировались!\nДавайте перейдем к созданию сбора на подарок'
-        _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-        msgs.put(_msg)
-        await state.set_state(Steps.tg_3)
+    if answer['command'] == 'create_user':
+        if 'account_id' in answer:
+            account_id = answer['account_id']
+            await create_user_account(message, account_id, state)
+        else:
+            _msg = await message.answer("Не удалось зарегистрировать пользователя. Попробуйте снова")
+            msgs.put(_msg)
         return
 
-    _msg = await message.answer("Не удалось зарегистрировать пользователя. Попробуйте снова")
-    msgs.put(_msg)
+    if answer['command'] == 'create_company':
+        company_id = answer['company_id']
+        company_account_id = answer['company_account_id']
+        member_account_id = answer['member_account_id']
+        await create_company_account(message, company_id, company_account_id, state)
 
 
 async def webapp_user_operation(message: types.Message, state: FSMContext):
@@ -680,6 +737,8 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
         await start_trial_user(user_id, state)
     elif user_status == UserStatus.User:
         await start_user(user_id, state)
+    elif user_status == UserStatus.Admin:
+        await start_admin(user_id, state)
 
 
 async def start_payment(message: types.Message, state: FSMContext):
@@ -893,10 +952,8 @@ def register_handlers_common(dp: Dispatcher):
     dp.register_callback_query_handler(query_return_menu, lambda c: c.data == 'go_menu', state="*")
     dp.register_callback_query_handler(query_fund_info, lambda c: str(c.data).startswith('fund_info'), state="*")
 
-    dp.register_message_handler(webapp_create_user_account, filters.Text(startswith='webapp'),
-                                state=Steps.tg_2)
+    dp.register_message_handler(webapp_visitors, filters.Text(startswith='webapp'), state=Steps.tg_2)
     dp.register_message_handler(webapp_create_user_fund, filters.Text(startswith='webapp'), state=[Steps.tg_3])
-
     dp.register_message_handler(webapp_user_operation, filters.Text(startswith='webapp'), state=[Steps.tg_19])
 
     dp.register_message_handler(webapp_reg_user, filters.Text(startswith='webapp'),

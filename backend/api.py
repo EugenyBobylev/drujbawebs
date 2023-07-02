@@ -16,7 +16,7 @@ from starlette.templating import Jinja2Templates
 
 import db
 from backend import send_answer_web_app_query
-from backend.models import User, Fundraising, WebAppInitData, PaymentResult
+from backend.models import User, Fundraising, WebAppInitData, PaymentResult, CompanyUser
 from backend.telegram_api import send_payment_message
 from config import Config
 from db import Account
@@ -118,6 +118,27 @@ async def get_query_id(query_id: str):
 # ****************************************
 # Вызовы WebApps
 # ****************************************
+@app.get('/UserRegistration')
+async def get_user_registration_html(request: Request):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+    }
+    host = Config().base_url
+    return templates.TemplateResponse('userRegistration.html',
+                                      context={'request': request, 'host': host}, headers=headers)
+
+
+@app.get('/CompanyRegistration')
+async def get_company_registration_html(request: Request):
+    headers = {
+        'ngrok-skip-browser-warning': '100',
+    }
+    host = Config().base_url
+    return templates.TemplateResponse('companyRegistration2.html',
+                                      context={'request': request, 'host': host}, headers=headers)
+
+
+
 @app.get('/payment/{account_id}/{cnt}')
 async def get_payment_html(request: Request, account_id: int, cnt: int):
     headers = {
@@ -131,16 +152,6 @@ async def get_payment_html(request: Request, account_id: int, cnt: int):
         'cnt': cnt,
     }
     return templates.TemplateResponse('payment.html', context=context, headers=headers)
-
-
-@app.get('/UserRegistration')
-async def get_user_registration_html(request: Request):
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-    }
-    host = Config().base_url
-    return templates.TemplateResponse('userRegistration.html',
-                                      context={'request': request, 'host': host}, headers=headers)
 
 
 @app.get('/CreateFund/')
@@ -305,6 +316,7 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
+        'command': 'create_user',
         'user_id': db_user.id,
         'account_id': db_account.id
     }
@@ -382,6 +394,38 @@ def create_fundraising(account_id: int, fund: Fundraising,
         'event_id': fund.id,
         'invite_url': fund.invite_url
     }
+
+
+@app.post('/api/company/')
+@auth
+def create_company(company_user: CompanyUser, authorization: str | None = Header(convert_underscores=True)):
+    ok = db.check_company_exists(company_user.company_name)
+    if ok:
+        return {'result': 'company exists'}
+    company, company_account, user, member_account = db.create_company_user(company_user)
+    if not company:
+        return {'result': 'company not created'}
+    if not company_account:     # не бы создан аккаунт компании
+        return {'result': 'company account not created'}
+    if not user:  # не бы создан пользователь
+        return {'result': 'user not created'}
+    if not member_account:  # не бы создан аккаунт участника компании
+        return {'result': 'member account not created'}
+
+    # компания/аккаунт/пользователь/участник компании созданы
+    web_init = WebAppInitData.form_auth_header(authorization)
+    data = {
+        'command': 'create_company',
+        'company_id': company.id,
+        'company_account_id': company_account.id,
+        'user_id': user.id,
+        'member_account_id': member_account.id
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, data_json)
+    assert 200 == r.status_code
+
+    return {'result': 'ok'}
 
 
 @app.get('/api/fundraising/{fund_id}/open/')
