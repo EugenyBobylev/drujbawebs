@@ -189,7 +189,8 @@ def _get_user_account(user_id: int, session: Session = None) -> Account | None:
         raise ValueError('user_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    account = session.scalars(select(Account).where(Account.user_id == user_id)).first()
+    account = session.scalars(select(Account).where(Account.user_id == user_id)
+                              .where(Account.company_id == None)).first()
     return account
 
 
@@ -198,7 +199,8 @@ def _get_company_account(company_id: int, session: Session = None) -> Account | 
         raise ValueError('company_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    account = session.scalars(select(Account).where(Account.company_id == company_id)).first()
+    account = session.scalars(select(Account).where(Account.company_id == company_id)
+                              .where(Account.user_id == None)).first()
     return account
 
 
@@ -222,7 +224,7 @@ def _insert_company_account(company_id: int, session: Session) -> Account:
         raise ValueError('company_id can not be None')
     if session is None:
         raise ValueError('session can not be None')
-    account = session.scalars(select(User).where(Account.company_id == company_id)).first()
+    account = _get_company_account(company_id, session)
     if account is not None:
         return account
 
@@ -339,16 +341,7 @@ def _get_company_users(company_id: int, session: Session) -> [User]:
     return company_users
 
 
-def _get_company_user(user_id: int, company_id: int, session: Session) -> MC | None:
-    if company_id is None:
-        raise ValueError("company_id can't be None")
-    if session is None:
-        raise ValueError("session can't be None")
-    mc = session.get(MC, (user_id, company_id))
-    return mc
-
-
-def _get_member(company_id: int, user_id: int, session: Session) -> [Account]:
+def _get_member_account(company_id: int, user_id: int, session: Session) -> Account | None:
     if company_id is None:
         raise ValueError("company_id can't be None")
     if user_id is None:
@@ -357,11 +350,14 @@ def _get_member(company_id: int, user_id: int, session: Session) -> [Account]:
         raise ValueError("session can't be None")
 
     query = select(Account).where(Account.company_id == company_id).where(Account.user_id == user_id)
-    result = session.execute(query).scalars().all()
+    result = session.execute(query).scalars().first()
     return result
 
 
-def _add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Account:
+def _add_member(company_id: int, user_id: int, session: Session) -> Account:
+    """
+    create companies' user account
+    """
     if company_id is None:
         raise ValueError("company_id can't be None")
     if user_id is None:
@@ -369,12 +365,13 @@ def _add_member(company_id: int, user_id: int, session: Session, **kvargs) -> Ac
     if session is None:
         raise ValueError("session can't be None")
 
-    account = _get_member(company_id, user_id, session)
+    account = _get_member_account(company_id, user_id, session)
     if account is not None:
-        _update_account(account.id, session, **kvargs)
+        _update_account(account.id, session, payed_events=0)
         return account
 
     account = Account(company_id=company_id, user_id=user_id, payed_events=0)
+    session.add(account)
     session.commit()
     return account
 
@@ -401,7 +398,7 @@ def _insert_company_user(user_id: int, company_id: int, session: Session, **kvar
         raise ValueError("user_id can't be None")
     if session is None:
         raise ValueError("session can't be None")
-    mc = get_company_user(user_id, company_id, session)
+    mc = _get_company_user(user_id, company_id, session)
     if mc is not None:
         return mc
 
@@ -421,7 +418,7 @@ def _update_company_user(user_id: int, company_id: int, session: Session, **kvar
         raise ValueError("user_id can't be None")
     if session is None:
         raise ValueError("session can't be None")
-    mc = get_company_user(user_id, company_id, session)
+    mc = _get_company_user(user_id, company_id, session)
     if mc is None:
         return None
 
@@ -432,7 +429,7 @@ def _update_company_user(user_id: int, company_id: int, session: Session, **kvar
     return mc
 
 
-def _delete_company_user(user_id: int, company_id: int, session: Session) :
+def _delete_company_user(user_id: int, company_id: int, session: Session):
     if company_id is None:
         raise ValueError("company_id can't be None")
     if user_id is None:
@@ -480,8 +477,8 @@ def _get_all_open_fundraising(account_id: int, session: Session) -> [Fundraising
     if session is None:
         raise ValueError("session can't be None")
 
-    query = select(Fundraising)\
-        .where(Fundraising.account_id == account_id)\
+    query = select(Fundraising) \
+        .where(Fundraising.account_id == account_id) \
         .where(date.today() + timedelta(days=7) <= Fundraising.event_date)  # через 7 дней после даты события
 
     result = session.execute(query).scalars().all()
@@ -494,8 +491,8 @@ def _get_all_closed_fundraising(account_id: int, session: Session) -> [Fundraisi
     if session is None:
         raise ValueError("session can't be None")
 
-    query = select(Fundraising)\
-        .where(Fundraising.account_id == account_id)\
+    query = select(Fundraising) \
+        .where(Fundraising.account_id == account_id) \
         .where(date.today() + timedelta(days=7) > Fundraising.event_date)  # через 7 дней после даты события
 
     result = session.execute(query).scalars().all()
@@ -556,7 +553,7 @@ def _get_donor(fund_id: int, user_id: int, session: Session) -> Donor | None:
     if session is None:
         raise ValueError("session can't be None")
 
-    donor: Donor = session.get(Donor, (fund_id, user_id))
+    donor = session.get(Donor, (fund_id, user_id))
     return donor
 
 
@@ -889,13 +886,13 @@ class UserStatus(Enum):
     """
     Статус пользователя
     """
-    Visitor = 0         # новый посетитель
-    TrialUser = 1       # пользователь без оплаты
-    User = 2            # пользователь
-    Admin = 3           # админ компании, управляет аккаунтом компании
-    Donor = 5           # зарегистрированный донор (спонсор)
+    Visitor = 0  # новый посетитель
+    TrialUser = 1  # пользователь без оплаты
+    User = 2  # пользователь
+    Admin = 3  # админ компании, управляет аккаунтом компании
+    Donor = 5  # зарегистрированный донор (спонсор)
     AnonymousDonor = 6  # анонимный донор (спонсор)
-    Unknown = 12        # фиг его знает, кто это такой
+    Unknown = 12  # фиг его знает, кто это такой
 
 
 def get_user_id_by_account(account_id) -> int | None:
@@ -981,19 +978,19 @@ def remove_user(user_id: int):
     if account is None:
         return
 
-    for payment in account.payments:    # удалить платежи
+    for payment in account.payments:  # удалить платежи
         session.delete(payment)
 
-    for fund in account.fundraisings:   # удалить сборы
+    for fund in account.fundraisings:  # удалить сборы
         fund_donors = fund.donors
-        for fd in fund_donors:          # удалить доноров сбора
+        for fd in fund_donors:  # удалить доноров сбора
             session.delete(fd)
         session.delete(fund)
 
-    for donor in user.donors:           # удалить донорство в других сборах
+    for donor in user.donors:  # удалить донорство в других сборах
         session.delete(donor)
 
-    for member in user.members:         # удалить участие в компаниях
+    for member in user.members:  # удалить участие в компаниях
         session.delete(member)
 
     session.delete(account)
@@ -1075,7 +1072,7 @@ def remove_user_payments(user_id: int):
     account: Account = user.account
 
     account.payed_events = 0
-    for payment in account.payments:    # удалить платежи
+    for payment in account.payments:  # удалить платежи
         session.delete(payment)
     session.commit()
 
@@ -1093,27 +1090,60 @@ def create_company_user(company_user: ApiCompanyUser) -> (Company, Account, User
     """
     session = get_session()
     session.expire_on_commit = False
+
+    # insert new user if it required otherwise update exists user
+    user_data = {
+        'name': company_user.user_name,
+        'birthdate': company_user.birthdate,
+        'timezone': company_user.timezone
+    }
     user = _get_user(company_user.user_id, session)
     if user is None:
-        user_data = {
-            'name': company_user.user_name,
-            'birhtdate': company_user.birthdate,
-            'timezone': company_user.timezone
-        }
         user = _register_user(company_user.user_id, session, **user_data)
+    else:
+        user = _update_user(company_user.user_id, session, **user_data)
 
-    company = _insert_company(company_user.company_name, company_user.user_id, session)
-
-    member_data = {
-        'phone': company_user.phone,
-        'email': company_user.phone,
-        'title': company_user.job
+    # insert new company
+    company_data = {
+        'industry': company_user.industry,
+        'person_count': company_user.person_count,
     }
+    company = _insert_company(company_user.company_name, company_user.user_id, session, **company_data)
 
-    member_acount: Account =_add_member(company.id, user.id, session, **member_data)
+    # insert new member of company or update exists member
+    mc = _get_company_user(company_user.user_id, company_user.user_id, session)
+    mc_data = {
+        'phone': company_user.phone,
+        'email': company_user.email,
+        'title': company_user.job,
+    }
+    if mc is None:
+        mc = _insert_company_user(company_user.user_id, company.id, session, **mc_data)
+    else:
+        mc = _update_company_user(company_user.user_id, company.id, session, **mc_data)
 
+    # create account for member of company and get account of company
+    member_acount: Account = _add_member(company.id, user.id, session)
     company_account: Account = _get_company_account(company.id, session)
     return company, company_account, user, member_acount
+
+
+async def create_company_url(company_id: int) -> str:
+    session = get_session()
+    company = _get_company(company_id, session)
+    if company is not None:
+        bot_url = await get_bot_url()
+        company_url = f'{bot_url}?start=company_{company.id}'
+        company.company_url = company_url
+        session.commit()
+        return company.company_url
+    return ''
+
+
+def get_company(company_id: int) -> Company | None:
+    session = get_session()
+    company = _get_company(company_id, session)
+    return company
 
 
 def create_fundraising(account_id: int, fund: ApiFundraising) -> ApiFundraising | None:
@@ -1304,7 +1334,7 @@ def get_not_started_fund_id(account_id: int) -> int | None:
     :return:
     """
     session = get_session()
-    query = select(Fundraising)\
+    query = select(Fundraising) \
         .where(Fundraising.account_id == account_id) \
         .where(Fundraising.start == None) \
         .order_by(Fundraising.id)

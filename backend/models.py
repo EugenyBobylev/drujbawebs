@@ -84,7 +84,7 @@ class CompanyUser(BaseModel):
     создается при регистрации компании
     """
     company_name: str       # название компании
-    activity: str           # сферадеятельности
+    industry: str           # сферадеятельности
     person_count: int       # количество человек в компании
     user_id: int            # id пользователя, совпадает с id телеграм пользователя
     user_name: str          # имя и фамилия

@@ -316,6 +316,7 @@ def create_new_user(user: User, authorization: str | None = Header(convert_under
 
     web_init = WebAppInitData.form_auth_header(authorization)
     data = {
+        'command': 'create_user',
         'user_id': db_user.id,
         'account_id': db_account.id
     }
@@ -401,8 +402,30 @@ def create_company(company_user: CompanyUser, authorization: str | None = Header
     ok = db.check_company_exists(company_user.company_name)
     if ok:
         return {'result': 'company exists'}
-    db_comany, db_user, db_account = db.create_company_user(company_user)
-    return {'result': 'company created'}
+    company, company_account, user, member_account = db.create_company_user(company_user)
+    if not company:
+        return {'result': 'company not created'}
+    if not company_account:     # не бы создан аккаунт компании
+        return {'result': 'company account not created'}
+    if not user:  # не бы создан пользователь
+        return {'result': 'user not created'}
+    if not member_account:  # не бы создан аккаунт участника компании
+        return {'result': 'member account not created'}
+
+    # компания/аккаунт/пользователь/участник компании созданы
+    web_init = WebAppInitData.form_auth_header(authorization)
+    data = {
+        'command': 'create_company',
+        'company_id': company.id,
+        'company_account_id': company_account.id,
+        'user_id': user.id,
+        'member_account_id': member_account.id
+    }
+    data_json = json.dumps(data)
+    r = send_answer_web_app_query(web_init.query_id, data_json)
+    assert 200 == r.status_code
+
+    return {'result': 'ok'}
 
 
 @app.get('/api/fundraising/{fund_id}/open/')

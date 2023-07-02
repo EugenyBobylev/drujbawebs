@@ -91,7 +91,7 @@ def test_is_user_registered():
 
 
 # *********************************************
-# Account
+# User and Company Account
 # *********************************************
 def test_get_not_exists_account():
     session = get_session()
@@ -134,6 +134,28 @@ def test_delete_company_account():
         account = db._get_company_account(company.id, session)
 
     assert account is None
+
+
+def test_get_company_account():
+    session = get_session()
+    account = db.get_company_account(13, session)
+
+    assert account is not None
+
+
+def test_get_user_account():
+    session = get_session()
+    account = db._get_user_account(124471751, session)
+
+    assert account is not None
+    assert account.id == 33
+
+
+def test_get_member_account():
+    session = get_session()
+    account = db.get_member_account(14, 124471751, session)
+
+    assert account is not None
 
 
 # *********************************************

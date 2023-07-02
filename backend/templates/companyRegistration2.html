@@ -15,7 +15,7 @@
         <h1>Регистрация <br> компании</h1>
         <form action="" name="companyRegistrationForm" class="companyRegister">
             <input type="text" placeholder="Название компании *" class="required" id="company_name" size="40" required><br>
-            <input type="text" placeholder="Сфера деятельности *" class="required" id="activity" size="40" required><br>
+            <input type="text" placeholder="Сфера деятельности *" class="required" id="industry" size="40" required><br>
             <input type="number" placeholder="Количество человек в компании *" class="required" id="person_count" size="40" required><br><br>
             <input type="text" placeholder="Ваши имя и фамилия *" class="required" id="uname" size="40" required><br>
             <input type="date" id="birthday" ><br>
@@ -58,7 +58,7 @@
             let company_user = {
                 // информация о компании
                 company_name: document.getElementById("company_name").value,
-                activity: document.getElementById("activity").value,
+                industry: document.getElementById("industry").value,
                 person_count: document.getElementById("person_count").value,
                 // ниформация о пользователе
                 user_id: tg.initDataUnsafe.user.id,
@@ -83,7 +83,6 @@
                 },
                 body: body,
             });
-            alert(body)
         }
     </script>
 </body>
