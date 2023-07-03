@@ -168,4 +168,4 @@ postgres_data/
 /chat/*_json
 
 .vscode
-/ngrock/*
+/ngrok/*
