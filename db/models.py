@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Date, BigInteger, Text, ForeignKey, Time
+from sqlalchemy import Integer, String, Date, BigInteger, Text, ForeignKey, Time, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, relationship, mapped_column
 
 
@@ -45,6 +45,7 @@ class Company(Base):
     industry = mapped_column(String, default='')        # сфера деятельности
     person_count = mapped_column(Integer, default=0)    # количество человек в компании
     admin_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    company_url = mapped_column(String, default='')     # ссылка на компанию
 
     admin = relationship('User', foreign_keys=[admin_id], back_populates='companies_admin', uselist=False)
     account = relationship('Account', back_populates='company', cascade="all, delete-orphan", uselist=False)
@@ -59,11 +60,13 @@ class Account(Base):
     Account of the telegram user in the bot
     """
     __tablename__: str = 'accounts'
+    __table_args__ = (UniqueConstraint("user_id", "company_id", name="uix_user_company"),)
 
     id = mapped_column(Integer, primary_key=True)
-    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'), unique=True)
-    company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'), unique=True)
+    user_id = mapped_column(BigInteger, ForeignKey('users.id', ondelete='CASCADE'))
+    company_id = mapped_column(Integer, ForeignKey('companies.id', ondelete='CASCADE'))
     payed_events = mapped_column(Integer, default=0)
+    UniqueConstraint("user_id", "company_id", name="uix_user_company")
 
     user = relationship('User', foreign_keys=[user_id], back_populates='account', uselist=False)
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
@@ -132,13 +135,13 @@ class Donor(Base):
 class Payment(Base):
     __tablename__ = 'payments'
     id = mapped_column(Integer, primary_key=True)
-    account_id = mapped_column(Integer, ForeignKey('accounts.id'))
+    account_id = mapped_column(Integer, ForeignKey('accounts.id', ondelete='CASCADE'), nullable=False)
     payment_date = mapped_column(Date)
     payment_sum = mapped_column(Integer)
     payed_events = mapped_column(Integer)
     transaction_id = mapped_column(Integer)
 
-    relationship('Account', back_populates='payments')
+    relationship('Account', foreign_keys=[account_id], back_populates='payments')
 
 
 class Msg(Base):
