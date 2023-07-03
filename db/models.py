@@ -25,10 +25,10 @@ class User(Base):
     birthdate = mapped_column(Date, default=None)
     timezone = mapped_column(Integer, default=3)
 
-    account = relationship('Account', back_populates='user', cascade="all, delete-orphan", uselist=False)
+    accounts = relationship('Account', back_populates='user', cascade="all, delete", passive_deletes=True, uselist=True)
     companies_admin = relationship('Company')
-    members = relationship('MC')
-    donors = relationship('Donor')
+    members = relationship('MC', cascade="all, delete", passive_deletes=True, uselist=True)
+    donors = relationship('Donor', cascade="all, delete", passive_deletes=True, uselist=True)
 
     def __repr__(self) -> str:
         return f'tgid={self.id}; name="{self.name}"; timezone={self.timezone}'
@@ -68,10 +68,10 @@ class Account(Base):
     payed_events = mapped_column(Integer, default=0)
     UniqueConstraint("user_id", "company_id", name="uix_user_company")
 
-    user = relationship('User', foreign_keys=[user_id], back_populates='account', uselist=False)
+    user = relationship('User', foreign_keys=[user_id], back_populates='accounts', uselist=False)
     company = relationship('Company', foreign_keys=[company_id], uselist=False)
-    fundraisings = relationship('Fundraising')
-    payments = relationship('Payment')
+    fundraisings = relationship('Fundraising', cascade="all, delete", passive_deletes=True, uselist=True)
+    payments = relationship('Payment',  cascade="all, delete", passive_deletes=True, uselist=True)
 
     def __repr__(self) -> str:
         return f'id={self.id}; user_id={self.user_id}; company_id={self.company_id}'
@@ -112,7 +112,7 @@ class Fundraising(Base):
     chat_url = mapped_column(String, default='')        # ссылка на чат
 
     owner = relationship('Account', back_populates='fundraisings')  # лицо ответственное за сбор
-    donors = relationship('Donor')
+    donors = relationship('Donor',  cascade="all, delete", passive_deletes=True, uselist=True)
 
     def __repr__(self) -> str:
         return f'id={self.id}; reason="{self.reason}"; target="{self.target}"; ' \

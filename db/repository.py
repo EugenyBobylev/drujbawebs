@@ -243,6 +243,15 @@ def db_get_user_account(user_id: int, session: Session = None) -> Account | None
     return account
 
 
+def db_get_user_all_accounts(user_id: int, session: Session = None) -> list[Account]:
+    if user_id is None:
+        raise ValueError('user_id can not be None')
+    if session is None:
+        raise ValueError('session can not be None')
+    accounts = session.scalars(select(Account).where(Account.user_id == user_id)).all()
+    return accounts
+
+
 def db_get_company_account(company_id: int, session: Session = None) -> Account | None:
     if company_id is None:
         raise ValueError('company_id can not be None')

@@ -1,16 +1,16 @@
 from backend import User as apiUser
 import db
-from db import get_session, db_get_user_account
+from db import get_session, db_get_user_account, remove_user
 from db.models import User, Account
 from db.repository import db_get_member_account, db_get_company, db_get_company_by_name, db_insert_company, \
     db_get_user, db_get_company_user, db_insert_company_user, db_update_company_user, db_delete_company_user, \
     db_get_fundraising, db_insert_user_account, db_insert_fundraising, db_get_company_account, db_get_fund_total_sum, \
     db_get_all_donor_count, db_register_user, init_texts_tbl, db_insert_user, db_update_user, db_is_user_registered, \
-    db_delete_user, db_get_account, db_delete_account, db_update_account
+    db_delete_user, db_get_account, db_delete_account, db_update_account, db_get_user_all_accounts
 
 
 # *********************************************
-# Account
+# User
 # *********************************************
 def test_get_not_exists_user():
     session = get_session()
@@ -67,7 +67,11 @@ def test_is_user_not_registered():
 
 def test_delete_user():
     session = get_session()
-    user_id = 124471751
+    user_id = 22
+
+    user = db_get_user(user_id, session)
+    assert user is not None
+
     db_delete_user(user_id, session)
 
     user = db_get_user(user_id, session)
@@ -93,6 +97,16 @@ def test_is_user_registered():
     user_id = 124471751
     registered = db_is_user_registered(user_id, session)
     assert registered
+
+
+def test_remove_user():
+    user_id = 124471751
+    remove_user(user_id)
+
+    session = get_session()
+    user = db_get_user(user_id, session)
+
+    assert user is None
 
 
 # *********************************************
@@ -154,6 +168,15 @@ def test_get_user_account():
 
     assert account is not None
     assert account.id == 33
+
+
+def test_get_user_all_accounts():
+    session = get_session()
+    accounts = db_get_user_all_accounts(124471751, session)
+
+    assert accounts is not None
+    assert type(accounts) == list
+    assert len(accounts) == 2
 
 
 def test_get_member_account():

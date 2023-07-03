@@ -24,7 +24,7 @@ from db.repository import get_session, db_get_account, db_get_company, db_get_us
     db_insert_fundraising, db_get_fundraising, db_update_fundraising, db_is_fundraising_open, db_get_all_donor_count, \
     db_get_payed_donor_count, db_get_fund_total_sum, db_get_fund_avg_sum, db_delete_donor, db_get_donors, \
     db_get_last_payment, db_get_msg, db_update_account, db_insert_payment, db_insert_user, db_insert_donor, \
-    db_register_user
+    db_register_user, db_get_user_all_accounts
 from utils import get_days_left, get_bot_url
 
 
@@ -77,7 +77,7 @@ def create_user(user: ApiUser) -> (User, Account):
     return user, user.account
 
 
-def get_user(user_id: int) -> User | None:
+def get_user(user_id: int) -> ApiUser | None:
     session = get_session()
     user: User = db_get_user(user_id, session)
     api_user: ApiUser = None
@@ -122,27 +122,6 @@ def remove_user(user_id: int):
     user: User = db_get_user(user_id, session)
     if user is None:
         return
-
-    account: Account = user.account
-    if account is None:
-        return
-
-    for payment in account.payments:  # удалить платежи
-        session.delete(payment)
-
-    for fund in account.fundraisings:  # удалить сборы
-        fund_donors = fund.donors
-        for fd in fund_donors:  # удалить доноров сбора
-            session.delete(fd)
-        session.delete(fund)
-
-    for donor in user.donors:  # удалить донорство в других сборах
-        session.delete(donor)
-
-    for member in user.members:  # удалить участие в компаниях
-        session.delete(member)
-
-    session.delete(account)
     session.delete(user)
     session.commit()
 
