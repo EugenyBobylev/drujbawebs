@@ -214,7 +214,7 @@ async def get_user(user_id: int, request: Request):
         'birthdate': user.birthdate.strftime('%Y-%m-%d'),
         'timezone': user.timezone,
     }
-    return templates.TemplateResponse('editUser.html', context=context, headers=headers)
+    return templates.TemplateResponse('formEdit.html', context=context, headers=headers)
 
 
 @app.get('/account/{account_id}/funds/')
