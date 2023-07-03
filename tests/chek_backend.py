@@ -19,9 +19,6 @@ base_url = 'http://127.0.0.1:8000'
 
 def check_get_root():
     url = f'{base_url}/'
-    headers = {
-        'Authorization': auth
-    }
     r = requests.get(url)
     assert r.status_code == 200
 

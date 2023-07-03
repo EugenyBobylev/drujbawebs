@@ -85,7 +85,7 @@ async def _create_channel(chat_name, chat_about, client: TelegramClient) -> str:
     return channel_link
 
 
-async def _get_all_channels(client: TelegramClient) -> list|str:
+async def _get_all_channels(client: TelegramClient) -> list | str:
     channels = []
     try:
         await client.connect()

@@ -1,7 +1,12 @@
 from backend import User as apiUser
 import db
-from db import get_session
+from db import get_session, db_get_user_account
 from db.models import User, Account
+from db.repository import db_get_member_account, db_get_company, db_get_company_by_name, db_insert_company, \
+    db_get_user, db_get_company_user, db_insert_company_user, db_update_company_user, db_delete_company_user, \
+    db_get_fundraising, db_insert_user_account, db_insert_fundraising, db_get_company_account, db_get_fund_total_sum, \
+    db_get_all_donor_count, db_register_user, init_texts_tbl, db_insert_user, db_update_user, db_is_user_registered, \
+    db_delete_user, db_get_account, db_delete_account, db_update_account
 
 
 # *********************************************
@@ -10,7 +15,7 @@ from db.models import User, Account
 def test_get_not_exists_user():
     session = get_session()
     user_id = -12
-    user = db._get_user(user_id, session)
+    user = db_get_user(user_id, session)
     assert user is None
 
 
@@ -23,7 +28,7 @@ def test_insert_user():
         'birthdate': '1966-12-15',
     }
 
-    user: User = db._insert_user(user_id=user_id, session=session, **user_data)
+    user: User = db_insert_user(user_id=user_id, session=session, **user_data)
     assert user_id == user.id
     assert 'Егор Летов' == user.name
     assert 3 == user.timezone
@@ -33,7 +38,7 @@ def test_insert_user():
 def test_get_user():
     session = get_session()
     user_id = 124471751
-    user = db._get_user(user_id, session)
+    user = db_get_user(user_id, session)
     assert user is not None
     assert user_id == user.id
 
@@ -47,7 +52,7 @@ def test_update_user():
         'birthdate': '1967-12-15',
     }
 
-    user = db._update_user(user_id, session, **user_data)
+    user = db_update_user(user_id, session, **user_data)
     assert 'Мария Лютова' == user.name
     assert 1 == user.timezone
     assert '1967-12-15' == user.birthdate
@@ -56,16 +61,16 @@ def test_update_user():
 def test_is_user_not_registered():
     session = get_session()
     user_id = 124471751
-    registered = db._is_user_registered(user_id, session)
+    registered = db_is_user_registered(user_id, session)
     assert not registered
 
 
 def test_delete_user():
     session = get_session()
     user_id = 124471751
-    db._delete_user(user_id, session)
+    db_delete_user(user_id, session)
 
-    user = db._get_user(user_id, session)
+    user = db_get_user(user_id, session)
     assert user is None
 
 
@@ -77,7 +82,7 @@ def test_register_user():
         'timezone': 3,
         'birthdate': '1966-12-15',
     }
-    user = db._register_user(user_id, session, **user_data)
+    user = db_register_user(user_id, session, **user_data)
     assert user is not None
     assert user.account is not None
     assert user.account.payed_events == 1
@@ -86,7 +91,7 @@ def test_register_user():
 def test_is_user_registered():
     session = get_session()
     user_id = 124471751
-    registered = db._is_user_registered(user_id, session)
+    registered = db_is_user_registered(user_id, session)
     assert registered
 
 
@@ -95,20 +100,20 @@ def test_is_user_registered():
 # *********************************************
 def test_get_not_exists_account():
     session = get_session()
-    account = db._get_account(account_id=-22, session=session)
+    account = db_get_account(account_id=-22, session=session)
     assert account is None
 
 
 def test_update_account():
     session = get_session()
     user_id = 124471751
-    user = db._get_user(user_id, session)
+    user = db_get_user(user_id, session)
 
     assert user is not None
     assert user.account is not None
 
     account: Account = user.account
-    account = db._update_account(account.id, session, payed_events=10)
+    account = db_update_account(account.id, session, payed_events=10)
     assert account.payed_events == 10
     assert user.account.payed_events == 10
 
@@ -120,32 +125,32 @@ def test_delete_user_account():
     assert user is not None
     assert user.account is not None
 
-    db._delete_account(user.account.id, session)
-    user = db._get_user(user.id, session)
+    db_delete_account(user.account.id, session)
+    user = db_get_user(user.id, session)
     assert user.account is None
 
 
 def test_delete_company_account():
     session = get_session()
     company = get_company_by_name()
-    account = db._get_company_account(company.id, session)
+    account = db_get_company_account(company.id, session)
     if account:
-        db._delete_account(account.id, session)
-        account = db._get_company_account(company.id, session)
+        db_delete_account(account.id, session)
+        account = db_get_company_account(company.id, session)
 
     assert account is None
 
 
 def test_get_company_account():
     session = get_session()
-    account = db.get_company_account(13, session)
+    account = db_get_company_account(13, session)
 
     assert account is not None
 
 
 def test_get_user_account():
     session = get_session()
-    account = db._get_user_account(124471751, session)
+    account = db_get_user_account(124471751, session)
 
     assert account is not None
     assert account.id == 33
@@ -153,7 +158,7 @@ def test_get_user_account():
 
 def test_get_member_account():
     session = get_session()
-    account = db.get_member_account(14, 124471751, session)
+    account = db_get_member_account(14, 124471751, session)
 
     assert account is not None
 
@@ -163,13 +168,13 @@ def test_get_member_account():
 # *********************************************
 def test_get_not_exists_company():
     session = get_session()
-    company = db._get_company(company_id=-22, session=session)
+    company = db_get_company(company_id=-22, session=session)
     assert company is None
 
 
 def test_get_not_exists_company_by_name():
     session = get_session()
-    company = db._get_company_by_name('Рога и копыта-2', session=session)
+    company = db_get_company_by_name('Рога и копыта-2', session=session)
     assert company is None
 
 
@@ -180,7 +185,7 @@ def test_insert_company():
         'person_count': 1,
     }
 
-    company = db.insert_company('Muvon', 124471751, session, **data)
+    company = db_insert_company('Muvon', 124471751, session, **data)
     assert company is not None
     assert 'Muvon' == company.name
     assert 1 == company.person_count
@@ -189,7 +194,7 @@ def test_insert_company():
 def test_get_company_by_name():
     session = get_session()
     name = 'Muvon'
-    company = db._get_company_by_name(name, session)
+    company = db_get_company_by_name(name, session)
 
     assert company is not None
 
@@ -199,7 +204,7 @@ def test_create_user():
     assert api_user is not None
 
     session = get_session()
-    user = db._get_user(api_user.id, session)
+    user = db_get_user(api_user.id, session)
     if user is None:
         user: User = db.create_user(api_user)
 
@@ -212,7 +217,7 @@ def test_create_user():
 # *********************************************
 def test_get_mc():
     session = get_session()
-    mc = db.get_company_user(100, 1, session)
+    mc = db_get_company_user(100, 1, session)
 
     assert mc is not None
     assert mc.phone == '04'
@@ -223,7 +228,7 @@ def test_get_mc():
 def test_insert_exists_mc():
     session = get_session()
     data = {'phone': '03', 'email': 'qqq@host.my', 'title': 'Чебурашка'}
-    mc = db.insert_company_user(100, 1, session, **data)
+    mc = db_insert_company_user(100, 1, session, **data)
 
     assert mc is not None
     assert mc.phone == '04'
@@ -234,7 +239,7 @@ def test_insert_exists_mc():
 def test_insert_mc():
     session = get_session()
     data = {'phone': '03', 'email': 'qqq@host.my', 'title': 'Чебурашка'}
-    mc = db.insert_company_user(124471751, 1, session, **data)
+    mc = db_insert_company_user(124471751, 1, session, **data)
 
     assert mc is not None
     assert mc.phone == '03'
@@ -245,7 +250,7 @@ def test_insert_mc():
 def test_update_mc():
     session = get_session()
     data = {'phone': '03', 'email': 'qqq@host.my', 'title': 'Чебурашка'}
-    mc = db.update_company_user(124471751, 1, session, **data)
+    mc = db_update_company_user(124471751, 1, session, **data)
 
     assert mc is not None
     assert mc.phone == '03'
@@ -255,12 +260,13 @@ def test_update_mc():
 
 def test_delete_mc():
     session = get_session()
-    mc = db.get_company_user(124471751, 1, session)
+    mc = db_get_company_user(124471751, 1, session)
 
     # assert mc is not None
-    db.delete_company_user(124471751, 1, session)
-    mc = db.get_company_user(124471751, 1, session)
+    db_delete_company_user(124471751, 1, session)
+    mc = db_get_company_user(124471751, 1, session)
     assert mc is None
+
 
 # *********************************************
 # Fundraising
@@ -268,7 +274,7 @@ def test_delete_mc():
 def test_get_not_exist_fundraising():
     session = get_session()
     event_id = -100
-    event = db._get_fundraising(event_id, session)
+    event = db_get_fundraising(event_id, session)
 
     assert event is None
 
@@ -277,7 +283,7 @@ def test_insert_private_fundraising():
     session = get_session()
     user = get_user(124471751)
     if user.account is None:
-        db._insert_user_account(user.id, session)
+        db_insert_user_account(user.id, session)
         user = get_user(1124471751)
 
     event_data = {
@@ -295,17 +301,17 @@ def test_insert_private_fundraising():
         'invite_url': r'tme:/drujba/pe_0012'
     }
 
-    event = db._insert_fundraising(user.account.id, session, **event_data)
+    event = db_insert_fundraising(user.account.id, session, **event_data)
     assert event is not None
 
 
 def test_insert_company_fundraising():
     session = get_session()
 
-    company = db._get_company_by_name('Muvon', session)
+    company = db_get_company_by_name('Muvon', session)
     assert company
 
-    account = db._get_company_account(company.id, session)
+    account = db_get_company_account(company.id, session)
     assert account
 
     event_data = {
@@ -323,21 +329,21 @@ def test_insert_company_fundraising():
         'invite_url': r'tme:/drujba/pe_0015'
     }
 
-    event = db._insert_fundraising(account.id, session, **event_data)
+    event = db_insert_fundraising(account.id, session, **event_data)
     assert event is not None
 
 
 def test_total_sum_not_exist_fundraising():
     session = get_session()
     fund_id = -1234
-    total_sum = db._get_fund_total_sum(fund_id, session)
+    total_sum = db_get_fund_total_sum(fund_id, session)
     assert total_sum == 0
 
 
 def test_donor_count_not_exist_fundraising():
     session = get_session()
     fund_id = -1234
-    total_sum = db._get_all_donor_count(fund_id, session)
+    total_sum = db_get_all_donor_count(fund_id, session)
     assert total_sum == 0
 
 
@@ -349,14 +355,14 @@ def get_user(user_id: int = 124471751, name: str = 'Егор Летов') -> Use
         'timezone': 3,
         'birthdate': '1966-12-15',
     }
-    user = db._register_user(user_id=user_id, session=session, **user_data)
+    user = db_register_user(user_id=user_id, session=session, **user_data)
     return user
 
 
 def get_company_by_name(name: str = 'ProfiTeam'):
     session = get_session()
     user = get_user(1234, 'Иван Куев')
-    company = db._get_company_by_name(name, session)
+    company = db_get_company_by_name(name, session)
     if company is None:
         data = {
             'industry': 'Software engineering',
@@ -364,13 +370,13 @@ def get_company_by_name(name: str = 'ProfiTeam'):
             'job_title': 'руководитель',
             'phone': '8-800-100=4455',
         }
-        company = db._insert_company(name, user.id, session, **data)
+        company = db_insert_company(name, user.id, session, **data)
     return company
 
 
 def test_init_texts_tbl():
     session = get_session()
-    db.init_texts_tbl(session)
+    init_texts_tbl(session)
     assert True
 
 

@@ -302,7 +302,7 @@ async def start_trial_user(chat_id, state: FSMContext):
     msgs.put(_msg)
 
 
-async def start_user(chat_id: str, state: FSMContext):
+async def start_user(chat_id: int, state: FSMContext):
     user_id = chat_id
     await _remove_all_messages(user_id)
     name = db.get_user_name(user_id)
@@ -321,7 +321,7 @@ async def start_user(chat_id: str, state: FSMContext):
     msgs.put(_msg)
 
 
-async def start_admin(chat_id: str, state: FSMContext):
+async def start_admin(chat_id: int, state: FSMContext):
     user_id = chat_id
     await _remove_all_messages(user_id)
     msg = db.get_message_text('start_message')
@@ -330,7 +330,7 @@ async def start_admin(chat_id: str, state: FSMContext):
     msgs.put(_msg)
 
 
-async def start_anonymous_donor(chat_id: str, args: str, state: FSMContext):
+async def start_anonymous_donor(chat_id: int, args: str, state: FSMContext):
     user_id = chat_id
     await _remove_all_messages(user_id)
     fund_id = args.replace('fund_', '')
@@ -347,7 +347,7 @@ async def start_anonymous_donor(chat_id: str, args: str, state: FSMContext):
     msgs.put(_msg)
 
 
-async def start_donor(chat_id, args, state: FSMContext):
+async def start_donor(chat_id: int, args, state: FSMContext):
     user_id = chat_id
     await _remove_all_messages(user_id)
     fund_id = args.replace('fund_', '')

@@ -1,15 +1,12 @@
 import asyncio
 import os
-import random
-import tempfile
 import urllib
-import uuid
 from datetime import datetime, date
 import json
 from pathlib import Path
 
 from backend.models import WebAppInitData, Fundraising
-from chat.user_chat import async_create_chat2, async_create_chat, async_change_chats_owners
+from chat.user_chat import async_create_chat
 from config import Config
 from utils import re_search, check_webapp_signature, decode_base64_str, get_bot_url
 import urllib.parse
@@ -90,25 +87,6 @@ def test_days_left():
     assert days_left > 0
 
 
-def test_loguru():
-    from loguru import logger
-    # config log path
-    app_dir = Config().app_dir
-    logs_dir = Config().logs_dir
-    log_path = f'{app_dir}/{logs_dir}/test.log'
-    # remove exists log
-    if Path(log_path).exists():
-        os.remove(log_path)
-    # config loguru
-    logger.remove(0)
-    logger.add(log_path)
-
-    logger.debug("Happy logging with Loguru!")
-    logger.info('Новое сообщение в лог')
-
-    assert Path(log_path).exists()
-
-
 def test_get_bot_url():
     url = asyncio.run(get_bot_url())
     assert url is not None
@@ -127,7 +105,7 @@ def test_read_all_files():
 
 def test_add_lists():
     common_list = [0]
-    other_list = [1,2,3,4]
+    other_list = [1, 2, 3, 4]
     common_list = common_list + other_list
 
     assert len(common_list) == 5
@@ -142,7 +120,7 @@ def test_new_or_append():
 
 
 def test_create_chat():
-    chat_name='Тест'
+    chat_name = 'Тест'
     about = 'тестовый чат который нужно удалить после создания'
     chat_url = async_create_chat(chat_name, about)
 

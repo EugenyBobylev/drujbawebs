@@ -1,9 +1,7 @@
 import json
-import random
 import urllib
 import urllib.parse
 from functools import wraps
-from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.encoders import jsonable_encoder
