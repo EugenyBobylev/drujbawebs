@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="{{ url_for('static', path='/css/participantList.css') }}" rel="stylesheet">
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <div class="content">
+            <h1>Список<br>
+                участников</h1>
+            <div class="list">
+                {% for di in donors_info %}
+                    <div class="item">
+                        <div class="itemContent">
+                            <div class="name">
+                                {{ di.info }}
+                            </div>
+                            <div class="control">
+                                <div class="bod">
+
+                                </div>
+                                <div class="setAdminButton" onclick="setAdmin({{ di.user_id }})">
+                                    Назначить админом
+                                </div>
+                            </div>
+                        </div>
+                        <div id="del#{{ di.user_id }}" class="deleteItemButton" onclick="deleteDonor({{ di.user_id }})">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="copyLinkContainer">
+                <div class="label">Ссылка на подключение к сбору</div>
+                <div class="copyLinkPlatform">
+                    <a id="copy-link" href="https://t.me/drugba_bot/23ag49x2">https://t.me/drugba_bot/23ag49x2</a>
+                    <div id="copy-button" class="copyButton">
+                        <img style="width: 20px; height: 20px" src="{{ url_for('static', path='/img/copy.png') }}"
+                             alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div class="backButton" onclick="closeWebApp()">
+                Назад
+            </div>
+        </footer>
+    </div>
+</div>
+<script src="{{ url_for('static', path='/js/participantList.js') }}"></script>
+<script>
+    let tg = window.Telegram.WebApp;
+    let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+    let api_url = "{{host}}";
+    let fund_id = "{{fund_id}}";
+
+    async function deleteDonor(user_id) {
+        let url = `${api_url}api/fundraising/${fund_id}/donor/${user_id}/`;
+        await fetch(url, {
+            method: 'DELETE',
+            mode: 'cors',
+            headers: {
+                'ngrok-skip-browser-warning': '100',
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+                'Authorization': btoa(tg.initData),
+            },
+        }).then(r => {
+            document.getElementById(`del#${user_id}`).parentElement.remove();
+        })
+    }
+
+    async function setAdmin(user_id) {
+        let url = `${api_url}api/fundraising/${fund_id}/admin/${user_id}/`;
+        await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'ngrok-skip-browser-warning': '100',
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+                'Authorization': btoa(tg.initData),
+            },
+        });
+    }
+
+    function closeWebApp() {
+        tg.close();
+    }
+
+    const link = document.getElementById('copy-link');
+    const button = document.getElementById('copy-button');
+
+    button.addEventListener('click', () => {
+        const href = link.href;
+        navigator.clipboard.writeText(href);
+        const message = document.createElement('div');
+        message.innerText = 'Скопировано';
+        message.style.fontSize = '12px';
+        message.style.color = '#0e0f75';
+        const parent = link.parentNode;
+        parent.replaceChild(message, link);
+        setTimeout(() => {
+            parent.replaceChild(link, message);
+        }, 2000);
+    });
+</script>
+</body>
+</html>

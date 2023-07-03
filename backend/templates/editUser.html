@@ -14,8 +14,7 @@
     <!--
     <img src="woman.svg" alt="">
     -->
-    <h3>Регистрация</h3>
-    <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
+    <h3>Редактировать анкету</h3>
     <div class="myform">
         <input type="text" id="uname" placeholder="Имя и фамилия" class="required" value="{{name}}" size="40"/>
         <div class="dateInput">
@@ -62,7 +61,7 @@
         let user_id = "{{user_id}}";
 
         let timezone = document.getElementById("timezone");
-        timezone.value = {{timezone}};
+        timezone.value = "{{timezone}}";
 
         async function postUser(){
             let url = `${api_url}api/user/${user_id}/`;
