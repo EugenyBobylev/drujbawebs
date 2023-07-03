@@ -66,7 +66,7 @@ async def send_payment_fail_msg(chat_id: int, account_id: int, payed_events: int
     api_hash = config.api_hash
     bot_token = config.test_token
     bot = TelegramClient('bot', api_id, api_hash)
-    bot = await bot.start(bot_token=bot_token)
+    bot = bot.start(bot_token=bot_token)
     async with bot:
         _url = f'{config.base_url}payment/{account_id}/{payed_events}'
         _txt = f'К сожалению, оплата не прошла. Давайте попробуем ещё раз.'
@@ -76,4 +76,3 @@ async def send_payment_fail_msg(chat_id: int, account_id: int, payed_events: int
         ]
         _msg = await bot.send_message(chat_id, _txt, buttons=_keyboard)
         assert _msg is not None
-
