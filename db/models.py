@@ -48,8 +48,9 @@ class Company(Base):
     company_url = mapped_column(String, default='')     # ссылка на компанию
 
     admin = relationship('User', foreign_keys=[admin_id], back_populates='companies_admin', uselist=False)
-    account = relationship('Account', back_populates='company', cascade="all, delete-orphan", uselist=False)
-    members = relationship('MC')  # companies' members
+    account = relationship('Account', back_populates='company', cascade="all, delete", passive_deletes=True,
+                           uselist=False)
+    members = relationship('MC', cascade="all, delete", passive_deletes=True)  # companies' members
 
     def __repr__(self) -> str:
         return f'id={self.id}; name="{self.name}"'
@@ -69,7 +70,8 @@ class Account(Base):
     UniqueConstraint("user_id", "company_id", name="uix_user_company")
 
     user = relationship('User', foreign_keys=[user_id], back_populates='accounts', uselist=False)
-    company = relationship('Company', foreign_keys=[company_id], uselist=False)
+    company = relationship('Company', foreign_keys=[company_id], cascade="all, delete", passive_deletes=True,
+                           uselist=False)
     fundraisings = relationship('Fundraising', cascade="all, delete", passive_deletes=True, uselist=True)
     payments = relationship('Payment',  cascade="all, delete", passive_deletes=True, uselist=True)
 

@@ -122,6 +122,9 @@ def remove_user(user_id: int):
     user: User = db_get_user(user_id, session)
     if user is None:
         return
+    for account in user.accounts:
+        if account.company_id is not None:
+            session.delete(account.company)
     session.delete(user)
     session.commit()
 

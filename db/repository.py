@@ -204,7 +204,7 @@ def db_is_user_registered(user_id: int, session: Session) -> bool:
         raise ValueError("session can't be None")
     user = session.get(User, user_id)
     if user is not None:
-        return user.account is not None
+        return len(user.accounts) > 0
     return False
 
 
