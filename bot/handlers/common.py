@@ -9,10 +9,10 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
-from backend import FundraisingInfo, Account, PaymentResult, UserInfo
+from backend import FundraisingInfo, Account, PaymentResult, UserInfo, ApiUserStatus
 from chat.user_chat import get_json_file, ChatConfig, async_get_chats, async_change_chats_owners, async_create_chat
 from config import Config
-from db.bl import UserStatus
+from db.bl import UserStatus, get_user_statuses
 from utils import is_number, calc_payment_sum
 
 bot_config = Config()
@@ -266,21 +266,19 @@ async def send_message(chat_id, text, **kwargs):
     return _msg
 
 
-async def start_visitor(message: types.Message, state: FSMContext):
-    # user_data = await state.get_data()
-    # user_status = user_data['user_status']
+async def start_visitor(user_id: int, state: FSMContext):
+    await _remove_all_messages(user_id)
 
     msg = db.get_message_text('start_message')
     keyboard = visitor_keyboard()
-    _msg = await message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(user_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
     await state.set_state(Steps.tg_2)
 
 
-async def start_trial_user(chat_id, state: FSMContext):
-    await _remove_all_messages(chat_id)
+async def start_trial_user(user_id, state: FSMContext):
+    await _remove_all_messages(user_id)
 
-    user_id = chat_id
     fund_id = db.get_trial_fund_id(user_id)
     account: Account = db.get_api_user_account(user_id)
     await state.update_data(user_id=user_id)
@@ -298,12 +296,11 @@ async def start_trial_user(chat_id, state: FSMContext):
         msg = db.get_message_text('start_message')
         await state.set_state(Steps.tg_3)
 
-    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(user_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
-async def start_user(chat_id: int, state: FSMContext):
-    user_id = chat_id
+async def start_user(user_id: int, state: FSMContext):
     await _remove_all_messages(user_id)
     name = db.get_user_name(user_id)
     user_info: UserInfo = db.get_user_info(user_id)
@@ -317,16 +314,15 @@ async def start_user(chat_id: int, state: FSMContext):
     keyboard = user_menu_keyboard(user_id, account.id, account.payed_events)
 
     await state.set_state(Steps.tg_19)
-    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(user_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
-async def start_admin(chat_id: int, state: FSMContext):
-    user_id = chat_id
+async def start_admin(user_id: int, state: FSMContext):
     await _remove_all_messages(user_id)
     msg = db.get_message_text('start_message')
     keyboard = admin_menu_keyboard()
-    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(user_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
@@ -347,8 +343,7 @@ async def start_anonymous_donor(chat_id: int, args: str, state: FSMContext):
     msgs.put(_msg)
 
 
-async def start_donor(chat_id: int, args, state: FSMContext):
-    user_id = chat_id
+async def start_donor(user_id: int, args, state: FSMContext):
     await _remove_all_messages(user_id)
     fund_id = args.replace('fund_', '')
     await state.update_data(fund_id=fund_id)
@@ -358,7 +353,7 @@ async def start_donor(chat_id: int, args, state: FSMContext):
     keyboard = donor_menu()
 
     await state.set_state(Steps.s_1)
-    _msg = await send_message(chat_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+    _msg = await send_message(user_id, msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     msgs.put(_msg)
 
 
@@ -374,11 +369,25 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
     user_id = message.from_user.id
     await state.update_data(user_id=user_id)
-    user_status: UserStatus = db.get_user_status(user_id, account_id=None, has_invite_url=has_invite_url)
+    user_status = UserStatus.Unknown
+    statuses: list[ApiUserStatus] = get_user_statuses(user_id, has_invite_url=has_invite_url)
+    if statuses[0].status == 'AnonymousDonor':
+        user_status = UserStatus.AnonymousDonor
+    elif statuses[0].status == 'Donor':
+        user_status = UserStatus.Donor
+    elif statuses[0].status == 'Visitor':
+        user_status = UserStatus.Visitor
+    elif statuses[0].status == 'TrialUser':
+        user_status = UserStatus.TrialUser
+    elif statuses[0].status == 'User':
+        user_status = UserStatus.User
+    elif statuses[0].status == 'Admin':
+        user_status = UserStatus.Admin
+
     await state.update_data(user_status=user_status)
 
     if user_status == UserStatus.Visitor:
-        await start_visitor(message, state)
+        await start_visitor(user_id, state)
         return
 
     if user_status == UserStatus.TrialUser:
@@ -726,9 +735,23 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
     await call.message.delete()
     await state.finish()
 
+    user_status = UserStatus.Unknown
     user_id = call.from_user.id
     await state.update_data(user_id=user_id)
-    user_status = db.get_user_status(user_id, account_id=None, has_invite_url=False)
+    statuses: list[ApiUserStatus] = get_user_statuses(user_id, has_invite_url=False)
+    if statuses[0].status == 'Visitor':
+        user_status = UserStatus.Visitor
+    elif statuses[0].status == 'TrialUser':
+        user_status = UserStatus.TrialUser
+    elif statuses[0].status == 'User':
+        user_status = UserStatus.User
+    elif statuses[0].status == 'Admin':
+        user_status = UserStatus.Admin
+    elif statuses[0].status == 'AnonymousDonor':
+        user_status = UserStatus.AnonymousDonor
+    elif statuses[0].status == 'Donor':
+        user_status = UserStatus.Donor
+
     await state.update_data(user_status=user_status)
 
     if user_status == UserStatus.Visitor:

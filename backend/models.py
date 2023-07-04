@@ -187,7 +187,7 @@ class PaymentResult(BaseModel):
                f'cnt={self.payed_events}; transaction_id={self.transaction_id}'
 
 
-class UserStatus(BaseModel):
+class ApiUserStatus(BaseModel):
     user_id: int                # id пользователя, совпадает с id телеграм пользователя
     status:  str                # статус пользователь
     account_id: int = None      # id аккаунта

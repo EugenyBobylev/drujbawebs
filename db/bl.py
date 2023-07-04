@@ -13,7 +13,7 @@ from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import UserInfo as ApiUserInfo
 from backend import PaymentResult as ApiPaymentResult
-from backend import UserStatus as ApiUserStatus
+from backend import ApiUserStatus as ApiUserStatus
 from chat.user_chat import async_create_chat
 
 from db.models import User, Company, Account, Fundraising, Donor, Payment
@@ -155,7 +155,7 @@ def get_user_statuses(user_id: int, has_invite_url: bool = False) -> list[ApiUse
     :param user_id: телеграм id
     :param account_id: id аккаунта
     :param has_invite_url: признак входа по приглашению
-    :return: статус пользователя телеграм (UserStatus)
+    :return: статус пользователя телеграм (ApiUserStatus)
     """
     session = get_session()
     all_statuses = []
@@ -172,6 +172,11 @@ def get_user_statuses(user_id: int, has_invite_url: bool = False) -> list[ApiUse
 
     if len(user.accounts) == 0:
         api_user = ApiUserStatus(user_id=user_id, status=UserStatus.Visitor.name)
+        all_statuses.append(api_user)
+        return all_statuses
+
+    if has_invite_url:
+        api_user = ApiUserStatus(user_id=user_id, status=UserStatus.Donor.name)
         all_statuses.append(api_user)
         return all_statuses
 
@@ -204,36 +209,36 @@ def get_user_statuses(user_id: int, has_invite_url: bool = False) -> list[ApiUse
 
     # is_registered: bool = db_is_user_registered(user_id, session)
     # if not is_registered and has_invite_url:
-    #     return UserStatus.AnonymousDonor
+    #     return ApiUserStatus.AnonymousDonor
     # if is_registered and has_invite_url:
-    #     return UserStatus.Donor
+    #     return ApiUserStatus.Donor
     #
     # if not is_registered and not has_invite_url:
-    #     return UserStatus.Visitor
+    #     return ApiUserStatus.Visitor
     #
     # user_account = db_get_user_account(user_id, session)
     # if user_account is not None:
     #     payment_count = db_get_payments_count(user_account.id, session)
     #     if payment_count > 0:
-    #         return UserStatus.User
-    #     return UserStatus.TrialUser
+    #         return ApiUserStatus.User
+    #     return ApiUserStatus.TrialUser
     #
     # companies = db_get_user_companies(user_id, session)
     #
     # if account_id is None:
-    #     return UserStatus.Visitor
+    #     return ApiUserStatus.Visitor
     #
     # account = db_get_account(account_id, session)
     # assert account is not None
     #
     # if account.user_id is not None and account.company_id is None:  # TrialUser or User
     #     payments_count = db_get_payments_count(account_id, session)
-    #     return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
+    #     return ApiUserStatus.TrialUser if payments_count == 0 else ApiUserStatus.User
     #
     # if account.user_id is None and account.company_id is not None:
-    #     return UserStatus.Admin
+    #     return ApiUserStatus.Admin
     #
-    # return UserStatus.Unknown
+    # return ApiUserStatus.Unknown
 
 
 def remove_user_payments(user_id: int):
