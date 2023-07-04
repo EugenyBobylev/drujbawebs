@@ -185,3 +185,11 @@ class PaymentResult(BaseModel):
     def __repr__(self):
         return f'code={self.code}; success={self.success}; message={self.message}; account_id={self.account_id}, ' \
                f'cnt={self.payed_events}; transaction_id={self.transaction_id}'
+
+
+class UserStatus(BaseModel):
+    user_id: int                # id пользователя, совпадает с id телеграм пользователя
+    status:  str                # статус пользователь
+    account_id: int = None      # id аккаунта
+    company_id: int = None      # id компании
+    company_name: str = ''      # название компании

@@ -1,6 +1,6 @@
 from backend import User as apiUser
 import db
-from db import get_session, db_get_user_account, remove_user
+from db import get_session, db_get_user_account, remove_user, UserStatus, get_user_statuses
 from db.models import User, Account
 from db.repository import db_get_member_account, db_get_company, db_get_company_by_name, db_insert_company, \
     db_get_user, db_get_company_user, db_insert_company_user, db_update_company_user, db_delete_company_user, \
@@ -88,8 +88,6 @@ def test_register_user():
     }
     user = db_register_user(user_id, session, **user_data)
     assert user is not None
-    assert user.account is not None
-    assert user.account.payed_events == 1
 
 
 def test_is_user_registered():
@@ -116,32 +114,6 @@ def test_get_not_exists_account():
     session = get_session()
     account = db_get_account(account_id=-22, session=session)
     assert account is None
-
-
-def test_update_account():
-    session = get_session()
-    user_id = 124471751
-    user = db_get_user(user_id, session)
-
-    assert user is not None
-    assert user.account is not None
-
-    account: Account = user.account
-    account = db_update_account(account.id, session, payed_events=10)
-    assert account.payed_events == 10
-    assert user.account.payed_events == 10
-
-
-def test_delete_user_account():
-    session = get_session()
-    user = get_user()
-
-    assert user is not None
-    assert user.account is not None
-
-    db_delete_account(user.account.id, session)
-    user = db_get_user(user.id, session)
-    assert user.account is None
 
 
 def test_delete_company_account():
@@ -302,32 +274,6 @@ def test_get_not_exist_fundraising():
     assert event is None
 
 
-def test_insert_private_fundraising():
-    session = get_session()
-    user = get_user(124471751)
-    if user.account is None:
-        db_insert_user_account(user.id, session)
-        user = get_user(1124471751)
-
-    event_data = {
-        'reason': 'ДР',
-        'target': 'юбилей',
-        'start': '2023-01-15',
-        'end': '2023-05-10',
-        'event_date': '2023-05-15',
-        'transfer_info': 'на карту Мир сбербанка 000-1111-2222-4444',
-        'gift_info': 'ящик коньяка',
-        'congratulation_date': '2023-05-16',
-        'congratulation_time': '19:00',
-        'event_place': 'Дача юбиляра на Щукинке',
-        'event_dresscode': 'чтобы комары на сожрали',
-        'invite_url': r'tme:/drujba/pe_0012'
-    }
-
-    event = db_insert_fundraising(user.account.id, session, **event_data)
-    assert event is not None
-
-
 def test_insert_company_fundraising():
     session = get_session()
 
@@ -407,3 +353,54 @@ def test_get_current_tariff():
     account_id = 138
     tariff_name = db.get_current_tariff(account_id)
     assert tariff_name == 'Приятель'
+
+
+def test_enum_to_str():
+    assert UserStatus.User.name == 'User'
+
+
+def test_get_visitor_status():
+    user_id = 1
+
+    session = get_session()
+    user = db_get_user(user_id, session)
+    if user:
+        db_delete_user(user_id, session)
+
+    statuses = get_user_statuses(user_id, False)
+
+    assert type(statuses) == list
+    assert len(statuses) == 1
+    assert statuses[0].status == UserStatus.Visitor.name
+
+    user = db_insert_user(user_id, session, name='test')
+    if user:
+        statuses = get_user_statuses(1, False)
+        assert statuses[0].status == UserStatus.Visitor.name
+        db_delete_user(user_id, session)
+
+    # user_id = 124471751
+    # status = db.get_user_status(user_id)
+    # assert status == 'active'
+
+
+def test_get_trialuser_status():
+    user_id = 1
+
+    session = get_session()
+    user = db_get_user(user_id, session)
+    if user is None:
+        user = db_insert_user(user_id, session, name='test')
+        account = db_insert_user_account(user.id, session)
+
+    statuses = get_user_statuses(user_id, False)
+
+    assert len(statuses) == 1
+    assert statuses[0].status == UserStatus.TrialUser.name
+
+    if user:
+        db_delete_user(user_id, session)
+
+    # user_id = 124471751
+    # status = db.get_user_status(user_id)
+    # assert status == 'active'

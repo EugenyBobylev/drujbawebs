@@ -4,7 +4,6 @@ from enum import Enum
 
 from sqlalchemy import select, func
 
-
 from backend import User as ApiUser
 from backend import CompanyUser as ApiCompanyUser
 from backend import Fundraising as ApiFundraising
@@ -14,6 +13,7 @@ from backend import Account as ApiAccount
 from backend import Donor as ApiDonor
 from backend import UserInfo as ApiUserInfo
 from backend import PaymentResult as ApiPaymentResult
+from backend import UserStatus as ApiUserStatus
 from chat.user_chat import async_create_chat
 
 from db.models import User, Company, Account, Fundraising, Donor, Payment
@@ -41,6 +41,7 @@ class UserStatus(Enum):
     Admin = 3  # админ компании, управляет аккаунтом компании
     Donor = 5  # зарегистрированный донор (спонсор)
     AnonymousDonor = 6  # анонимный донор (спонсор)
+    DonationCheaf = 7  # отвественный за сбор DonationCheaf
     Unknown = 12  # фиг его знает, кто это такой
 
 
@@ -74,7 +75,7 @@ def create_user(user: ApiUser) -> (User, Account):
     user_data: dict = user.dict()
     user_data.pop('id')
     user = db_register_user(user_id, session, **user_data)
-    return user, user.account
+    return user, user.accounts
 
 
 def get_user(user_id: int) -> ApiUser | None:
@@ -148,7 +149,7 @@ def get_user_info(user_id: int) -> ApiUserInfo:
     return user_info
 
 
-def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool = False) -> UserStatus:
+def get_user_statuses(user_id: int, has_invite_url: bool = False) -> list[ApiUserStatus]:
     """
     Определить статус пользователя
     :param user_id: телеграм id
@@ -157,39 +158,82 @@ def get_user_status(user_id: int, account_id: int = None, has_invite_url: bool =
     :return: статус пользователя телеграм (UserStatus)
     """
     session = get_session()
-    is_registered: bool = db_is_user_registered(user_id, session)
+    all_statuses = []
 
-    if not is_registered and has_invite_url:
-        return UserStatus.AnonymousDonor
-    if is_registered and has_invite_url:
-        return UserStatus.Donor
+    user: User = db_get_user(user_id, session)
+    if user is None and not has_invite_url:
+        api_user = ApiUserStatus(user_id=user_id, status=UserStatus.Visitor.name)
+        all_statuses.append(api_user)
+        return all_statuses
+    if user is None and has_invite_url:
+        api_user = ApiUserStatus(user_id=user_id, status=UserStatus.AnonymousDonor.name)
+        all_statuses.append(api_user)
+        return all_statuses
 
-    if not is_registered and not has_invite_url:
-        return UserStatus.Visitor
+    if len(user.accounts) == 0:
+        api_user = ApiUserStatus(user_id=user_id, status=UserStatus.Visitor.name)
+        all_statuses.append(api_user)
+        return all_statuses
 
-    user_account = db_get_user_account(user_id, session)
-    if user_account is not None:
-        payment_count = db_get_payments_count(user_account.id, session)
-        if payment_count > 0:
-            return UserStatus.User
-        return UserStatus.TrialUser
+    for account in user.accounts:
+        api_user = None
 
-    companies = db_get_user_companies(user_id, session)
+        if account.company_id is None:  # это персональный аккаунт м.б. TrialUser or User
+            payments = account.payments
+            payments_count = len(payments) if payments is not None else 0
+            if payments_count == 0:
+                api_user = ApiUserStatus(user_id=user_id, account_id=account.id, status=UserStatus.TrialUser.name)
+            elif payments_count > 0:
+                api_user = ApiUserStatus(user_id=user_id, account_id=account.id, status=UserStatus.User.name)
+            all_statuses.append(api_user)
 
-    if account_id is None:
-        return UserStatus.Visitor
+        elif account.company_id is not None:  # это aккаунт компании или ответственного за сбор
+            company = account.company
+            if company.admin_id == user_id:
+                api_user = ApiUserStatus(user_id=user_id, account_id=account.id,  status=UserStatus.Admin.name,
+                                         company_id=company.id, company_nsme=company.name)
+                all_statuses.append(api_user)
+            funraisings = account.fundraisings
+            fund_count = len(funraisings) if funraisings is not None else 0
+            if fund_count > 0:
+                api_user = ApiUserStatus(user_id=user_id, account_id=account.id, status=UserStatus.DonationCheaf.name,
+                                         company_id=company.id, company_nsme=company.name)
+                all_statuses.append(api_user)
 
-    account = db_get_account(account_id, session)
-    assert account is not None
+    return all_statuses
 
-    if account.user_id is not None and account.company_id is None:  # TrialUser or User
-        payments_count = db_get_payments_count(account_id, session)
-        return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
-
-    if account.user_id is None and account.company_id is not None:
-        return UserStatus.Admin
-
-    return UserStatus.Unknown
+    # is_registered: bool = db_is_user_registered(user_id, session)
+    # if not is_registered and has_invite_url:
+    #     return UserStatus.AnonymousDonor
+    # if is_registered and has_invite_url:
+    #     return UserStatus.Donor
+    #
+    # if not is_registered and not has_invite_url:
+    #     return UserStatus.Visitor
+    #
+    # user_account = db_get_user_account(user_id, session)
+    # if user_account is not None:
+    #     payment_count = db_get_payments_count(user_account.id, session)
+    #     if payment_count > 0:
+    #         return UserStatus.User
+    #     return UserStatus.TrialUser
+    #
+    # companies = db_get_user_companies(user_id, session)
+    #
+    # if account_id is None:
+    #     return UserStatus.Visitor
+    #
+    # account = db_get_account(account_id, session)
+    # assert account is not None
+    #
+    # if account.user_id is not None and account.company_id is None:  # TrialUser or User
+    #     payments_count = db_get_payments_count(account_id, session)
+    #     return UserStatus.TrialUser if payments_count == 0 else UserStatus.User
+    #
+    # if account.user_id is None and account.company_id is not None:
+    #     return UserStatus.Admin
+    #
+    # return UserStatus.Unknown
 
 
 def remove_user_payments(user_id: int):
@@ -200,11 +244,10 @@ def remove_user_payments(user_id: int):
     """
     session = get_session()
     user: User = db_get_user(user_id, session)
-    account: Account = user.account
-
-    account.payed_events = 0
-    for payment in account.payments:  # удалить платежи
-        session.delete(payment)
+    for account in user.accounts:
+        account.payed_events = 0
+        for payment in account.payments:  # удалить платежи
+            session.delete(payment)
     session.commit()
 
 
