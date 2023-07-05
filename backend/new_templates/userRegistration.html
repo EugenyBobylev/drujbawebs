@@ -6,13 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="registration.css">
-    <link rel="stylesheet" href="https://drugba-test.netlify.app/registration.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        .birthday {
-            text-align: left;
-        }
-
         a {
             text-decoration: none;
             cursor: pointer !important;
@@ -21,11 +16,11 @@
 </head>
 <body>
 <div id="container">
-
     <img src="{{ host }}static/women.png" alt="">
     <h1>Регистрация</h1>
     <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
     <form action="#" class="register__form" name="userRegistrationForm">
+        <label for="uname"></label>
         <input id="uname" type="text" placeholder="Имя и фамилия" class="required" name="name" required>
         <div class="dateInput">
             <input type="date"
@@ -33,19 +28,19 @@
                    id="birthday" name="birthday" required>
             <label for="birthday">Дата рождения</label>
         </div>
-        <select class="timezone" name="timezone" id="timezone">
-            <option value=-1> Калининград (Мск-1).</option>
-            <option value=0> Москва (Мск)</option>
-            <option value=+1> Самара (МСК+1)</option>
-            <option value=+2> Екатеринбург (МСК+2).</option>
-            <option value=+3> Омск (МСК+3)</option>
-            <option value=+4> Красноярск (МСК+4)</option>
-            <option value=+5> Иркутск (МСК+5)</option>
-            <option value=+6> Якутск (МСК+6)</option>
-            <option value=+7> Владивосток (МСК+7)</option>
-            <option value=+8> Магадан (МСК+8)</option>
-            <option value=+9> Камчатка (МСК+9)</option>
-        </select>
+        <label for="timezone"></label><select class="timezone" name="timezone" id="timezone">
+        <option value=-1> Калининград (Мск-1).</option>
+        <option value=0> Москва (Мск)</option>
+        <option value=+1> Самара (МСК+1)</option>
+        <option value=+2> Екатеринбург (МСК+2).</option>
+        <option value=+3> Омск (МСК+3)</option>
+        <option value=+4> Красноярск (МСК+4)</option>
+        <option value=+5> Иркутск (МСК+5)</option>
+        <option value=+6> Якутск (МСК+6)</option>
+        <option value=+7> Владивосток (МСК+7)</option>
+        <option value=+8> Магадан (МСК+8)</option>
+        <option value=+9> Камчатка (МСК+9)</option>
+    </select>
         <div class="formFooter">
             <input type="checkbox" name="check" id="" required>
             <label for="">Я согласен на обработку моих персональных данных в соответствии с <a
@@ -57,53 +52,28 @@
         </div>
     </form>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).on('click', 'a', function (event) {
-        event.preventDefault()
-        var url = $(this).attr('href');
-        $('#container').load(url)
-    })
-</script>
 <script>
     document.getElementById("birthday").style.transform = "scaleX(" + (document.getElementById("birthday").nextElementSibling.offsetWidth) + ")"
     let timeSelect = document.getElementById("timezone")
     const date = new Date();
     const offset = date.getTimezoneOffset() / 60 * -1;
-    // let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
-    // document.getElementById("timeZoneInput").value = "Часовой пояс: " + Intl.DateTimeFormat().resolvedOptions().timeZone
 </script>
 <script>
-    let tg = window.Telegram.WebApp;  //получаем объект webapp
-    tg.MainButton.text = "Сохранить"; //изменяем текст кнопки
-    tg.MainButton.show();
-    tg.MainButton.enable();
-    Telegram.WebApp.onEvent("mainButtonClicked", postUser);
-
+    let tg = window.Telegram.WebApp;
     let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
     document.getElementById("uname").value = user_name;
     let api_url = "{{host}}";
 
     async function postUser() {
         let url = `${api_url}api/user/`;
-
-        // вывести отладочное сообещние
-        // msg = `user_id=${tg.initDataUnsafe.user.id}`
-        // if(tg.initData !== '')
-        //      Telegram.WebApp.showAlert(msg);
-
-        // создать пользователя
         let user = {
             id: tg.initDataUnsafe.user.id,
             name: document.getElementById("uname").value,
             birthdate: document.getElementById("birthday").value,
             timezone: document.getElementById("timezone").value,
         };
-        // подготовить к отправке и отправить запрос на server
-        let body = JSON.stringify(user);
 
-        let response = await fetch(url, {
+        await fetch(url, {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -112,12 +82,14 @@
                 'accept': 'application/json',
                 'Authorization': btoa(tg.initData),
             },
-            body: body,
-        });
-        console.info(response.status)
+            body: JSON.stringify(user),
+        }).then(res => {
+            tg.alert("ok")
+            tg.close();
+        }).catch(err => {
+            tg.alert("error")
+        })
     }
 </script>
-<script src="./js/api.js"></script>
-<script src="./js/userRegister.js"></script>
 </body>
 </html>
