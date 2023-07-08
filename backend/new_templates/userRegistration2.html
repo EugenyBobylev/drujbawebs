@@ -94,19 +94,6 @@
         let [first_name, last_name] = [App.initDataUnsafe.user.first_name, App.initDataUnsafe.user.last_name]
         document.querySelector("#full-name").value = `${first_name} ${last_name}`;
 
-        async function update_html(url) {
-            await fetch(url, {
-                method: 'GET',
-                mode: 'cors'
-            }).then(data => {
-                data.text().then(html => {
-                    document.open()
-                    document.write(html)
-                    document.close()
-                })
-            })
-        }
-
         async function postUser() {
             let url = `${api_url}api/user/`;
             let timezone = document.querySelector("#time-zone").value
@@ -115,7 +102,7 @@
                 id: account_id,
                 name: document.querySelector("#full-name").value,
                 birthdate: document.querySelector("#birth-date").value,
-                timezone: timezone ? timezone !== "" : "0",
+                timezone: timezone ? timezone !== "" : 0,
             };
 
             await fetch(url, {
@@ -129,11 +116,7 @@
                 },
                 body: JSON.stringify(user),
             }).then(res => {
-                let params = new URLSearchParams({
-                    account_id: account_id,
-                    payed_events: 0
-                })
-                update_html(`${api_url}CreateFund?` + params)
+                App.close()
             }).catch(err => {
                 App.alert("error")
             })

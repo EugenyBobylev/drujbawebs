@@ -3,7 +3,7 @@ import urllib.parse
 from dataclasses import dataclass
 from datetime import datetime, date, time
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from utils import re_search, decode_base64_str
 
@@ -66,6 +66,10 @@ class User(BaseModel):
     name: str
     birthdate: date = None
     timezone: int
+
+    @validator("birthdate", pre=True)
+    def parse_birthdate(cls, value):
+        return datetime.strptime(value, "%d.%m.%Y").date()
 
     def __repr__(self):
         return f'id={self.id}; name={self.name}; timezone={self.timezone}; birthdate={self.birthdate}'
