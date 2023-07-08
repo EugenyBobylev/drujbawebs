@@ -126,8 +126,6 @@
     }
 
     filterFunds();
-
-
     openRadios.forEach(radio => {
         radio.addEventListener('change', () => {
             console.log('dd')
@@ -140,9 +138,8 @@
 </script>
 <script>
     let tg = window.Telegram.WebApp;
-
     async function openFund(id) {
-        await fetch("{{ host }}" + `api/fundraising/${id}/open/`, {
+        await fetch(`{{ host }}` + `api/fundraising/${id}/open/`, {
             method: 'GET',
             mode: 'cors',
             headers: {
@@ -152,7 +149,9 @@
             },
         }).then(r => {
             tg.close()
-        }).catch(err => tg.showAlert('err'))
+        }).catch(err => {
+            tg.showAlert('err')
+        })
     }
 
     function closeWebApp() {

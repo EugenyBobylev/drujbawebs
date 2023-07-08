@@ -122,7 +122,7 @@ async def get_user_registration_html(request: Request):
         'ngrok-skip-browser-warning': '100',
     }
     host = Config().base_url
-    return templates.TemplateResponse('userRegistration.html',
+    return templates.TemplateResponse('userRegistration2.html',
                                       context={'request': request, 'host': host}, headers=headers)
 
 
@@ -132,7 +132,7 @@ async def get_company_registration_html(request: Request):
         'ngrok-skip-browser-warning': '100',
     }
     host = Config().base_url
-    return templates.TemplateResponse('companyRegistration2.html',
+    return templates.TemplateResponse('companyRegistration.html',
                                       context={'request': request, 'host': host}, headers=headers)
 
 
