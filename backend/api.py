@@ -79,41 +79,6 @@ def auth(func):
 
 
 # ****************************************
-# Тестовый мусор
-# ****************************************
-@app.get("/test/")
-async def get_test(request: Request):
-    headers = {
-        'ngrok-skip-browser-warning': '100',
-    }
-    host = Config().base_url
-    courses = ['C', 'C++', 'Python', 'Java']
-    context = {
-        'request': request,
-        'courses': courses,
-    }
-    return templates.TemplateResponse('test.html', context=context, headers=headers)
-
-
-@app.get("/api/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get('/api/query/{query_id}')
-async def get_query_id(query_id: str):
-    # response.headers["Allow-Origins"] = "*"
-    # response.headers["Allow-Credentials"] = "true"
-    # response.headers["Access-Control-Allow-Origin"] = "*"
-    # response.headers["Access-Control-Allow-Headers"] = "origin, x-requested-with, content-type, authorization"
-    # response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS,DELETE,PUT"
-    return {
-        'query_id': query_id,
-        'message': 'Hello World',
-    }
-
-
-# ****************************************
 # Вызовы WebApps
 # ****************************************
 @app.get('/UserRegistration')
@@ -242,11 +207,14 @@ async def get_user_funds(account_id: int, request: Request):
         'funds_info': data,
         'funds_amounts': amounts
     }
-    return templates.TemplateResponse('new-feeHistory.html', context=context, headers=headers)
+    return templates.TemplateResponse('feeHistory3.html', context=context, headers=headers)
 
 
 @app.get('/donors/{fund_id}')
 async def get_donors(fund_id: int, request: Request):
+    """
+    Детали сбора
+    """
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
@@ -273,6 +241,9 @@ async def get_donors(fund_id: int, request: Request):
 
 @app.get('/donors/edit/{fund_id}')
 async def get_donors(fund_id: int, request: Request):
+    """
+    Редактировать список участников
+    """
     host = Config().base_url
     headers = {
         'ngrok-skip-browser-warning': '100',
@@ -286,13 +257,15 @@ async def get_donors(fund_id: int, request: Request):
         }
         donors.append(item)
 
+    fund: Fundraising = db.get_fund(fund_id)
     context = {
         'request': request,
         'host': host,
         'fund_id': fund_id,
+        'invite_url': fund.invite_url,
         'donors_info': donors
     }
-    return templates.TemplateResponse('new-participantList.html', context=context, headers=headers)
+    return templates.TemplateResponse('participantList.html', context=context, headers=headers)
 
 
 # ****************************************
