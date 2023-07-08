@@ -1,7 +1,9 @@
 import json
+import re
 import urllib.parse
 from dataclasses import dataclass
 from datetime import datetime, date, time
+from re import Match
 
 from pydantic import BaseModel, validator
 
@@ -69,6 +71,9 @@ class User(BaseModel):
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
+        m: Match = re.search('\d{4}-\d{2}-\d{2}', value)
+        if m:
+            return datetime.strptime(value, "%Y-%m-%d").date()
         return datetime.strptime(value, "%d.%m.%Y").date()
 
     def __repr__(self):
