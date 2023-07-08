@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>Регистрация</title>
 </head>
@@ -32,11 +32,11 @@
             <form class="app__form" onsubmit="postUser();return false;">
                 <ul class="form__blocks block_margin">
                     <li class="form__item">
-                        <input id="full-name" class="form__field" type="text" name="name" placeholder=" " data-inputmask="'mask': 'a{3, 20} a{3, 20}'" required>
+                        <input id="full-name" class="form__field" type="text" name="name" placeholder=" "required>
                         <label for="full-name" class="field__placeholder">Имя и фамилия</label>
                     </li>
                     <li class="form__item">
-                        <input id="birth-date" class="form__field" type="text" name="birthdate" placeholder=" " data-inputmask="'alias': 'date'" required>
+                        <input id="birth-date" class="form__field" type="text" name="birthdate" placeholder=" " required>
                         <label for="birth-date" class="field__placeholder">Дата рождения</label>
                     </li>
                     <li class="form__item">
@@ -83,7 +83,25 @@
         })
 
         IMask(document.querySelector("#birth-date"), {
-            mask: Date
+            mask: Date,
+            pattern: 'YYYY-MM-DDD',
+            blocks: {
+                YYYY: {
+                    mask: IMask.MaskedRange,
+                    from: 1900,
+                    to: 2100
+                },
+                MM: {
+                    mask: IMask.MaskedRange,
+                    from: 1,
+                    to: 12
+                },
+                DD: {
+                    mask: IMask.MaskedRange,
+                    from: 1,
+                    to: 311
+                },
+            }
         })
 
         /* Отправка данных из формы */
