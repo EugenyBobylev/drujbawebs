@@ -2,97 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-   <!--
-    <link rel="stylesheet" href="https://drugba-test.netlify.app/registration.css">
-   -->
-    <link rel="stylesheet" href="registration.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration2.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        a {
-            text-decoration: none;
-            cursor: pointer !important;
-        }
-    </style>
+    <title>Регистрация</title>
 </head>
 <body>
-<div id="container">
-    <img src="{{ host }}static/women.png" alt="">
-    <h1>Регистрация</h1>
-    <p>Пожалуйста, введите данные для регистрации. После этого вы сможете начать сбор</p>
-    <form action="#" class="register__form" name="userRegistrationForm">
-        <label for="uname"></label>
-        <input id="uname" type="text" placeholder="Имя и фамилия" class="required" name="name" required>
-        <div class="dateInput">
-            <input type="date"
-                   onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата рождения' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]"
-                   id="birthday" name="birthday" required>
-            <label for="birthday">Дата рождения</label>
-        </div>
-        <label for="timezone"></label><select class="timezone" name="timezone" id="timezone">
-        <option value=-1> Калининград (Мск-1).</option>
-        <option value=0> Москва (Мск)</option>
-        <option value=+1> Самара (МСК+1)</option>
-        <option value=+2> Екатеринбург (МСК+2).</option>
-        <option value=+3> Омск (МСК+3)</option>
-        <option value=+4> Красноярск (МСК+4)</option>
-        <option value=+5> Иркутск (МСК+5)</option>
-        <option value=+6> Якутск (МСК+6)</option>
-        <option value=+7> Владивосток (МСК+7)</option>
-        <option value=+8> Магадан (МСК+8)</option>
-        <option value=+9> Камчатка (МСК+9)</option>
-    </select>
-        <div class="formFooter">
-            <input type="checkbox" name="check" id="" required>
-            <label for="">Я согласен на обработку моих персональных данных в соответствии с <a
-                    href="https://druzhba.io/privacy">Политикой</a> и <a href="https://druzhba.io/user-agreement">Пользовательским</a>
-                соглашением</label>
-            <button type="submit" onclick="postUser()">
-                Сохранить
-            </button>
-        </div>
-    </form>
-</div>
-<script>
-    document.getElementById("birthday").style.transform = "scaleX(" + (document.getElementById("birthday").nextElementSibling.offsetWidth) + ")"
-    let timeSelect = document.getElementById("timezone")
-    const date = new Date();
-    const offset = date.getTimezoneOffset() / 60 * -1;
-</script>
-<script>
-    let tg = window.Telegram.WebApp;
-    let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
-    document.getElementById("uname").value = user_name;
-    let api_url = "{{host}}";
+    <div class="container">
+        <main class="app">
+            <div class="wrapper">
+                <img src="{{ url_for('static', path='img/backgrounds/blur-back.png') }}" alt="">
+            </div>
+            <div class="app__illustration block_margin">
+                <div class="illustration__image">
+                    <img src="{{ url_for('static', path='img/icons/illustration.svg') }}" alt="illustration">
+                </div>
+            </div>
+            <div class="app__info block_margin">
+                <div class="info__title info__title_margin">
+                    <h3>Регистрация</h3>
+                </div>
+                <div class="info__content">
+                    Пожалуйста, введите данные
+                    для регистрации. После этого
+                    вы сможете начать сбор
+                </div>
+            </div>
+            <form class="app__form" onsubmit="postUser();return false;">
+                <ul class="form__blocks block_margin">
+                    <li class="form__item">
+                        <input id="full-name" class="form__field" type="text" name="name" placeholder=" " data-inputmask="'mask': 'a{3, 20} a{3, 20}'" required>
+                        <label for="full-name" class="field__placeholder">Имя и фамилия</label>
+                    </li>
+                    <li class="form__item">
+                        <input id="birth-date" class="form__field" type="text" name="birthdate" placeholder=" " data-inputmask="'alias': 'date'" required>
+                        <label for="birth-date" class="field__placeholder">Дата рождения</label>
+                    </li>
+                    <li class="form__item">
+                        <input id="time-zone" type="text" name="timezone" hidden>
+                        <input id="time-zone-input" class="form__field" type="text" placeholder=" ">
+                        <label for="time-zone-input" class="field__placeholder">Часовой пояс</label>
+                        <ul class="field__selector wrapped">
+                            <li class="selector__item" value=-1>Калининград (МСК-1)</li>
+                            <li class="selector__item" value=0>Москва (МСК)</li>
+                            <li class="selector__item" value=+1>Самара (МСК+1)</li>
+                            <li class="selector__item" value=+2>Екатеринбург (МСК+2).</li>
+                            <li class="selector__item" value=+3>Омск (МСК+3)</li>
+                            <li class="selector__item" value=+4>Красноярск (МСК+4)</li>
+                            <li class="selector__item" value=+5>Иркутск (МСК+5)</li>
+                            <li class="selector__item" value=+6>Якутск (МСК+6)</li>
+                            <li class="selector__item" value=+7>Владивосток (МСК+7)</li>
+                            <li class="selector__item" value=+8>Магадан (МСК+8)</li>
+                            <li class="selector__item" value=+9>Камчатка (МСК+9)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="form__politics block_margin">
+                    <input id="agreement" class="form__box" type="checkbox" name="agreement" hidden>
+                    <label class="box__label" for="agreement"></label>
+                    <span class="politics__content">
+                        Я согласен на обработку моих персональных
+                        данных в соответствии с Политикой и
+                        Пользовательским соглашением
+                    </span>
+                </div>
+                <button class="form__button">Сохранить</button>
+            </form>
+        </main>
+    </div>
+    <!-- Плагин для маски ввода данных-->
+    <script type="text/javascript" src="{{ url_for('static', path='js/inputmask.js') }}"></script>
+    <!-- Фильтрация для текстового поля 'часовой пояс'-->
+    <script type="text/javascript" src="{{ url_for('static', path='js/update_selector.js') }}"></script>
+    <script>
+        /* Инициализация маски для полей: имя, дата */
 
-    async function postUser() {
-        let url = `${api_url}api/user/`;
-        let user = {
-            id: tg.initDataUnsafe.user.id,
-            name: document.getElementById("uname").value,
-            birthdate: document.getElementById("birthday").value,
-            timezone: document.getElementById("timezone").value,
-        };
-
-        await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'ngrok-skip-browser-warning': '100',
-                'Content-Type': 'application/json',
-                'accept': 'application/json',
-                'Authorization': btoa(tg.initData),
-            },
-            body: JSON.stringify(user),
-        }).then(res => {
-            tg.alert("ok")
-            tg.close();
-        }).catch(err => {
-            tg.alert("error")
+        IMask(document.querySelector("#full-name"), {
+            mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
         })
-    }
-</script>
+
+        IMask(document.querySelector("#birth-date"), {
+            mask: Date
+        })
+
+        /* Отправка данных из формы */
+
+        const App = window.Telegram.WebApp;
+        const api_url = "{{ host }}"
+
+        let [first_name, last_name] = [App.initDataUnsafe.user.first_name, App.initDataUnsafe.user.last_name]
+        document.querySelector("#full-name").value = `${first_name} ${last_name}`;
+
+        async function postUser() {
+            let url = `${api_url}api/user/`;
+            let timezone = document.querySelector("#time-zone").value
+            let account_id = App.initDataUnsafe.user.id
+            let user = {
+                id: account_id,
+                name: document.querySelector("#full-name").value,
+                birthdate: document.querySelector("#birth-date").value,
+                timezone: timezone ? timezone !== "" : 0,
+            };
+
+            await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(App.initData),
+                },
+                body: JSON.stringify(user),
+            }).then(res => {
+                App.close()
+            }).catch(err => {
+                App.alert("error")
+            })
+        }
+
+    </script>
 </body>
 </html>

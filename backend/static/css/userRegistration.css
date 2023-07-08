@@ -1,154 +1,239 @@
-@font-face {
-  font-family: "SF UI Display";
-  src: url("../font/sf-ui-display-light-58646b33e0551.otf");
-}
-
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-body {
-  font-family: "SF UI Display", sans-serif;
-  background-image: url("../img/bgRegistration.png");
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-color: #fff;
+@font-face {
+    font-family: sf-ui-medium;
+    src: url("../font/sf-ui-display/sf-ui-display-medium.woff");
 }
 
-img {
-  display: block;
-  margin: auto;
+@font-face {
+    font-family: sf-ui-light;
+    src: url("../font/sf-ui-display/sf-ui-display-light.woff");
 }
 
-h1 {
-  color: #282C32;
-  padding: 24px 24px 4px;
-  width: 100%;
-  line-height: 24px;
-  font-size: 24px;
+:root {
+    --black: #282C32;
+    --grey: #BDBDBD;
+    --red: #EB5757;
+    --purple: #788BF0;
 }
 
-p {
-  color: #282C32;
-  padding: 0 24px 24px;
-  font-size: 14px;
-  margin-bottom: 24px;
+.block_margin {
+    margin-bottom: 24px;
 }
 
-form > input, form select {
-  line-height: 40px;
-  border-radius: 8px;
-  font-family: "SF UI Display", sans-serif;
-  padding: 0 12px;
-  box-sizing: border-box;
-  border: 1px solid #BDBDBD;
-  display: block;
-  width: calc(100% - 48px);
-  margin: 16px auto auto;
-  background-color: #fff;
-  height: 40px;
+.container {
+    position: relative;
+    width: 320px;
+    margin: 0 auto;
+    padding: 24px;
+    border: 1px solid var(--black);
+    border-radius: 16px;
+    overflow-x: hidden;
+    background-color: white;
 }
 
-form select {
-  margin-bottom: 16px;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  text-indent: 1px;
-  text-overflow: "";
+.wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
-.formFooter {
-  box-shadow: 0 -12px 32px rgba(167, 161, 208, 0.25);
-  margin-top: 24px;
-  padding: 24px;
-  font-size: 0;
+.app__illustration {
+    position: relative;
+    width: auto;
+    height: 264px;
+    text-align: center;
 }
 
-.formFooter > input, .formFooter .addingCheckbox {
-  height: 24px;
-  width: 24px;
-  border-radius: 4px;
-  border: 2px solid #788BF0;
-  -moz-appearance: none;
-       appearance: none;
-  -webkit-appearance: none;
-  outline: none;
-  cursor: pointer;
-  box-sizing: border-box;
-  display: inline-block;
-  vertical-align: middle;
+.illustration__image {
+    position: absolute;
+    bottom: 16.5px;
+    right: 10px;
+    z-index: 1;
 }
 
-.formFooter > input:checked, .formFooter .addingCheckbox:checked {
-  -moz-appearance: auto;
-       appearance: auto;
-  -webkit-appearance: auto;
+.illustration__image::before {
+    position: absolute;
+    display: inline-block;
+    content: url("../img/backgrounds/illustration-back.png");
+    width: 170px;
+    aspect-ratio: 1 / 1;
+    z-index: -1;
+    bottom: 0;
 }
 
-.formFooter label {
-  display: inline-block;
-  vertical-align: middle;
-  width: calc(100% - 24px);
-  font-size: 10px;
-  padding-left: 16px;
-  font-family: "SF UI Display", sans-serif;
-  box-sizing: border-box;
+.app__info {
+    color: var(--black);
 }
 
-.formFooter button {
-  font-size: 14px;
-  text-align: center;
-  display: block;
-  border-radius: 32px;
-  line-height: 16px;
-  padding: 16px;
-  width: 100%;
-  margin-top: 24px;
-  background: #F4F6FF radial-gradient(64.98% 189.58% at 42.65% -71.88%, #8E9EF4 0%, #788BF0 100%);
-  border: none;
-  font-family: "SF UI Display", sans-serif;
-  color: #fff;
+.info__title {
+    font-family: sf-ui-medium;
+    font-size: 24px;
 }
 
-.smallParagraph {
-  font-size: 10px;
-  line-height: 14px;
-  padding-bottom: 4px;
-  padding-top: 8px;
-  margin-bottom: 0;
+.info__content {
+    font-size: 14px;
+    font-family: sf-ui-light;
+    max-width: 225px;
+    letter-spacing: 2%;
+    line-height: 140%;
 }
 
-.dateInput {
-  position: relative;
-  width: calc(100% - 48px);
-  overflow: hidden;
-  margin: 16px auto auto;
+.info__title_margin {
+    margin-bottom: 8px;
 }
 
-.dateInput label {
-  line-height: 40px;
-  border-radius: 8px;
-  font-family: "SF UI Display", sans-serif;
-  padding: 0 12px;
-  box-sizing: border-box;
-  border: 1px solid #BDBDBD;
-  display: block;
-  margin: auto;
-  font-size: 14px;
-  color: #757575;
-  background-color: #fff;
+.form__blocks {
+    list-style: none;
+    padding-top: 16px;
+    width: auto;
 }
 
-.dateInput input {
-  position: absolute;
-  width: 1px;
-  height: 42px;
-  top: 0;
-  box-sizing: border-box;
-  left: 50%;
-  border: none;
-  opacity: 0;
+.form__item {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 40px;
+    border: 1px solid var(--grey);
+    border-radius: 8px;
+    color: var(--grey);
+    font-size: 14px;
+    font-family: sf-ui-light;
+    letter-spacing: 2%;
+}
+
+.form__item:not(:last-child) {
+    margin-bottom: 24px;
+}
+
+.form__field {
+    display: inline-block;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    width: 100%;
+    margin-left: 12px;
+    font-size: 14px;
+    font-family: sf-ui-light;
+}
+
+.field__placeholder {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+}
+
+.field__placeholder::after {
+    display: inline-block;
+    content: "\00a0 *";
+    color: var(--red);
+}
+
+.form__field:focus + .field__placeholder,
+.form__field:not(:placeholder-shown) + .field__placeholder {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.form__field:not(:-webkit-placeholder-shown) + .field__placeholder {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.form__field:not(:-moz-placeholder-shown) + .field__placeholder {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.form__field:not(:-ms-placeholder-shown) + .field__placeholder {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.form__field:not(:-o-placeholder-shown) + .field__placeholder {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.field__selector {
+    position: absolute;
+    min-width: calc(100% - 12px);
+    overflow: hidden;
+    top: 40px;
+    left: 12px;
+    color: var(--black);
+    height: 80px;
+    overflow-y: scroll;
+}
+
+.selector__item {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 10px 0;
+}
+
+.wrapped {
+    height: 0;
+    overflow-y: hidden;
+}
+
+.hidden {
+    display: none;
+}
+
+.form__politics {
+    display: flex;
+    padding-top: 24px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.box__label {
+    display: inline-block;
+    border: 2px solid var(--purple);
+    width: 24px;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    accent-color: var(--purple);
+    cursor: pointer;
+}
+
+.form__box:checked + .box__label {
+    background-color: var(--purple);
+}
+
+.box__label::after {
+    display: inline-block;
+    content: url("../img/icons/tick.svg");
+    transform: translateX(4px);
+}
+
+.politics__content {
+    display: inline-block;
+    color: var(--black);
+    font-family: sf-ui-light;
+    font-size: 10px;
+    letter-spacing: 2%;
+    max-width: 232px;
+    line-height: 140%;
+}
+
+.form__button {
+    display: flex;
+    border: none;
+    outline: none;
+    border-radius: 32px;
+    height: 48px;
+    background-color: var(--purple);
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: sf-ui-medium;
+    cursor: pointer;
 }
