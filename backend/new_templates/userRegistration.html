@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-control: max-age=172800" content="public">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -10,10 +11,10 @@
 </head>
 <body>
     <div class="container">
+        <div class="wrapper">
+            <img src="{{ url_for('static', path='img/backgrounds/blur-back.png') }}" alt="">
+        </div>
         <main class="app">
-            <div class="wrapper">
-                <img src="{{ url_for('static', path='img/backgrounds/blur-back.png') }}" alt="">
-            </div>
             <div class="app__illustration block_margin">
                 <div class="illustration__image">
                     <img src="{{ url_for('static', path='img/icons/illustration.svg') }}" alt="illustration">
@@ -36,8 +37,9 @@
                         <label for="full-name" class="field__placeholder">Имя и фамилия</label>
                     </li>
                     <li class="form__item">
-                        <input id="birth-date" class="form__field" type="text" name="birthdate" placeholder=" " required>
-                        <label for="birth-date" class="field__placeholder">Дата рождения</label>
+                        <input id="birth-date-input" class="form__field" type="text" placeholder=" " required>
+                        <label for="birth-date-input" class="field__placeholder">Дата рождения</label>
+                        <input id="birth-date" type="date" name="birthdate" onfocus="this.style.opacity=0" onblur="this.style.opacity=1">
                     </li>
                     <li class="form__item">
                         <input id="time-zone" type="text" name="timezone" hidden>
@@ -76,20 +78,21 @@
     <!-- Фильтрация для текстового поля 'часовой пояс'-->
     <script type="text/javascript" src="{{ url_for('static', path='js/update_selector.js') }}"></script>
     <script>
+
         /* Инициализация маски для полей: имя, дата */
 
         IMask(document.querySelector("#full-name"), {
             mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
         })
 
-        IMask(document.querySelector("#birth-date"), {
+        const birth_date_mask = IMask(document.querySelector("#birth-date-input"), {
             mask: Date,
-            pattern: 'YYYY-MM-DDD',
+            pattern: 'DD.MM.YYYY',
             blocks: {
                 YYYY: {
                     mask: IMask.MaskedRange,
                     from: 1900,
-                    to: 2100
+                    to: 9999
                 },
                 MM: {
                     mask: IMask.MaskedRange,
@@ -99,10 +102,33 @@
                 DD: {
                     mask: IMask.MaskedRange,
                     from: 1,
-                    to: 311
+                    to: 31
                 },
             }
         })
+
+        /* Создание календаря */
+
+        const date = document.querySelector("#birth-date")
+        const date_input = document.querySelector("#birth-date-input")
+
+        document.ontouchend = () => {
+            date.blur()
+        }
+        document.onclick = () => {
+            date.blur()
+        }
+
+        date.onchange = () => {
+            let [year, month, day] = date.value.split("-")
+            date_input.value = `${day}.${month}.${year}`
+            birth_date_mask.updateValue()
+        }
+
+        date_input.onchange = () => {
+            let [day, month, year] = date_input.value.split(".")
+            date.value = `${year}-${month}-${day}`
+        }
 
         /* Отправка данных из формы */
 

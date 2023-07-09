@@ -6,102 +6,204 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link href="{{ url_for('static', path='/css/feeCreation.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/userRegistration.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://drugba-test.netlify.app/feeCreation.css">
+    <link rel="stylesheet" href="https://drugba-test.netlify.app/registration.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        .presents {
+            margin-bottom: 280px;
+        }
+
+        .formFooter {
+            padding-bottom: 40px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .formButtons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .formButtons > button {
+            margin-top: 0 !important;
+
+        }
+
+        .middleBtn {
+            border-radius: 32px !important;
+            margin-top: 0 !important;
+        }
+
+        .removeButton {
+            background-image: url({{ host }}static/delete.svg) !important;
+            /* background-image: url('./delete.svg') !important; */
+            background-size: cover;
+        }
+    </style>
+
 </head>
 
 <body>
-    <h3>Создание сбора</h3>
+<div id="container">
+
+    <h1>Создание сбора</h1>
     <p>Пожалуйста, заполните данные о сборе</p>
-    <div class="myform">
-        <label for="reason">На что собираем:</label>
-        <input type="text" id='reason' placeholder="Тип события" value="{{reason}}">
-        <label for="target">Кому собираем:</label>
-        <input type="text" id="target" placeholder="Кому собираем" value="{{target}}">
-        <label for="eventDate">Дата события</label>
-        <input id="eventDate" type="date" value="{{event_date}}">
+    <form action="" name="feeCreationForm" class="feeCreation">
+        <input type="text" id='reason' placeholder="Тип события" name="type" value="{{ reason }}">
+        <input type="text" id="target" placeholder="Кому собираем" name="collect" value="{{ target }}">
+        <!-- <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}"> -->
+        <!-- <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}"> -->
+        <!-- <div class="dateInput">
+                <input id="eventDate"  type="date"  value="{{event_date}}" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата события' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
 
-        <label for="transferInfo">Куда переводим</label>
-        <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
-        <label for="transferInfo">Варианты подарков:</label>
-        <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}">
+                <label  for="birthday">Дата рождения</label>
+            </div> -->
+        <input id="eventDate" type="date">
+        <input type="text" placeholder="Ссылка на внешнюю копилку/карту" name="url_card" required>
+        <p class="smallParagraph">Ссылки на желаемый подарок
+            *</p>
+        <div class="present " id="present0">
+            <input class="present__value " type="text" placeholder="Ссылка"
+                   name="urls_gifts" required>
+            <button onclick="addPresent(event)" type="button"></button>
+        </div>
+        <div class="presents">
 
+        </div>
+        <div class="new-presents">
+
+        </div>
         <div class="formFooter">
             <div class="formAdding">
+                <input class="addingCheckbox" type="checkbox" name="check" id="addingCheckbox"
+                       onchange="setCheckbox(event)">
                 <label for="addingCheckbox">Добавить данные о праздновании</label>
                 <div class="addingOptions">
-                    <input type="text" id="congratulationDate" placeholder="Дата события">
-                    <input type="text" id="congratulationTime" placeholder="Время">
-                    <input type="text" id="eventPlace" placeholder="место празднования" value="">
-                    <input type="text" id="dresscode" placeholder="Дресс-код" value="">
+                    <input type="text" id="congratulationDate" placeholder="Дата события" name="date_type">
+                    <input type="text" id="congratulationTime" placeholder="Время" name="time">
+                    <input type="text" id="eventPlace" placeholder="Ссылка на место празднования" name="url_place">
+                    <input type="text" id="dresscode" placeholder="Дресс-код" name="cod">
                 </div>
             </div>
             <div class="formButtons">
-                <button type="button">Отмена</button>
-                <button id="runbtn" class="btn" onclick="postFund()">Запустить</button>
-                <button id="paybtn" class="bnt" onclick="postFund()">Оплатить и запустить  сбор</button>
+                <button onclick="loadFn()" type="button">Отмена</button>
+                <button id="runbtn" onclick="postFund()" class="middleBtn" type="submit">
+                    Запустить
+                </button>
             </div>
         </div>
-    </div>
-    <script>
-        let tg = window.Telegram.WebApp;  //получаем объект webapp
-        let api_url = "{{host}}";
-        let account_id = {{account_id}};
-        let payed_events = {{payed_events}};
+    </form>
+</div>
+<script>
+    document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
+    let presents = document.querySelector(".presents")
 
-        let run_btn = document.getElementById("runbtn");
-        let pay_btn = document.getElementById("paybtn");
 
-        let need_pay = payed_events < 1;
-        if(need_pay)
-            run_btn.style.display = "none";
-        else
-            pay_btn.style.display = "none";
-        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+    let presentId = 1
 
-        async function postFund(){
-            // let user_id = tg.initDataUnsafe.user.id;
-            let url = `${api_url}api/user/fundraising/${account_id}/`;
+    function addPresent(e) {
 
-            // создать сбор (fundraising)
-            let congratulations_date = document.getElementById("congratulationDate").value;
-            if (congratulations_date === "")
-                congratulations_date = null;
+        if (e.target.className !== "removeButton") {
+            e.target.className = "removeButton"
+            let newDiv = document.createElement('div')
+            newDiv.innerHTML = `
+                <div class="present" id="present">
+                    <input class="present__value" type="text" placeholder="" value="" name="urls_gifts" onchange='setInput(event)'>
+                    <button onclick="addPresent(event, 'remove')" type="button"></button>
+                    </div>
+                    `;
 
-            let congratulations_time = document.getElementById("congratulationTime").value;
-            if (congratulations_time === "")
-                congratulations_time = null;
-
-            let fund = {
-                reason: document.getElementById("reason").value,
-                target: document.getElementById("target").value,
-                start: need_pay ? null : new Date().toJSON().slice(0, 10),
-                event_date: document.getElementById("eventDate").value,
-                transfer_info: document.getElementById("transferInfo").value,
-                gift_info: document.getElementById("giftInfo").value,
-                congratulation_date: congratulations_date,
-                congratulation_time: congratulations_time,
-                event_place: document.getElementById("eventPlace").value,
-                event_dresscode: document.getElementById("dresscode").value,
-            };
-
-            let body = JSON.stringify(fund);
-            // Отладочное сообщение
-            // tg.showAlert(fund.reason);
-            // alert(body);
-
-            let response = await fetch(url, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Content-Type': 'application/json',
-                    'accept': 'application/json',
-                    'Authorization': btoa(tg.initData),
-                },
-                body: body,
-            });
-            console.info(response.status)
+            console.log('newDiv');
+            document.querySelector(".presents").appendChild(newDiv)
+        } else {
+            e.target.parentElement.remove()
         }
-    </script>
+    }
+
+    function setInput(e) {
+        e.target.setAttribute('value', e.target.value)
+    }
+
+    function setCheckbox(e) {
+        console.log(e.target.checked);
+        let addingOptions = document.getElementsByClassName("addingOptions")[0]
+        let presents = document.getElementsByClassName("presents")[0]
+        if (e.target.checked) {
+            addingOptions.style.display = "block"
+            presents.style.marginBottom = "400px"
+        } else {
+            presents.style.marginBottom = "200px"
+            addingOptions.style.display = "none"
+        }
+    }
+</script>
+<script>
+    let tg = window.Telegram.WebApp;  //получаем объект webapp
+    let api_url = "{{host}}";
+    let account_id = "{{account_id}}";
+    let payed_events = "{{payed_events}}";
+
+    let run_btn = document.getElementById("runbtn");
+    let pay_btn = document.getElementById("paybtn");
+
+    let need_pay = payed_events < 1;
+    if (need_pay)
+        run_btn.style.display = "none";
+    else
+        pay_btn.style.display = "none";
+
+    //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+    async function postFund() {
+        // let user_id = tg.initDataUnsafe.user.id;
+        let url = `${api_url}api/user/fundraising/${account_id}/`;
+
+        // создать сбор (fundraising)
+        let congratulations_date = document.getElementById("congratulationDate").value;
+        if (congratulations_date === "")
+            congratulations_date = null;
+
+        let congratulations_time = document.getElementById("congratulationTime").value;
+        if (congratulations_time === "")
+            congratulations_time = null;
+
+        let fund = {
+            reason: document.getElementById("reason").value,
+            target: document.getElementById("target").value,
+            start: need_pay ? null : new Date().toJSON().slice(0, 10),
+            event_date: document.getElementById("eventDate").value,
+            transfer_info: document.getElementById("transferInfo").value,
+            gift_info: document.getElementById("giftInfo").value,
+            congratulation_date: congratulations_date,
+            congratulation_time: congratulations_time,
+            event_place: document.getElementById("eventPlace").value,
+            event_dresscode: document.getElementById("dresscode").value,
+        };
+
+        let body = JSON.stringify(fund);
+        // Отладочное сообщение
+        // tg.showAlert(fund.reason);
+        // alert(body);
+
+        let response = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'ngrok-skip-browser-warning': '100',
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+                'Authorization': btoa(tg.initData),
+            },
+            body: body,
+        });
+        console.info(response.status)
+    }
+</script>
 </body>
+
 </html>

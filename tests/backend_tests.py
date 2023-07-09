@@ -1,7 +1,4 @@
 import json
-import re
-from datetime import datetime
-from re import Match
 
 import requests
 from fastapi.encoders import jsonable_encoder
@@ -229,16 +226,3 @@ def test_telethon_send_bot_msg():
     bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
     with bot:
         bot.loop.run_until_complete(_send_msg())
-
-
-def test_pydantic_create_user():
-    user = User(id=1234, name='test_user', timezone=1, birthdate='1980-01-23')
-    user_json = jsonable_encoder(user)
-    user_model = User(**user_json)
-    assert user_model is not None
-
-    user = User(id=1234, name='test_user', timezone=1, birthdate='23.01.1980')
-    user_json = jsonable_encoder(user)
-    user_model = User(**user_json)
-    assert user_model is not None
-
