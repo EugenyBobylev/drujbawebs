@@ -123,7 +123,6 @@
     display: inline-block;
     border: none;
     outline: none;
-    border-radius: 8px;
     width: 100%;
     margin-left: 12px;
     font-size: 14px;
@@ -174,7 +173,27 @@
 }
 
 #birth-date {
-    opacity: 0;
+    position: relative;
+    border: none;
+    background: none;
+    outline: none;
+    color: white;
+}
+
+#birth-date::-webkit-calendar-picker-indicator {
+  color: transparent;
+  background: none;
+  z-index: 1;
+}
+
+#birth-date::before {
+  color: transparent;
+  background: none;
+  content: url("../img/icons/date.svg");
+  position: absolute;
+  top: -2.5px;
+  right: 0;
+  cursor: pointer
 }
 
 .field__selector {

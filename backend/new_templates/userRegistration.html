@@ -4,18 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-control: max-age=172800" content="public">
-    <link href=
-    "http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css"
-    rel="Stylesheet"
-    type="text/css" />
     <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration.css') }}">
-    <script type="text/javascript"
-        src="http://code.jquery.com/jquery-1.7.2.min.js">
-    </script>
-    <script type="text/javascript"
-        src="http://code.jquery.com/ui/1.10.4/jquery-ui.js">
-    </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>Регистрация</title>
 </head>
@@ -118,25 +108,23 @@
         })
 
         /* Создание календаря */
-        $(document).ready(function () {
-
-        })
 
         const date = document.querySelector("#birth-date")
         const date_input = document.querySelector("#birth-date-input")
-
-        $(date).datepicker({
-            showOn: "button",
-
-            buttonImage: "/static/img/icons/date.svg",
-            buttonImageOnly: true
-        });
 
         document.ontouchend = () => {
             date.blur()
         }
         document.onclick = () => {
             date.blur()
+        }
+
+        date.onfocus = () => {
+            date.display.opacity = 0
+        }
+
+        date.onblur = () => {
+            date.display.opacity = 1
         }
 
         date.onchange = () => {
