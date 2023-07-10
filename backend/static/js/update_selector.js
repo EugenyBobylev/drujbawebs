@@ -25,20 +25,13 @@ timezone_input.oninput = () => {
     sort_selector(timezone_input.value)
 }
 
-timezone_input.onblur = () => {
-    let wrap = () => {
-        timezone_selector.classList.add("wrapped");
-    }
-    setTimeout(wrap, 100)
-}
-
 
 timezone_items.forEach((item) => {
 
     let update = () => {
         timezone_input.value = item.innerText
         timezone.value = item.value
-
+        timezone_selector.classList.add("wrapped");
     };
 
     item.onclick = update
