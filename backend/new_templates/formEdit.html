@@ -62,7 +62,7 @@
 
         /* Инициализация маски для полей: имя, дата */
 
-        IMask(document.querySelector("#full-name"), {
+        const full_name_mask = IMask(document.querySelector("#full-name"), {
             mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
         })
 
@@ -136,9 +136,14 @@
         }
 
         document.querySelector("#full-name").value = "{{ name }}"
-        document.querySelector("#birth-date-input").value = "{{ birthdate }}"
-        birth_date_mask.updateValue()
+        full_name_mask.updateValue()
+        if ('{{ birthdate }}') {
+            document.querySelector("#birth-date").value = '{{ birthdate }}'
+            document.querySelector("#birth-date").onchange()
+            birth_date_mask.updateValue()
+        }
         document.querySelector('#time-zone-input').value = convert_to_string('{{ timezone }}')
+        document.querySelector('#time-zone').value = '{{ timezone }}'
 
 
         function sendData(event) {

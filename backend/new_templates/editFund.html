@@ -131,7 +131,7 @@
             date.onchange = () => {
                 let [year, month, day] = date.value.split("-")
                 date_input.value = `${day}.${month}.${year}`
-                birth_date_mask.updateValue()
+                mask.updateValue()
             }
 
             date_input.onchange = () => {
@@ -163,7 +163,7 @@
 
         function init_add_button(button) {
             let item = button.parentElement
-            IMask(item.querySelector(".form__field"), {
+            item.mask = IMask(item.querySelector(".form__field"), {
                 mask: `{https://}[${'*'.repeat(1000)}]`
             });
             button.onclick = () => {
@@ -198,13 +198,15 @@
                     mainItem.querySelector(".item__button").click()
                 }
                 mainItem.querySelector(".form__field").value = data_array[key]
+                mainItem.mask.updateValue()
             }
 
         }
 
         document.querySelector("#reason").value = '{{ reason }}'
         document.querySelector("#target").value = '{{ target }}'
-        document.querySelector("#event-date-input").value = '{{ event_date }}'
+        document.querySelector("#event-date").value = '{{ event_date }}'
+        document.querySelector("#event-date").onchange('{{ event_date }}')
         document.querySelector("#transfer-info").value = '{{ transfer_info }}'
         create_links(JSON.parse({{ gift_info | tojson }}))
         const con_date = '{{ congratulation_date }}'
@@ -213,7 +215,10 @@
         const dress_code = '{{ event_dresscode }}'
         if (con_date || con_time || ev_place || dress_code) {
             document.querySelector("#add-info").checked = true
-            document.querySelector("#congratulation-date-input").value =con_date
+            if (con_date) {
+                document.querySelector("#congratulation-date").value = con_date
+                document.querySelector("#congratulation-date").onchange(con_date)
+            }
             document.querySelector("#congratulation-time").value = con_time
             document.querySelector("#event-place").value = ev_place
             document.querySelector("#event-dresscode").value = dress_code
@@ -255,7 +260,7 @@
                 event_place: document.getElementById("event-place").value,
                 event_dresscode: document.getElementById("event-dresscode").value,
             };
-
+            console.log(fund)
             let body = JSON.stringify(fund);
             // Отладочное сообщение
             // tg.showAlert(fund.reason);
