@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <div class="wrapper" style="width: 100%;">
-            <img src="{{ url_for('static', path='img/backgrounds/blur-back-2.png') }}" alt="">
+            <img src="{{ url_for('static', path='img/backgrounds/blur-back-2.png') }}" style="width: 100%; height: 305px;" alt="">
         </div>
         <main class="app">
             <div class="app__info block_margin">
@@ -130,7 +130,16 @@
             document.querySelector("#full-name").value = `${first_name} ${last_name}`;
         }
 
-        const form = document.querySelector(".app__form")
+        function convert_to_string(value) {
+            let input = document.querySelector(`.selector__item[value="${value}"]`)
+            return input.innerText
+        }
+
+        document.querySelector("#full-name").value = "{{ name }}"
+        document.querySelector("#birth-date-input").value = "{{ birthdate }}"
+        birth_date_mask.updateValue()
+        document.querySelector('#time-zone-input').value = convert_to_string('{{ timezone }}')
+
 
         function sendData(event) {
             event.preventDefault()

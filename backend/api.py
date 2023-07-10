@@ -150,14 +150,15 @@ async def get_fund(fund_id: int, request: Request):
         'fund_id': fund_id,
         'reason': fund.reason,
         'target': fund.target,
-        'event_date': fund.event_date,
+        'event_date': fund.event_date.strftime("%d.%m.%Y"),
         'transfer_info': fund.transfer_info,
         'gift_info': fund.gift_info,
-        'congratulation_date': fund.congratulation_date if fund.congratulation_date is not None else '',
+        'congratulation_date': fund.congratulation_date.strftime("%d.%m.%Y") if fund.congratulation_date is not None else '',
         'congratulation_time': fund.congratulation_time if fund.congratulation_time is not None else '',
-        'event_place': fund.event_place,
-        'event_dresscode': fund.event_dresscode
+        'event_place': fund.event_place if fund.event_place is not None else '',
+        'event_dresscode': fund.event_dresscode if fund.event_dresscode is not None else ''
     }
+    print(context["gift_info"])
     return templates.TemplateResponse('editFund.html', context=context, headers=headers)
 
 
@@ -173,7 +174,7 @@ async def get_user(user_id: int, request: Request):
         'host': host,
         'user_id': user_id,
         'name': user.name,
-        'birthdate': user.birthdate.strftime('%Y-%m-%d'),
+        'birthdate': user.birthdate.strftime("%d.%m.%Y"),
         'timezone': user.timezone,
     }
     return templates.TemplateResponse('formEdit.html', context=context, headers=headers)

@@ -158,13 +158,12 @@
         })
 
         /* Создание добавляющихся ссылок */
-
-        init_add_button(document.querySelector(".item__button_add"))
+        var mainItem = init_add_button(document.querySelector(".item__button_add"))
         const item_list = document.querySelector(".form__item-list")
 
         function init_add_button(button) {
-
-            IMask(button.parentElement.querySelector(".form__field"), {
+            let item = button.parentElement
+            IMask(item.querySelector(".form__field"), {
                 mask: `{https://}[${'*'.repeat(1000)}]`
             });
             button.onclick = () => {
@@ -176,7 +175,9 @@
 
                 new_item.querySelector(".form__field").value = ""
                 new_item.querySelector(".field__placeholder").innerText = "Дополнительная ссылка"
+                mainItem = new_item
             }
+            return item
         }
 
         function init_remove_button(button) {
@@ -190,6 +191,34 @@
         /* Отправка формы */
 
         let App = window.Telegram.WebApp;
+
+        function create_links(data_array) {
+            for(let key in data_array) {
+                if (key != 0) {
+                    mainItem.querySelector(".item__button").click()
+                }
+                mainItem.querySelector(".form__field").value = data_array[key]
+            }
+
+        }
+
+        document.querySelector("#reason").value = '{{ reason }}'
+        document.querySelector("#target").value = '{{ target }}'
+        document.querySelector("#event-date-input").value = '{{ event_date }}'
+        document.querySelector("#transfer-info").value = '{{ transfer_info }}'
+        create_links(JSON.parse({{ gift_info | tojson }}))
+        const con_date = '{{ congratulation_date }}'
+        const con_time = '{{ congratulation_time }}'
+        const ev_place = '{{ event_place }}'
+        const dress_code = '{{ event_dresscode }}'
+        if (con_date || con_time || ev_place || dress_code) {
+            document.querySelector("#add-info").checked = true
+            document.querySelector("#congratulation-date-input").value =con_date
+            document.querySelector("#congratulation-time").value = con_time
+            document.querySelector("#event-place").value = ev_place
+            document.querySelector("#event-dresscode").value = dress_code
+        }
+
 
         document.querySelector(".form__cancel").onclick = () => {
             App.close()
