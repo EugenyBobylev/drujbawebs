@@ -26,15 +26,21 @@ timezone_input.oninput = () => {
 }
 
 timezone_input.onblur = () => {
-    timezone_selector.classList.add("wrapped");
+    let wrap = () => {
+        timezone_selector.classList.add("wrapped");
+    }
+    setTimeout(wrap, 100)
 }
+
 
 timezone_items.forEach((item) => {
 
     let update = () => {
         timezone_input.value = item.innerText
         timezone.value = item.value
-    }
+
+    };
+
     item.onclick = update
 
     item.ontouchend = update

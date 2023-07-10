@@ -178,6 +178,7 @@
     background: none;
     outline: none;
     color: white;
+    width: 25px;
 }
 
 #birth-date::-webkit-calendar-picker-indicator {

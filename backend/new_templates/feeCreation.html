@@ -1,225 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="registration.css">
-    <link rel="stylesheet" href="feeCreation.css">
-    <link rel="stylesheet" href="https://drugba-test.netlify.app/feeCreation.css">
-    <link rel="stylesheet" href="https://drugba-test.netlify.app/registration.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/feeCreation.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        .presents {
-            margin-bottom: 280px;
-        }
-
-        .formFooter {
-            padding-bottom: 40px;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .formButtons {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .formButtons > button {
-            margin-top: 0 !important;
-
-        }
-
-        .middleBtn {
-            border-radius: 32px !important;
-            margin-top: 0 !important;
-        }
-
-        .removeButton {
-            background-image: url({{ host }}static/delete.svg) !important;
-            /* background-image: url('./delete.svg') !important; */
-            background-size: cover;
-        }
-    </style>
-
+    <title>Регистрация</title>
 </head>
-
 <body>
-<div id="container">
-
-    <h1>Создание сбора</h1>
-    <p>Пожалуйста, заполните данные о сборе</p>
-    <form action="" name="feeCreationForm" class="feeCreation">
-        <input type="text" id='reason' placeholder="Тип события" name="type" value="{{ reason }}">
-        <input type="text" id="target" placeholder="Кому собираем" name="collect" value="{{ target }}">
-        <!-- <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}"> -->
-        <!-- <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}"> -->
-        <!-- <div class="dateInput">
-                <input id="eventDate"  type="date"  value="{{event_date}}" onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата события' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]" id="birthday" name="birthday" required>
-                
-                <label  for="birthday">Дата рождения</label>
-            </div> -->
-        <input id="eventDate" type="date">
-        <input type="text" placeholder="Ссылка на внешнюю копилку/карту" name="url_card" required>
-        <p class="smallParagraph">Ссылки на желаемый подарок
-            *</p>
-        <div class="present " id="present0">
-            <input class="present__value " type="text" placeholder="Ссылка"
-                   name="urls_gifts" required>
-            <button onclick="addPresent(event)" type="button"></button>
-        </div>
-        <div class="presents">
-
-        </div>
-        <div class="new-presents">
-
-        </div>
-        <div class="formFooter">
-            <div class="formAdding">
-                <input class="addingCheckbox" type="checkbox" name="check" id="addingCheckbox"
-                       onchange="setCheckbox(event)">
-                <label for="addingCheckbox">Добавить данные о праздновании</label>
-                <div class="addingOptions">
-                    <input type="text" id="congratulationDate" placeholder="Дата события" name="date_type">
-                    <input type="text" id="congratulationTime" placeholder="Время" name="time">
-                    <input type="text" id="eventPlace" placeholder="Ссылка на место празднования" name="url_place">
-                    <input type="text" id="dresscode" placeholder="Дресс-код" name="cod">
+    <div class="container">
+        <main class="app">
+            <div class="wrapper">
+                <img src="{{ url_for('static', path='/img/backgrounds/blur-back-2.png') }}" alt="">
+            </div>
+            <div class="app__info block_margin">
+                <div class="info__title info__title_margin">
+                    <h3>Создание сбора</h3>
+                </div>
+                <div class="info__content">
+                    Пожалуйста, заполните данные о сборе
                 </div>
             </div>
-            <div class="formButtons">
-                <button onclick="loadFn()" type="button">Отмена</button>
-                <button id="runbtn" onclick="postFund()" class="middleBtn" type="submit">
-                    Запустить
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
+            <form class="app__form" onsubmit="sendData(event)">
+                <ul class="form__blocks block_margin">
+                    <li class="form__item form__item_margin">
+                        <input id="reason" name="reason" class="form__field" type="text" placeholder=" " required>
+                        <label for="reason" class="field__placeholder">Тип события</label>
+                    </li>
+                    <li class="form__item form__item_margin">
+                        <input id="target" name="target" class="form__field" type="text" placeholder=" " required>
+                        <label for="target" class="field__placeholder">Кому собираем</label>
+                    </li>
+                    <li class="form__item form__item_margin">
+                        <input id="event-date-input" class="form__field" type="text" placeholder=" " required>
+                        <label for="event-date-input" class="field__placeholder">Дата события</label>
+                        <input id="event-date" class="form__date" type="date" name="event-date">
+                    </li>
+                    <li class="form__item">
+                        <input id="transfer-info" name="transfer_info" class="form__field" type="text" placeholder=" " required>
+                        <label for="transfer_info" class="field__placeholder field__placeholder_s-font">Ссылка на внешнюю копилку/карту</label>
+                    </li>
+                    <ul class="form__item-list">
+                        <span class="item-list__span item-list__span_margin">Ссылки на желаемый подарок</span>
+                        <li class="form__item form__item_link form__item_margin">
+                            <input id="gift-info" class="form__field" name='gift_info' type="text" placeholder=" ">
+                            <label for="gift-info" class="field__placeholder">Введите ссылку</label>
+                            <span class="item__button item__button_add"></span>
+                        </li>
+                    </ul>
+                </ul>
+                <div class="form__party-block form__party-block_margin">
+                    <input id="add-info" class="form__box" type="checkbox" hidden>
+                    <label class="box__label" for="add-info"></label>
+                    <span class="box__span">
+                        Добавить данные о праздновании
+                    </span>
+                    <ul class="party-block__wrapper">
+                        <li class="form__item party-block__item form__item_margin">
+                            <input id="congratulation-date-input" class="form__field" type="text" placeholder=" ">
+                            <label for="congratulation-date-input" class="field__placeholder">Дата события</label>
+                            <input id="congratulation-date" type="date" class="form__date"  name="congratulation_date">
+                        </li>
+                        <li class="form__item party-block__item form__item_margin">
+                            <input id="congratulation-time" name="congratulation_time" class="form__field" type="text" placeholder=" ">
+                            <label class="field__placeholder">Время</label>
+                        </li>
+                        <li class="form__item party-block__item form__item_margin">
+                            <input id="event-place" name="event_place" class="form__field" type="text" placeholder=" ">
+                            <label class="field__placeholder">Ссылка на место празднования</label>
+                        </li>
+                        <li class="form__item party-block__item">
+                            <input id="event-dresscode" name="event_dresscode" class="form__field" type="text" placeholder=" ">
+                            <label class="field__placeholder">Дресс-код</label>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form__footer">
+                    <span class="form__cancel">Отмена</span>
+                    <button class="form__button">Оплатить</button>
+                </div>
+            </form>
+        </main>
+    </div>
+    <script type="text/javascript" src="{{ url_for('static', path='/js/inputmask.js') }}"></script>
+    <script>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).on('click', 'a', function (event) {
-        event.preventDefault()
-        var url = $(this).attr('href');
-        $('#container').load(url)
-    })
+        /* Сохдание валидации полей */
 
-    function loadFn() {
-        // window.location.reload()
-        window.close()
-    }
-</script>
-<script>
-    document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
-    let presents = document.querySelector(".presents")
+        ["#event-date", "#congratulation-date"].forEach((_id) => {
+            let date = document.querySelector(_id)
+            let date_input = document.querySelector(_id + "-input")
 
+            let mask = IMask(date_input, {
+                mask: Date,
+                pattern: 'DD.MM.YYYY',
+                blocks: {
+                    YYYY: {
+                        mask: IMask.MaskedRange,
+                        from: 1900,
+                        to: 9999
+                    },
+                    MM: {
+                        mask: IMask.MaskedRange,
+                        from: 1,
+                        to: 12
+                    },
+                    DD: {
+                        mask: IMask.MaskedRange,
+                        from: 1,
+                        to: 31
+                    },
+                }
+            })
+            document.ontouchend = () => {
+                date.blur()
+            }
+            document.onclick = () => {
+                date.blur()
+            }
 
-    let presentId = 1
+            date.onfocus = () => {
+                date.display.opacity = 0
+            }
 
-    function addPresent(e) {
+            date.onblur = () => {
+                date.display.opacity = 1
+            }
 
-        if (e.target.className != "removeButton") {
-            e.target.className = "removeButton"
-            let newDiv = document.createElement('div')
-            newDiv.innerHTML = `
-                <div class="present" id="present">
-                    <input class="present__value" type="text" placeholder="" value="" name="urls_gifts" onchange='setInput(event)'>
-                    <button onclick="addPresent(event, 'remove')" type="button"></button>
-                    </div>
-                    `;
+            date.onchange = () => {
+                let [year, month, day] = date.value.split("-")
+                date_input.value = `${day}.${month}.${year}`
+                birth_date_mask.updateValue()
+            }
 
-            console.log('newDiv');
-            document.querySelector(".presents").appendChild(newDiv)
-        } else {
-            e.target.parentElement.remove()
+            date_input.onchange = () => {
+                let [day, month, year] = date_input.value.split(".")
+                date.value = `${year}-${month}-${day}`
+            }
+        })
+
+        IMask(document.querySelector("#congratulation-time"), {
+            mask: Date,
+            pattern: 'HH:MM',
+            blocks: {
+                HH: {
+                    mask: IMask.MaskedRange,
+                    from: 0,
+                    to: 23
+                },
+                MM: {
+                    mask: IMask.MaskedRange,
+                    from: 0,
+                    to: 590
+                }
+            }
+        })
+
+        /* Создание добавляющихся ссылок */
+
+        init_add_button(document.querySelector(".item__button_add"))
+        const item_list = document.querySelector(".form__item-list")
+
+        function init_add_button(button) {
+
+            IMask(button.parentElement.querySelector(".form__field"), {
+                mask: `{https://}[${'*'.repeat(1000)}]`
+            });
+            button.onclick = () => {
+                let new_item = button.parentElement.cloneNode(true)
+
+                init_remove_button(button)
+                init_add_button(new_item.querySelector(".item__button"))
+                item_list.appendChild(new_item)
+
+                new_item.querySelector(".form__field").value = ""
+                new_item.querySelector(".field__placeholder").innerText = "Дополнительная ссылка"
+            }
         }
-    }
 
-    function setInput(e) {
-        e.target.setAttribute('value', e.target.value)
-    }
-
-    function setCheckbox(e) {
-        console.log(e.target.checked);
-        let addingOptions = document.getElementsByClassName("addingOptions")[0]
-        let presents = document.getElementsByClassName("presents")[0]
-        if (e.target.checked) {
-            addingOptions.style.display = "block"
-            presents.style.marginBottom = "400px"
-        } else {
-            presents.style.marginBottom = "200px"
-            addingOptions.style.display = "none"
+        function init_remove_button(button) {
+            button.classList.remove("item__button_add")
+            button.classList.add("item__button_remove")
+            button.onclick = () => {
+                item_list.removeChild(button.parentElement)
+            }
         }
-    }
-</script>
-<script>
-    let tg = window.Telegram.WebApp;  //получаем объект webapp
-    let api_url = "{{host}}";
-    let account_id = "{{account_id}}";
-    let payed_events = "{{payed_events}}";
 
-    let run_btn = document.getElementById("runbtn");
-    let pay_btn = document.getElementById("paybtn");
+        /* Отправка формы */
 
-    let need_pay = payed_events < 1;
-    if (need_pay)
-        run_btn.style.display = "none";
-    else
-        pay_btn.style.display = "none";
+        let App = window.Telegram.WebApp;
+        let api_url = "{{host}}";
+        let account_id = "{{account_id}}";
+        let payed_events = "{{payed_events}}";
 
-    //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+        let form_button = document.querySelector(".form__button")
 
-    async function postFund() {
-        // let user_id = tg.initDataUnsafe.user.id;
-        let url = `${api_url}api/user/fundraising/${account_id}/`;
+        let need_pay = payed_events < 1;
+        if (need_pay)
+            form_button.innerText = "Оплатить";
+        else
+            pay_btn.style.display = "Запустить";
 
-        // создать сбор (fundraising)
-        let congratulations_date = document.getElementById("congratulationDate").value;
-        if (congratulations_date === "")
-            congratulations_date = null;
+        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
 
-        let congratulations_time = document.getElementById("congratulationTime").value;
-        if (congratulations_time === "")
-            congratulations_time = null;
+        async function postFund() {
+            // let user_id = tg.initDataUnsafe.user.id;
+            let url = `${api_url}api/user/fundraising/${account_id}/`;
 
-        let fund = {
-            reason: document.getElementById("reason").value,
-            target: document.getElementById("target").value,
-            start: need_pay ? null : new Date().toJSON().slice(0, 10),
-            event_date: document.getElementById("eventDate").value,
-            transfer_info: document.getElementById("transferInfo").value,
-            gift_info: document.getElementById("giftInfo").value,
-            congratulation_date: congratulations_date,
-            congratulation_time: congratulations_time,
-            event_place: document.getElementById("eventPlace").value,
-            event_dresscode: document.getElementById("dresscode").value,
-        };
+            // создать сбор (fundraising)
+            let congratulations_date = document.getElementById("congratulation-date").value;
+            if (congratulations_date === "")
+                congratulations_date = null;
 
-        let body = JSON.stringify(fund);
-        // Отладочное сообщение
-        // tg.showAlert(fund.reason);
-        // alert(body);
+            let congratulations_time = document.getElementById("congratulation-time").value;
+            if (congratulations_time === "")
+                congratulations_time = null;
 
-        let response = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'ngrok-skip-browser-warning': '100',
-                'Content-Type': 'application/json',
-                'accept': 'application/json',
-                'Authorization': btoa(tg.initData),
-            },
-            body: body,
-        });
-        console.info(response.status)
-    }
-</script>
-<script src="./js/_api.js"></script>
-<!-- <script src="./js/feeCreation.js"></script> -->
+            let fund = {
+                reason: document.getElementById("reason").value,
+                target: document.getElementById("target").value,
+                start: need_pay ? null : new Date().toJSON().slice(0, 10),
+                event_date: document.getElementById("event-date").value,
+                transfer_info: document.getElementById("transfer-info").value,
+                gift_info: create_gift_info_data(),
+                congratulation_date: congratulations_date,
+                congratulation_time: congratulations_time,
+                event_place: document.getElementById("event-place").value,
+                event_dresscode: document.getElementById("event-dresscode").value,
+            };
+
+            let body = JSON.stringify(fund);
+            // Отладочное сообщение
+            // tg.showAlert(fund.reason);
+            // alert(body);
+
+            await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(App.initData),
+                },
+                body: body,
+            }).then(res => {
+                App.close()
+            }).catch(err => {
+                App.alert("error")
+            })
+        }
+
+        function create_gift_info_data() {
+            let data = {}
+            item_list.querySelectorAll(".form__field").forEach((input, index) => {
+                data[`${index}`] = input.value
+            })
+            return JSON.stringify(data)
+        }
+
+        function sendData(event) {
+            event.preventDefault()
+            postFund()
+            return true
+        }
+
+    </script>
 </body>
-
 </html>
