@@ -197,7 +197,7 @@
 
         let api_url = "{{host}}";
         let account_id = "{{account_id}}";
-        let payed_events = "{{payed_events}}";
+        let payed_events = 1;
 
         let form_button = document.querySelector(".form__button")
 
@@ -205,7 +205,7 @@
         if (need_pay)
             form_button.innerText = "Оплатить";
         else
-            pay_btn.style.display = "Запустить";
+            form_button.innerText = "Запустить";
 
         //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
 

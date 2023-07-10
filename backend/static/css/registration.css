@@ -1,6 +1,6 @@
 @font-face {
   font-family: "SF UI Display";
-  src: url("sf-ui-display-light-58646b33e0551.otf");
+  src: url("../font/sf-ui-display-light-58646b33e0551.otf");
 }
 
 * {
@@ -11,7 +11,7 @@
 
 body {
   font-family: "SF UI Display", sans-serif;
-  background-image: url("bgRegistration.png");
+  background-image: url("../img/bgRegistration.png");
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;

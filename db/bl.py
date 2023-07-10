@@ -83,7 +83,7 @@ def get_user(user_id: int) -> ApiUser | None:
     user: User = db_get_user(user_id, session)
     api_user: ApiUser = None
     if user is not None:
-        api_user = ApiUser(id=user.id, name=user.name, timezone=user.timezone, birthdate=user.birthdate)
+        api_user = ApiUser(id=user.id, name=user.name, timezone=user.timezone, birthdate=str(user.birthdate))
     return api_user
 
 

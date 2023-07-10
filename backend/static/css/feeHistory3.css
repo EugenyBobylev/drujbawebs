@@ -1,6 +1,6 @@
 @font-face {
   font-family: "SF UI Display";
-  src: url("sf-ui-display-light-58646b33e0551.otf");
+  src: url("../font/sf-ui-display-light-58646b33e0551.otf");
 }
 * {
   margin: 0;
@@ -103,7 +103,7 @@ ul li a {
   width: 28px;
   height: 28px;
   margin-top: 10px;
-  background-image: url("markBig.svg");
+  background-image: url("../img/markBig.svg");
   background-repeat: no-repeat;
   background-size: contain;
 }

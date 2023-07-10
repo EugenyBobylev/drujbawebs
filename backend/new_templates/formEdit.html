@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="registration.css">
-    <link rel="stylesheet" href="companyRegistration2.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/registration.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/companyRegistration.css') }}">
     <style>
         .formFooter button {
             display: inline-block;
@@ -99,8 +99,8 @@
         let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
         // document.getElementById("timeZoneInput").value = "Часовой пояс: " + Intl.DateTimeFormat().resolvedOptions().timeZone
     </script>
-    <script src="./js/_api.js"></script>
-    <script src="./js/formEdit.js"></script>
+    <script src="{{ url_for('static', path='/js/_api.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/formEdit.js') }}"></script>
 </body>
 
 </html>

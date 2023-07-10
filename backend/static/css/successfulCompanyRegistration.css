@@ -1,6 +1,6 @@
 @font-face {
   font-family: "SF UI Display";
-  src: url("sf-ui-display-light-58646b33e0551.otf");
+  src: url("../font/sf-ui-display-light-58646b33e0551.otf");
 }
 * {
   margin: 0;
@@ -15,7 +15,7 @@ a {
 }
 
 body {
-  background-image: url("successGradient.png");
+  background-image: url("../img/successGradient.png");
   font-family: "SF UI Display", sans-serif;
   background-size: cover;
   background-position: center top;
