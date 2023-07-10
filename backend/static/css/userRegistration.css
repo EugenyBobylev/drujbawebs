@@ -6,12 +6,12 @@
 
 @font-face {
     font-family: sf-ui-medium;
-    src: url("../font/sf-ui-display/sf-ui-display-medium.woff");
+    src: url("../font/sf-ui-display/sf-ui-display-medium.ttf") format("truetype");
 }
 
 @font-face {
     font-family: sf-ui-light;
-    src: url("../font/sf-ui-display/sf-ui-display-light.woff");
+    src: url("../font/sf-ui-display/sf-ui-display-light.ttf") format("truetype");
 }
 
 :root {
