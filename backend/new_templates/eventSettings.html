@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="companySettings.css">
+    <style>
+        .smallParagraph {
+            font-size: 10px;
+            line-height: 14px;
+            padding: 0 24px;
+            padding-top: 8px;
+            background-color: #fff;
+        }
+        .companyInfo ul {
+            margin-bottom: 0;
+        }
+        .companyInfo ul:first-of-type{
+            margin-top: 0;
+        }
+        footer{
+           
+            background: none;
+        }
+        .companyInfo{
+            margin-bottom: 70px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+        <header>
+            <div class="headerContainer">
+                <p>Управление сбором</p>
+                <h1>День рождения</h1>
+            </div>
+            <a href="" class="notificationIcon"></a>
+        </header>
+        <p class="smallParagraph">20 декабря 2023</p>
+        <div class="companyButtons">
+            <a href="">
+                <img src="linkIcon.svg" alt="">
+                <p>Ссылка на сбор</p>
+            </a>
+            <a href="">
+                <img src="mini-icons (2).svg" alt="">
+                <p>Изменить детали сбора</p>
+            </a>
+            <a href="">
+                <img src="mini-icons.svg" alt="">
+                <p>Редактировать список участников</p>
+            </a>
+        </div>
+        <div class="companyInfo">
+            <ul>
+                <li>
+                    <p>Сбор открыт</p>
+                    <p>Да</p>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <p>Тип события</p>
+                    <p>ДР Васи</p>
+                </li>
+                <li>
+                    <p>На кого</p>
+                    <p>Вася Иванов</p>
+                </li>
+                <li>
+                    <p>Дата</p>
+                    <p>12.11.2022</p>
+                </li>
+                <li>
+                    <p>Осталось дней</p>
+                    <p>5</p>
+                </li>
+    
+            </ul>
+            <ul>
+                <li>
+                    <p>Сдали деньги</p>
+                    <p>15 человек</p>
+                </li>
+                <li>
+                    <p>Сумма сбора</p>
+                    <p>5 672 р.</p>
+                </li>
+                <li>
+                    <p>Средний чек</p>
+                    <p>450 р.</p>
+                </li>
+            </ul>
+        </div>
+    
+        <footer>
+            <a href="" class="bottomBtn">Закрыть</a>
+        </footer>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).on('click','a', function(event){
+            event.preventDefault()
+            var url = $(this).attr('href');
+            $('#container').load(url)
+        })
+    </script>
+</body>
+
+</html>

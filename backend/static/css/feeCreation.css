@@ -337,7 +337,7 @@ ul {
     border-radius: 32px;
     height: 48px;
     background-color: var(--purple);
-    width: 200px;
+    width: 100%;
     color: white;
     font-family: sf-ui-medium;
     cursor: pointer;

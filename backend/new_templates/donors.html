@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body style='background-image: url({{host}}static/gradient.jpg); background-repeat:no-repeat; background-size:cover'>
+    <h3>Список участников</h3>
+    <table id="tbl" border="1">
+        <tr>
+            <th>кто сдал</th>
+            <th>сумма</th>
+            <th>дата</th>
+        </tr>
+
+        {% for di in donors_info %}
+         <tr>
+             <td>{{di.name}}</td>
+             <td>{{di.payed}}</td>
+             <td>{{di.payed_date}}</td>
+         </tr>
+        {% endfor %}
+    </table>
+    <footer>
+        <a href="" class="bottomBtn">Назад</a>
+    </footer>
+    <script>
+        let tg = window.Telegram.WebApp;  //получаем объект webapp
+        tg.MainButton.text = "Закрыть"; //изменяем текст кнопки
+        tg.MainButton.show();
+        tg.MainButton.enable();
+        Telegram.WebApp.onEvent("mainButtonClicked", postFund);
+
+        let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+        let api_url = "{{host}}";
+        let fund_id = "{{fund_id}}";
+
+        async function deleteDonor(user_id){
+            let url = `${api_url}api/fundraising/${fund_id}/donor/${user_id}/`;
+            // Отладочное сообщение
+            // tg.showAlert(url);
+            let response = await fetch(url, {
+                method: 'DELETE',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+            });
+        }
+
+        async function setAdmin(user_id){
+            let url = `${api_url}api/fundraising/${fund_id}/admin/${user_id}/`;
+            let response = await fetch(url, {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(tg.initData),
+                },
+            });
+        }
+
+        async function postFund() {
+            tg.close();
+        }
+    </script>
+</body>
+</html>

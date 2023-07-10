@@ -190,6 +190,11 @@
         /* Отправка формы */
 
         let App = window.Telegram.WebApp;
+
+        document.querySelector(".form__cancel").onclick = () => {
+            App.close()
+        }
+
         let api_url = "{{host}}";
         let account_id = "{{account_id}}";
         let payed_events = "{{payed_events}}";

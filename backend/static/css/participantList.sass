@@ -1,0 +1,127 @@
+@font-face
+    font-family: "SF UI Display"
+    src: url('sf-ui-display-light-58646b33e0551.otf')
+*
+    margin: 0
+    padding: 0
+body
+    font-family: "SF UI Display", sans-serif
+    background-image: url("Gradient.png")
+    background-size: cover
+    background-attachment: fixed
+a
+    text-decoration: none
+    color: #121212
+    font-family: "SF UI Display", sans-serif
+h1
+    color: #282C32
+    padding: 48px 24px 24px
+    background-color: white
+    position: fixed
+    width: 100%
+    line-height: 24px
+    font-size: 24px
+    top: 0
+    z-index: 7
+.participantSection
+    background-color: #fff
+    padding-bottom: 24px
+.participantSection:last-of-type
+    padding-top: 24px
+    margin-bottom: 0px
+p
+    color: #282C32
+    padding: 0px 24px 24px
+    font-size: 12px
+    background-color: #fff
+.participantSection:first-of-type .topParagraph
+    margin-top: 120px
+.smallParagraph
+    font-size: 10px
+    line-height: 14px
+    padding-bottom: 4px
+.linkParagraph
+    background-color: #F4F6FF
+    font-size: 12px
+    line-height: 14px
+    padding: 21px 12px
+    margin: 0 24px
+    text-align: center
+    border-radius: 8px
+
+ul
+    li
+        position: relative
+        margin-bottom: 1px
+        &:first-child
+            margin-top: 1px
+        >a
+            background-color: #EB5757
+            line-height: 48px
+            width: 48px
+            height: 48px
+            position: absolute
+            right: 0
+            top: 0
+            background-image: url("delete.svg")
+            background-repeat: no-repeat
+            background-position: center
+        p
+            // float: left
+            line-height: 20px
+            padding: 0
+            // background-color: pink
+            // justify-content: center
+
+        .participantInfo
+            z-index: 5
+            padding: 0 24px
+            overflow: hidden
+            position: relative
+            background-color: white
+            transition: 0.3s
+            display: flex
+            justify-content: space-between
+            align-items: center
+            section
+                // background-color: pink
+                flex-direction: column
+                display: flex
+                height: 48px
+                justify-content: center
+                &:last-child
+                    flex-direction: row
+                    align-items: center
+                span
+                    line-height: 14px
+                    font-size: 10px
+                p
+                    padding-right: 10px
+            a
+                width: 85px
+                background-color: #F4F6FF
+                display: block
+                float: right
+                text-align: center
+                border-radius: 50px
+                font-size: 10px
+                line-height: 10px
+                padding: 4px 0
+                // margin-top: 10px
+                height: 20px
+footer
+    background-color: #fff
+    padding: 24px
+    position: fixed
+    width: 100%
+    bottom: 0
+    z-index: 10
+    box-sizing: border-box
+    .bottomBtn
+        font-size: 14px
+        text-align: center
+        background-color: #F4F6FF
+        display: block
+        border-radius: 32px
+        line-height: 16px
+        padding: 16px
