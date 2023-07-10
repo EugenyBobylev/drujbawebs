@@ -140,7 +140,7 @@
             }
         })
 
-        IMask(document.querySelector("#congratulation-time"), {
+        const time_mask = IMask(document.querySelector("#congratulation-time"), {
             mask: Date,
             pattern: 'HH:MM',
             blocks: {
@@ -220,6 +220,7 @@
                 document.querySelector("#congratulation-date").onchange(con_date)
             }
             document.querySelector("#congratulation-time").value = con_time
+            time_mask.updateValue()
             document.querySelector("#event-place").value = ev_place
             document.querySelector("#event-dresscode").value = dress_code
         }
