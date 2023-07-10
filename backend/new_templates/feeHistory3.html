@@ -1,267 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/feeHistory3.css') }}">
-    <link rel="stylesheet" href="https://drugba-test.netlify.app/feeHistory3.css">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width">
+    <title>Список сборов</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        footer{
-            padding-bottom: 90px;
-            background-color: #fff;
-        }
-        ul{
-            margin-bottom: 160px;
-        }
-        footer button {
-            width: 100%;
-            border: none;
-        }
-        .companyInfo{
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .companyInfo a{
-            width: 100%;
-        }
-                table.blueTable {
-        border: 1px solid #1C6EA4;
-        background-color: #EEEEEE;
-        width: 100%;
-        text-align: left;
-        border-collapse: collapse;
-        }
-        table.blueTable td, table.blueTable th {
-        border: 1px solid #AAAAAA;
-        padding: 3px 10px;
-        }
-        table.blueTable tbody td {
-        font-size: 11px;
-        }
-        table.blueTable tr:nth-child(even) {
-        background: #D0E4F5;
-        }
-        table.blueTable tfoot td {
-        font-size: 14px;
-        }
-        table.blueTable tfoot .links {
-        text-align: right;
-        }
-        table.blueTable tfoot .links a{
-        display: inline-block;
-        background: #1C6EA4;
-        color: #FFFFFF;
-        padding: 2px 8px;
-        border-radius: 5px;
-        }
-    </style>
+    <link href="{{ url_for('static', path='/css/feeHistory.css') }}" rel="stylesheet">
 </head>
-
 <body>
-    <div id="container">
 
-        <h1>Список сборов</h1>
-        <div class="companyInfo">
-            <a href="">
-                <div class="buttonInfo">
-                    <p>Открытые</p>
+<div class="wrapper">
+    <div class="container">
+        <div class="content">
+            <h1>Список сборов</h1>
+            <form class="filter">
+                <div>
+                    <label>
+                        <input checked type="radio" id="closedRadio" name="open" value="open">
+                        <div>
+                            <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
+                            <span class="name">Открытые</span>
+                        </div>
+                        <span class="amount">{{ funds_amounts.open }}</span>
+                    </label>
+                    <label>
+                        <input type="radio" id="closedRadio" name="success" value="successful">
+                        <div>
+                            <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
+                            <span class="name">Успешные</span>
+                        </div>
+                        <span class="amount">{{ funds_amounts.closed }}</span>
+                    </label>
                 </div>
-                <p>5</p>
-            </a>
-            <a href="" class="active">
-                <div class="buttonInfo">
-                    <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
-                    <p>Закрытые</p>
+                <div>
+                    <label>
+                        <input type="radio" id="closedRadio" name="open" value="closed">
+                        <div>
+                            <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
+                            <span class="name">Закрытые</span>
+                        </div>
+                        <span class="amount">{{ funds_amounts.success }}</span>
+                    </label>
+
+                    <label>
+                        <input type="radio" id="closedRadio" name="success" value="unsuccessful">
+                        <div>
+                            <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
+                            <span class="name">Неуспешные</span>
+                        </div>
+                        <span class="amount">{{ funds_amounts.unsuccessful }}</span>
+                    </label>
                 </div>
-                <p>7</p>
-            </a>
-            <a href="" class="active">
-                <div class="buttonInfo">
-                    <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
-                    <p>Успешные</p>
-                </div>
-                <p>4</p>
-            </a>
-            <a href="">
-                <div class="buttonInfo">
-                    <p>Неуспешные</p>
-                </div>
-                <p>83</p>
-            </a>
+            </form>
+
+            <div class="funds">
+                {% for fi in funds_info %}
+                    {% set classes = "fund " %}
+                    {% if fi.is_open %}
+                        {% set classes = classes + "open " %}
+                    {% else %}
+                        {% set classes = classes + "closed " %}
+                    {% endif %}
+                    {% if fi.is_success %}
+                        {% set classes = classes + "successful " %}
+                    {% else %}
+                        {% set classes = classes + "unsuccessful " %}
+                    {% endif %}
+                    <div class="{{ classes }}" onclick="openFund({{ fi.id }})">
+                        <div>
+                            <p>{{ fi.target }}</p>
+                            <p>{{ fi.event_date }}</p>
+                        </div>
+                        <div>
+                            <img src="{{ url_for('static', path='/img/markBig.svg') }}" alt="">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-        <!-- <ul>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022</p>
-                </div>
-                <a href=""></a>
-            </li>
-            <li>
-                <div class="info">
-                    <p>Открытие офиса</p>
-                    <p>12.11.2022222</p>
-                </div>
-                <a href=""></a>
-            </li>
-        </ul> -->
-       <ul>
-            {% for fi in funds_info %}
-            <li>
-                <div class="info" >
-                    <p>{{fi.target}}</p>
-                    <p>{{fi.event_date}}</p>
-                </div>
-                <a href="#" id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})"></a>
-            </li>
-            {% endfor %}
-       </ul>
-
-        <!-- <table class="blueTable">
-            {% for fi in funds_info %}
-            <tr><td><button id="{{fi.id}}" data-open="{{fi.is_open}}" data-success="{{fi.is_success}}" onclick="openFund({{fi.id}})">{{fi.target}} {{fi.event_date}}</button></td></tr>
-            {% endfor %}
-
-        </table> -->
-        <br>
-        <footer class="formFooter">
-            <button onclick="closeHtml()" class="bottomBtn">Назад</button>
+        <footer>
+            <div class="backButton" onclick="closeWebApp()">
+                Назад
+            </div>
         </footer>
     </div>
+</div>
+<script>
+    let openRadios = document.querySelectorAll('input[name="open"]');
+    let successRadios = document.querySelectorAll('input[name="success"]');
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).on('click','a', function(event){
-            event.preventDefault()
-            var url = $(this).attr('href');
-            $('#container').load(url)
-        })
-    </script>
-      <script>
-        let tg = window.Telegram.WebApp; //получаем объект webapp
-        let api_url = "https://panel.druzhba.io/";
-        let account_id = "{{account_id}}";
+    let funds = document.querySelectorAll('.fund');
 
-        async function openFund(fund_id){
-            let url = `${api_url}api/fundraising/4/open/`;
-            // tg.showAlert(url)
-            let response = await fetch(url, {
-                method: 'GET',
-                mode: 'cors',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Content-Type': 'application/json',
-                    'Authorization': btoa(tg.initData),
-                },
+    function filterFunds() {
+        let showOpen = document.querySelector('input[name="open"]:checked')?.value === 'open';
+        let showClosed = document.querySelector('input[name="open"]:checked')?.value === 'closed';
+        let showSuccessful = document.querySelector('input[name="success"]:checked')?.value === 'successful';
+        let showUnsuccessful = document.querySelector('input[name="success"]:checked')?.value === 'unsuccessful';
+
+        openRadios.forEach(radio => {
+            radio.parentElement.classList.toggle('active', radio.checked);
+        });
+        successRadios.forEach(radio => {
+            radio.parentElement.classList.toggle('active', radio.checked);
+        });
+
+        if (!showOpen && !showClosed && !showSuccessful && !showUnsuccessful) {
+            funds.forEach(fund => {
+                fund.style.display = 'flex';
             });
+            return;
         }
 
-        function closeHtml() {
-            tg.close();
-        }
-    </script>
+        funds.forEach(fund => {
+            let isClosed = fund.classList.contains('closed');
+            let isSuccessful = fund.classList.contains('successful');
+            if ((showOpen && !isClosed) ||
+                (showClosed && isClosed) ||
+                (showSuccessful && isSuccessful) ||
+                (showUnsuccessful && !isSuccessful)) {
+                fund.style.display = 'flex';
+            } else {
+                fund.style.display = 'none';
+            }
+        });
+    }
+
+    filterFunds();
+
+
+    openRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            console.log('dd')
+            filterFunds()
+        });
+    });
+    successRadios.forEach(radio => {
+        radio.addEventListener('change', filterFunds);
+    });
+</script>
+<script>
+    let tg = window.Telegram.WebApp;
+
+    async function openFund(id) {
+        await fetch("{{ host }}" + `api/fundraising/${id}/open/`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'ngrok-skip-browser-warning': '100',
+                'Content-Type': 'application/json',
+                'Authorization': btoa(tg.initData),
+            },
+        }).then(r => {
+            tg.close()
+        }).catch(err => tg.showAlert('err'))
+    }
+
+    function closeWebApp() {
+        tg.close()
+    }
+</script>
 </body>
-
 </html>
+
+
