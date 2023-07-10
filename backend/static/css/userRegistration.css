@@ -113,6 +113,7 @@
     font-family: sf-ui-light;
     align-items: center;
     letter-spacing: 2%;
+    background-color: white;
 }
 
 .form__item:not(:last-child) {

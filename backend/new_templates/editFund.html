@@ -1,97 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/feeCreation.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Изменение сбора</title>
 </head>
-
 <body>
-    <h3>Создание сбора</h3>
-    <p>Пожалуйста, заполните данные о сборе</p>
-    <div class="myform">
-        <label for="reason">На что собираем:</label>
-        <input type="text" id='reason' placeholder="Тип события" value="{{reason}}">
-        <label for="target">Кому собираем:</label>
-        <input type="text" id="target" placeholder="Кому собираем" value="{{target}}">
-        <label for="eventDate">Дата события</label>
-        <input id="eventDate" type="date" value="{{event_date}}">
-
-        <label for="transferInfo">Дата события</label>
-        <input type="text" id="transferInfo" placeholder="Куда переводим деньги" value="{{transfer_info}}">
-        <label for="transferInfo">Варианты подарков:</label>
-        <input type="text" id="giftInfo" placeholder="" value="{{gift_info}}">
-
-        <div class="formFooter">
-            <div class="formAdding">
-                <label for="addingCheckbox">Добавить данные о праздновании</label>
-                <div class="addingOptions">
-                    <input type="text" id="congratulationDate" placeholder="Дата события" value="{{congratulation_date}}">
-                    <input type="text" id="congratulationTime" placeholder="Время" value="{{congratulation_time}}">
-                    <input type="text" id="eventPlace" placeholder="место празднования" value="{{event_place}}">
-                    <input type="text" id="dresscode" placeholder="Дресс-код" value="{{event_dresscode}}">
+    <div class="container">
+        <main class="app">
+            <div class="wrapper">
+                <img src="{{ url_for('static', path='/img/backgrounds/blur-back-2.png') }}" alt="">
+            </div>
+            <div class="app__info block_margin">
+                <div class="info__title info__title_margin">
+                    <h3>Изменение сбора</h3>
+                </div>
+                <div class="info__content">
+                    Пожалуйста, заполните данные о сборе
                 </div>
             </div>
-            <div class="formButtons">
-                <button type="button">Отменить</button>
-                <button class="middleBtn" onclick="postFund()">Сохранить</button>
-            </div>
-        </div>
+            <form class="app__form" onsubmit="sendData(event)">
+                <ul class="form__blocks block_margin">
+                    <li class="form__item form__item_margin">
+                        <input id="reason" name="reason" class="form__field" type="text" placeholder=" " required>
+                        <label for="reason" class="field__placeholder">Тип события</label>
+                    </li>
+                    <li class="form__item form__item_margin">
+                        <input id="target" name="target" class="form__field" type="text" placeholder=" " required>
+                        <label for="target" class="field__placeholder">Кому собираем</label>
+                    </li>
+                    <li class="form__item form__item_margin">
+                        <input id="event-date-input" class="form__field" type="text" placeholder=" " required>
+                        <label for="event-date-input" class="field__placeholder">Дата события</label>
+                        <input id="event-date" class="form__date" type="date" name="event-date">
+                    </li>
+                    <li class="form__item">
+                        <input id="transfer-info" name="transfer_info" class="form__field" type="text" placeholder=" " required>
+                        <label for="transfer-info" class="field__placeholder field__placeholder_s-font">Ссылка на внешнюю копилку/карту</label>
+                    </li>
+                    <ul class="form__item-list">
+                        <span class="item-list__span item-list__span_margin">Ссылки на желаемый подарок</span>
+                        <li class="form__item form__item_link form__item_margin">
+                            <input id="gift-info" class="form__field" name='gift_info' type="text" placeholder=" ">
+                            <label for="gift-info" class="field__placeholder">Введите ссылку</label>
+                            <span class="item__button item__button_add"></span>
+                        </li>
+                    </ul>
+                </ul>
+                <div class="form__party-block form__party-block_margin">
+                    <input id="add-info" class="form__box" type="checkbox" hidden>
+                    <label class="box__label" for="add-info"></label>
+                    <span class="box__span">
+                        Добавить данные о праздновании
+                    </span>
+                    <ul class="party-block__wrapper">
+                        <li class="form__item party-block__item form__item_margin">
+                            <input id="congratulation-date-input" class="form__field" type="text" placeholder=" ">
+                            <label for="congratulation-date-input" class="field__placeholder">Дата события</label>
+                            <input id="congratulation-date" type="date" class="form__date"  name="congratulation_date">
+                        </li>
+                        <li class="form__item party-block__item form__item_margin">
+                            <input id="congratulation-time" name="congratulation_time" class="form__field" type="text" placeholder=" ">
+                            <label for="congratulation-time" class="field__placeholder">Время</label>
+                        </li>
+                        <li class="form__item party-block__item form__item_margin">
+                            <input id="event-place" name="event_place" class="form__field" type="text" placeholder=" ">
+                            <label for="event-place" class="field__placeholder">Ссылка на место празднования</label>
+                        </li>
+                        <li class="form__item party-block__item">
+                            <input id="event-dresscode" name="event_dresscode" class="form__field" type="text" placeholder=" ">
+                            <label for="event-dresscode" class="field__placeholder">Дресс-код</label>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form__footer">
+                    <span class="form__cancel">Отмена</span>
+                    <button class="form__button">Изменить</button>
+                </div>
+            </form>
+        </main>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', path='/js/inputmask.js') }}"></script>
     <script>
-        let tg = window.Telegram.WebApp;  //получаем объект webapp
-        // let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+        /* Сохдание валидации полей */
+
+        ["#event-date", "#congratulation-date"].forEach((_id) => {
+            let date = document.querySelector(_id)
+            let date_input = document.querySelector(_id + "-input")
+
+            let mask = IMask(date_input, {
+                mask: Date,
+                pattern: 'DD.MM.YYYY',
+                blocks: {
+                    YYYY: {
+                        mask: IMask.MaskedRange,
+                        from: 1900,
+                        to: 9999
+                    },
+                    MM: {
+                        mask: IMask.MaskedRange,
+                        from: 1,
+                        to: 12
+                    },
+                    DD: {
+                        mask: IMask.MaskedRange,
+                        from: 1,
+                        to: 31
+                    },
+                }
+            })
+            document.ontouchend = () => {
+                date.blur()
+            }
+            document.onclick = () => {
+                date.blur()
+            }
+
+            date.onfocus = () => {
+                date.display.opacity = 0
+            }
+
+            date.onblur = () => {
+                date.display.opacity = 1
+            }
+
+            date.onchange = () => {
+                let [year, month, day] = date.value.split("-")
+                date_input.value = `${day}.${month}.${year}`
+                birth_date_mask.updateValue()
+            }
+
+            date_input.onchange = () => {
+                let [day, month, year] = date_input.value.split(".")
+                date.value = `${year}-${month}-${day}`
+            }
+        })
+
+        IMask(document.querySelector("#congratulation-time"), {
+            mask: Date,
+            pattern: 'HH:MM',
+            blocks: {
+                HH: {
+                    mask: IMask.MaskedRange,
+                    from: 0,
+                    to: 23
+                },
+                MM: {
+                    mask: IMask.MaskedRange,
+                    from: 0,
+                    to: 590
+                }
+            }
+        })
+
+        /* Создание добавляющихся ссылок */
+
+        init_add_button(document.querySelector(".item__button_add"))
+        const item_list = document.querySelector(".form__item-list")
+
+        function init_add_button(button) {
+
+            IMask(button.parentElement.querySelector(".form__field"), {
+                mask: `{https://}[${'*'.repeat(1000)}]`
+            });
+            button.onclick = () => {
+                let new_item = button.parentElement.cloneNode(true)
+
+                init_remove_button(button)
+                init_add_button(new_item.querySelector(".item__button"))
+                item_list.appendChild(new_item)
+
+                new_item.querySelector(".form__field").value = ""
+                new_item.querySelector(".field__placeholder").innerText = "Дополнительная ссылка"
+            }
+        }
+
+        function init_remove_button(button) {
+            button.classList.remove("item__button_add")
+            button.classList.add("item__button_remove")
+            button.onclick = () => {
+                item_list.removeChild(button.parentElement)
+            }
+        }
+
+        /* Отправка формы */
+
+        let App = window.Telegram.WebApp;
+
+        document.querySelector(".form__cancel").onclick = () => {
+            App.close()
+        }
 
         let api_url = "{{host}}";
-        async function postFund(){
-            //let user_id = tg.initDataUnsafe.user.id;
-            let fund_id = "{{fund_id}}"
+        let fund_id = "{{fund_id}}";
+
+
+        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
+
+        async function postFund() {
+            // let user_id = tg.initDataUnsafe.user.id;
             let url = `${api_url}api/fundraising/${fund_id}/`;
 
             // создать сбор (fundraising)
-            let congratulations_date = document.getElementById("congratulationDate").value;
+            let congratulations_date = document.getElementById("congratulation-date").value;
             if (congratulations_date === "")
                 congratulations_date = null;
 
-            let congratulations_time = document.getElementById("congratulationTime").value;
+            let congratulations_time = document.getElementById("congratulation-time").value;
             if (congratulations_time === "")
                 congratulations_time = null;
 
             let fund = {
                 reason: document.getElementById("reason").value,
                 target: document.getElementById("target").value,
-                event_date: document.getElementById("eventDate").value,
-                transfer_info: document.getElementById("transferInfo").value,
-                gift_info: document.getElementById("giftInfo").value,
+                start: new Date().toJSON().slice(0, 10),
+                event_date: document.getElementById("event-date").value,
+                transfer_info: document.getElementById("transfer-info").value,
+                gift_info: create_gift_info_data(),
                 congratulation_date: congratulations_date,
                 congratulation_time: congratulations_time,
-                event_place: document.getElementById("eventPlace").value,
-                event_dresscode: document.getElementById("dresscode").value,
+                event_place: document.getElementById("event-place").value,
+                event_dresscode: document.getElementById("event-dresscode").value,
             };
-            // Отладочное сообщение
-            // tg.showAlert(url);
 
-            // подготовить к отправке и отправить запрос на server
             let body = JSON.stringify(fund);
+            // Отладочное сообщение
+            // tg.showAlert(fund.reason);
+            // alert(body);
 
-            let response = await fetch(url, {
+            await fetch(url, {
                 method: 'PUT',
                 mode: 'cors',
                 headers: {
                     'ngrok-skip-browser-warning': '100',
                     'Content-Type': 'application/json',
                     'accept': 'application/json',
-                    'Authorization': btoa(tg.initData),
+                    'Authorization': btoa(App.initData),
                 },
                 body: body,
-            }).then(response => response.json())
-              .then((data) =>{
-                  tg.close();
-              });
+            }).then(res => {
+                App.close()
+            }).catch(err => {
+                App.alert("error")
+            })
         }
+
+        function create_gift_info_data() {
+            let data = {}
+            item_list.querySelectorAll(".form__field").forEach((input, index) => {
+                data[`${index}`] = input.value
+            })
+            return JSON.stringify(data)
+        }
+
+        function sendData(event) {
+            event.preventDefault()
+            postFund()
+            return true
+        }
+
     </script>
 </body>
 </html>

@@ -27,7 +27,7 @@ timezone_items.forEach((item) => {
         timezone_input.value = item.innerText
         timezone.value = item.value
         timezone_selector.classList.add("wrapped");
-        timezone_input.onblur()
+        timezone_input.blur()
     };
 
     const isTouch = () => 'ontouchstart' in window || window.DocumentTouch && document instanceof window.DocumentTouch || navigator.maxTouchPoints > 0 || window.navigator.msMaxTouchPoints > 0

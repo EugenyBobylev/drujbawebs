@@ -1,106 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/registration.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/companyRegistration.css') }}">
-    <style>
-        .formFooter button {
-            display: inline-block;
-        }
-
-        .closeBtn {
-            width: 80px !important;
-            margin-right: 8px;
-            background: #ffffff00 !important;
-            color: #788bf0 !important;
-        }
-
-        .saveBtn {
-            width: calc(100% - 88px) !important;
-        }
-    </style>
+    <meta http-equiv="Cache-control: max-age=172800" content="public">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration.css') }}">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Редактирование анкеты</title>
 </head>
-
 <body>
-    <div id="container">
-
-        <h1>Редактирование <br> анкеты</h1>
-        <form action="" name="formEditForm" class="formEdit">
-            <input type="text" placeholder="Имя и фамилия *" class="required" name="username" required>
-            <div class="dateInput">
-                <input id="dateInput" type="date"
-                    onchange="this.nextElementSibling.innerHTML = !this.value ? 'Дата рождения' : this.value.split('-')[2]+'.'+this.value.split('-')[1]+'.'+this.value.split('-')[0]"
-                    id="birthday" name="birthday" required>
-                <label for="birthday">Дата рождения</label>
+    <div class="container">
+        <div class="wrapper" style="width: 100%;">
+            <img src="{{ url_for('static', path='img/backgrounds/blur-back-2.png') }}" alt="">
+        </div>
+        <main class="app">
+            <div class="app__info block_margin">
+                <div class="info__title info__title_margin">
+                    <h3>Редактирование анкеты</h3>
+                </div>
             </div>
-            <!-- <input type="text" id="timeZoneInput" placeholder="Часовой пояс" class="required" style="margin-top: 16px;" required> -->
-            <select class="timezone" name="timezone" id="timezone">
-                <option value="-12.0"> (GMT -12:00) Эниветок, Кваджалейн </option>
-                <option value="-11.0"> (GMT -11:00) Остров Мидуэй, Самоа </option>
-                <option value="-10.0"> (GMT -10:00) Гавайи </option>
-                <option value="-9.0"> (GMT -9:00) Аляска </option>
-                <option value="-8.0"> (GMT -8:00) Тихоокеанское время (США и Канада) </option>
-                <option value="-7.0"> (GMT -7:00) Горное время (США и Канада) </option>
-                <option value="-6.0"> (GMT -6:00) Центральное время (США и Канада), Мехико</option>
-                <option value="-5.0"> (GMT -5:00) Восточное время (США и Канада), Богота, Лима </option>
-                <option value="-4.0"> (GMT -4:00) Атлантическое время (Канада), Каракас, Ла-Пас </option>
-                <option value="-3.5"> (GMT -3:30) Ньюфаундленд </option>
-                <option value="-3.0"> (GMT -3:00) Бразилия, Буэнос-Айрес, Джорджтаун </option>
-                <option value="-2.0"> (GMT -2:00) Срединно-Атлантического </option>
-                <option value="-1.0"> (GMT -1:00 час) Азорские острова, острова Зеленого Мыса </option>
-                <option value="0.0"> (GMT) Время Западной Европе, Лондон, Лиссабон, Касабланка </option>
-                <option value="1.0"> (GMT +1:00 час) Брюссель, Копенгаген, Мадрид, Париж </option>
-                <option value="2.0"> (GMT +2:00) Киев, Калининград, Южная Африка </option>
-                <option value="3.0"> (GMT +3:00) Багдад, Эр-Рияд, Москва, Санкт-Петербург</option>
-                <option value="3.5"> (GMT +3:30) Тегеран </option>
-                <option value="4.0"> (GMT +4:00) Абу-Даби, Мускат, Баку, Тбилиси</option>
-                <option value="4.5"> (GMT +4:30) Кабул </option>
-                <option value="5.0"> (GMT +5:00) Екатеринбург, Исламабад, Карачи, Ташкент</option>
-                <option value="5.5"> (GMT +5:30) Бомбей, Калькутта, Мадрас, Нью-Дели</option>
-                <option value="5.75"> (GMT +5:45) Катманду</option>
-                <option value="6.0"> (GMT +6:00) Алматы, Дакке, Коломбо </option>
-                <option value="7.0"> (GMT +7:00) Бангкок, Ханой, Джакарта</option>
-                <option value="8.0"> (GMT +8:00) Пекин, Перт, Сингапур, Гонконг</option>
-                <option value="9.0"> (GMT +9:00) Токио, Сеул, Осака, Саппоро, Якутск</option>
-                <option value="9.5"> (GMT +9:30) Аделаида, Дарвин </option>
-                <option value="10.0"> (GMT +10:00) Восточная Австралия, Гуам, Владивосток </option>
-                <option value="11.0"> (GMT +11:00) Магадан, Соломоновы острова, Новая Каледония</option>
-                <option value="12.0"> (GMT +12:00) Окленд, Веллингтон, Фиджи, Камчатка</option>
-            </select>
-            <input type="text" placeholder="Должность" name="job">
-            <input type="text" placeholder="Компания *" name="company">
-            <div class="formFooter">
-                <input type="checkbox" name="check" id="" required>
-                <label for="">Я согласен на обработку моих персональных данных в соответствии с Политикой и Пользовательским
-                    соглашением</label>
-                <button class="closeBtn" type="button">Закрыть</button>
-                <button class="saveBtn" type="submit">Сохранить</button>
-            </div>
-        </form>
+            <form class="app__form" onsubmit="sendData(event)" />
+                <ul class="form__blocks block_margin">
+                    <li class="form__item">
+                        <input id="full-name" class="form__field" type="text" name="name" placeholder=" "required>
+                        <label for="full-name" class="field__placeholder">Имя и фамилия</label>
+                    </li>
+                    <li class="form__item">
+                        <input id="birth-date-input" class="form__field" type="text" placeholder=" " required>
+                        <label for="birth-date-input" class="field__placeholder">Дата рождения</label>
+                        <input id="birth-date" type="date" name="birthdate">
+                    </li>
+                    <li class="form__item">
+                        <input id="time-zone" type="text" name="timezone" hidden>
+                        <input id="time-zone-input" class="form__field" type="text" placeholder=" ">
+                        <label for="time-zone-input" class="field__placeholder">Часовой пояс</label>
+                        <ul class="field__selector wrapped">
+                            <li class="selector__item" value=-1>Калининград (МСК-1)</li>
+                            <li class="selector__item" value=0>Москва (МСК)</li>
+                            <li class="selector__item" value=+1>Самара (МСК+1)</li>
+                            <li class="selector__item" value=+2>Екатеринбург (МСК+2).</li>
+                            <li class="selector__item" value=+3>Омск (МСК+3)</li>
+                            <li class="selector__item" value=+4>Красноярск (МСК+4)</li>
+                            <li class="selector__item" value=+5>Иркутск (МСК+5)</li>
+                            <li class="selector__item" value=+6>Якутск (МСК+6)</li>
+                            <li class="selector__item" value=+7>Владивосток (МСК+7)</li>
+                            <li class="selector__item" value=+8>Магадан (МСК+8)</li>
+                            <li class="selector__item" value=+9>Камчатка (МСК+9)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <button class="form__button">Изменить</button>
+            </form>
+        </main>
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Плагин для маски ввода данных-->
+    <script type="text/javascript" src="{{ url_for('static', path='js/inputmask.js') }}"></script>
+    <!-- Фильтрация для текстового поля 'часовой пояс'-->
+    <script type="text/javascript" src="{{ url_for('static', path='js/update_selector.js') }}"></script>
     <script>
-        $(document).on('click','a', function(event){
-            event.preventDefault()
-            var url = $(this).attr('href');
-            $('#container').load(url)
-        })
-    </script>
-    <script>
-        document.getElementById("dateInput").style.transform = "scaleX(" + (document.getElementById("dateInput").nextElementSibling.offsetWidth) + ")"
-        let timeSelect = document.getElementById("timezone")
-        const date = new Date();
-        const offset = date.getTimezoneOffset()/ 60 * -1;
-        let timeOption = document.querySelector('option[value="'+(offset).toFixed(1)+'"]').selected = true;
-        // document.getElementById("timeZoneInput").value = "Часовой пояс: " + Intl.DateTimeFormat().resolvedOptions().timeZone
-    </script>
-    <script src="{{ url_for('static', path='/js/_api.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/formEdit.js') }}"></script>
-</body>
 
+        /* Инициализация маски для полей: имя, дата */
+
+        IMask(document.querySelector("#full-name"), {
+            mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
+        })
+
+        const birth_date_mask = IMask(document.querySelector("#birth-date-input"), {
+            mask: Date,
+            pattern: 'DD.MM.YYYY',
+            blocks: {
+                YYYY: {
+                    mask: IMask.MaskedRange,
+                    from: 1900,
+                    to: 9999
+                },
+                MM: {
+                    mask: IMask.MaskedRange,
+                    from: 1,
+                    to: 12
+                },
+                DD: {
+                    mask: IMask.MaskedRange,
+                    from: 1,
+                    to: 31
+                },
+            }
+        })
+
+        /* Создание календаря */
+
+        const date = document.querySelector("#birth-date")
+        const date_input = document.querySelector("#birth-date-input")
+
+        document.ontouchend = () => {
+            date.blur()
+        }
+        document.onclick = () => {
+            date.blur()
+        }
+
+        date.onfocus = () => {
+            date.display.opacity = 0
+        }
+
+        date.onblur = () => {
+            date.display.opacity = 1
+        }
+
+        date.onchange = () => {
+            let [year, month, day] = date.value.split("-")
+            date_input.value = `${day}.${month}.${year}`
+            birth_date_mask.updateValue()
+        }
+
+        date_input.onchange = () => {
+            let [day, month, year] = date_input.value.split(".")
+            date.value = `${year}-${month}-${day}`
+        }
+
+        /* Отправка данных из формы */
+
+        const App = window.Telegram.WebApp;
+        const api_url = "{{ host }}"
+        const user_id = "{{ user_id }}"
+
+        if (App.initDataUnsafe.user !== undefined) {
+            let [first_name, last_name] = [App.initDataUnsafe.user.first_name, App.initDataUnsafe.user.last_name]
+            document.querySelector("#full-name").value = `${first_name} ${last_name}`;
+        }
+
+        const form = document.querySelector(".app__form")
+
+        function sendData(event) {
+            event.preventDefault()
+            putUser()
+            return true
+        }
+
+        async function putUser() {
+            let url = `${api_url}api/user/${user_id}/`;
+            let timezone = document.querySelector("#time-zone").value
+
+            let app_user = App.initDataUnsafe.user
+            let account_id = app_user === undefined ? null : app_user.id
+
+            let user = {
+                id: user_id,
+                name: document.querySelector("#full-name").value,
+                birthdate: document.querySelector("#birth-date").value,
+                timezone: timezone ? timezone !== "" : 0,
+            };
+
+            await fetch(url, {
+                method: 'PUT',
+                mode: 'cors',
+                headers: {
+                    'ngrok-skip-browser-warning': '100',
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json',
+                    'Authorization': btoa(App.initData),
+                },
+                body: JSON.stringify(user),
+            }).then(res => {
+                App.close()
+            }).catch(err => {
+                App.alert("error")
+            })
+        }
+
+    </script>
+</body>
 </html>
