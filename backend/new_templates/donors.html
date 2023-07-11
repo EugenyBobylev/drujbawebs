@@ -16,6 +16,7 @@
             <h1>Список<br>
                 участников</h1>
             <div class="list">
+            <script>let total = 0;</script>
                 {% for di in donors_info %}
                     <div class="item">
                         <div class="itemContent">
@@ -29,7 +30,15 @@
                             </div>
                         </div>
                     </div>
+                    <script>total += parseInt('{{ di.payed }}')</script>
                 {% endfor %}
+                    <div class="item">
+                        <div class="itemContent">
+                            <div class="name">
+                                 Всего сдано <script>document.write(total + " руб.")</script>
+                            </div>
+                        </div>
+                    </div>
             </div>
             <div class="copyLinkContainer">
                 <div class="label">Ссылка на подключение к сбору</div>
@@ -44,7 +53,7 @@
         </div>
         <footer>
             <div class="backButton" onclick="closeWebApp()">
-                Назад
+                Закрыть
             </div>
         </footer>
     </div>

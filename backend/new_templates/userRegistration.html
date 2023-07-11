@@ -81,7 +81,7 @@
 
         /* Инициализация маски для полей: имя, дата */
 
-        IMask(document.querySelector("#full-name"), {
+        const full_name_mask = IMask(document.querySelector("#full-name"), {
             mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
         })
 
@@ -112,21 +112,6 @@
         const date = document.querySelector("#birth-date")
         const date_input = document.querySelector("#birth-date-input")
 
-        document.ontouchend = () => {
-            date.blur()
-        }
-        document.onclick = () => {
-            date.blur()
-        }
-
-        date.onfocus = () => {
-            date.style.opacity = 0
-        }
-
-        date.onblur = () => {
-            date.style.opacity = 1
-        }
-
         date.onchange = () => {
             let [year, month, day] = date.value.split("-")
             date_input.value = `${day}.${month}.${year}`
@@ -145,7 +130,10 @@
 
         if (App.initDataUnsafe.user !== undefined) {
             let username = App.initDataUnsafe.user.username
-            document.querySelector("#full-name").value = `${username}`;
+            if (username) {
+                document.querySelector("#full-name").value = `${username}`;
+                full_name_mask.updateValue()
+            }
         }
 
         const form = document.querySelector(".app__form")

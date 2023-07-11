@@ -177,10 +177,11 @@
 #birth-date {
     position: relative;
     border: none;
-    background: none;
+    background: white;
     outline: none;
     color: white;
     width: 23px;
+    height: 20px;
 }
 
 #birth-date::-webkit-calendar-picker-indicator {
