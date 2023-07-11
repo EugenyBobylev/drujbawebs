@@ -4,7 +4,7 @@ const timezone_selector = document.querySelector(".field__selector")
 
 const timezone_items = document.querySelectorAll(".selector__item")
 
-timezone.update = () => {
+timezone.onchange = () => {
     timezone_items.forEach((item) => {
         if (parseInt(item.value) === parseInt(timezone.value)) {
             timezone_input.value = item.innerHTML
@@ -21,7 +21,7 @@ timezone_items.forEach((item) => {
 
     let reload = () => {
         timezone.value = item.value
-        timezone.update()
+        timezone.onchange()
         timezone_selector.classList.add("wrapped");
         timezone_input.blur()
     };
