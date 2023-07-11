@@ -425,7 +425,7 @@ def get_fund_info(fund_id: int) -> ApiFundraisingInfo:
         fund_info.is_open = db_is_fundraising_open(fund_id, session)
         fund_info.reason = fund.reason
         fund_info.target = fund.target
-        fund_info.event_date = fund.event_date.strftime("%m.%d.%Y")
+        fund_info.event_date = fund.event_date.strftime("%d.%m.%Y")
         fund_info.days_left = get_days_left(fund.event_date)
         fund_info.donor_count = db_get_all_donor_count(fund_id, session)
         fund_info.payed_count = db_get_payed_donor_count(fund_id, session)

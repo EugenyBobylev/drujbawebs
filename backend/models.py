@@ -159,7 +159,7 @@ class FundraisingInfo(BaseModel):
         return f'Сбор открыт: {is_open}\n\nТип события: {self.reason}\nНа кого: {self.target}\n' \
                f'Дата: {self.event_date}\nОсталось дней: {self.days_left}\n\nСбор успешен: {is_ok}\n ' \
                f'Участники сбора: {self.donor_count} чел.\n\nСдали деньги: {self.payed_count} чел.\n' \
-               f'Сумма сбора: {self.total_sum} руб.\nСредний чек: {self.avg_sum} руб.'
+               f'Сумма сбора: {self.total_sum} руб.\nСредний чек: {int(self.avg_sum)} руб.'
 
 
 class FundraisingSmallInfo(BaseModel):
