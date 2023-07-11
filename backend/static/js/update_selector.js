@@ -4,10 +4,10 @@ const timezone_selector = document.querySelector(".field__selector")
 
 const timezone_items = document.querySelectorAll(".selector__item")
 
-timezone.onchange = () => {
+timezone.update = () => {
     timezone_items.forEach((item) => {
-        if (item.value == timezone.value) {
-                timezone_input.value = item.innerText
+        if (parseInt(item.value) === parseInt(timezone.value)) {
+            timezone_input.value = item.innerHTML
         }
     })
 }
@@ -19,9 +19,9 @@ timezone_input.onfocus = () => {
 
 timezone_items.forEach((item) => {
 
-    let update = () => {
+    let reload = () => {
         timezone.value = item.value
-        timezone.onchange()
+        timezone.update()
         timezone_selector.classList.add("wrapped");
         timezone_input.blur()
     };
@@ -30,10 +30,10 @@ timezone_items.forEach((item) => {
 
     item.addEventListener('mousedown', (e) => {
       if (isTouch())  {
-          update()
+          reload()
       }
     });
 
-    item.onclick = update
+    item.onclick = reload
 
 })
