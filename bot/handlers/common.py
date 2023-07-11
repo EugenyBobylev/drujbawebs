@@ -159,7 +159,7 @@ def user_menu_keyboard(user_id: int, account_id: int, payed_events: int):
         InlineKeyboardButton(text="Редактировать анкету", web_app=types.WebAppInfo(url=url3)),
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
-        InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
+        # InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
