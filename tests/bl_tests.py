@@ -1,3 +1,6 @@
+import json
+from json import JSONDecodeError
+
 from backend import User as apiUser
 import db
 from db import get_session, db_get_user_account, remove_user, UserStatus, get_user_statuses
@@ -404,3 +407,25 @@ def test_get_trialuser_status():
     # user_id = 124471751
     # status = db.get_user_status(user_id)
     # assert status == 'active'
+
+
+class JSONDecoderError:
+    pass
+
+
+def test_unpack_gift_info():
+    gift_info = '{"0":"https://21312312","1":"https://23221312312"}'
+    gift_links = json.loads(gift_info)
+
+    assert isinstance(gift_links, dict)
+    print('\n')
+    gift_links = '\n'.join(gift_links.values())
+    print(gift_links)
+
+    gift_info = 'На бухло и закуску'
+    try:
+        gift_links = json.loads(gift_info)
+        gift_links = '\n'.join(gift_links.values())
+    except JSONDecodeError:
+        gift_links = gift_info
+    assert isinstance(gift_links, str)
