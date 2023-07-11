@@ -33,7 +33,7 @@
             <form class="app__form" onsubmit="sendData(event)" />
                 <ul class="form__blocks block_margin">
                     <li class="form__item">
-                        <input id="full-name" class="form__field" type="text" name="name" placeholder=" "required>
+                        <input id="full-name" class="form__field" type="text" name="name" placeholder=" " required>
                         <label for="full-name" class="field__placeholder">Ваши имя и фамилия</label>
                     </li>
                     <li class="form__item">
@@ -78,6 +78,16 @@
     <!-- Фильтрация для текстового поля 'часовой пояс'-->
     <script type="text/javascript" src="{{ url_for('static', path='js/update_selector.js') }}"></script>
     <script>
+
+        document.onclick = (event) => {
+            document.querySelectorAll(".form__item").forEach((item) => {
+                if (event.target === item || item.contains(event.target)) {
+                    return
+                } else {
+                    item.blur();
+                }
+            })
+        }
 
         /* Инициализация маски для полей: имя, дата */
 

@@ -55,16 +55,21 @@
             </form>
         </main>
     </div>
-    <!-- Для нормального отображения поля даты на IOS-->
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css'">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">
-        $("#birth-date").datepicker();
-    </script>
     <!-- Плагин для маски ввода данных-->
     <script type="text/javascript" src="{{ url_for('static', path='js/inputmask.js') }}"></script>
     <!-- Фильтрация для текстового поля 'часовой пояс'-->
     <script type="text/javascript" src="{{ url_for('static', path='js/update_selector.js') }}"></script>
     <script>
+
+        document.onclick = (event) => {
+            document.querySelectorAll(".form__item").forEach((item) => {
+                if (event.target === item || item.contains(event.target)) {
+                    return
+                } else {
+                    item.blur();
+                }
+            })
+        }
 
         /* Инициализация маски для полей: имя, дата */
 
@@ -99,21 +104,6 @@
         const date = document.querySelector("#birth-date")
         const date_input = document.querySelector("#birth-date-input")
 
-        document.ontouchend = () => {
-            date.blur()
-        }
-        document.onclick = () => {
-            date.blur()
-        }
-
-        date.onfocus = () => {
-            date.style.opacity = 0
-        }
-
-        date.onblur = () => {
-            date.style.opacity = 1
-        }
-
         date.onchange = () => {
             let [year, month, day] = date.value.split("-")
             date_input.value = `${day}.${month}.${year}`
@@ -132,8 +122,11 @@
         const user_id = "{{ user_id }}"
 
         if (App.initDataUnsafe.user !== undefined) {
-            let [first_name, last_name] = [App.initDataUnsafe.user.first_name, App.initDataUnsafe.user.last_name]
-            document.querySelector("#full-name").value = `${first_name} ${last_name}`;
+            let username = App.initDataUnsafe.user.username
+            if (username) {
+                document.querySelector("#full-name").value = `${username}`;
+                full_name_mask.updateValue()
+            }
         }
 
         function convert_to_string(value) {

@@ -277,11 +277,11 @@ ul {
 .form__date {
     position: relative;
     border: none;
-    background: none;
+    background: white;
     outline: none;
     color: white;
-    width: 25px;
-    margin: auto 0;
+    width: 23px;
+    height: 20px;
 }
 
 .form__date::-webkit-calendar-picker-indicator {
