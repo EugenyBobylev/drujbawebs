@@ -16,21 +16,21 @@
             </div>
             <div class="app__info block_margin">
                 <div class="info__title info__title_margin">
-                    <h3>Создание сбора</h3>
+                    <h3>Создаём новый сбор</h3>
                 </div>
                 <div class="info__content">
-                    Пожалуйста, заполните данные о сборе
+                    Пожалуйста, расскажите мне о сборе:
                 </div>
             </div>
             <form class="app__form" onsubmit="sendData(event)">
                 <ul class="form__blocks block_margin">
                     <li class="form__item form__item_margin">
                         <input id="reason" name="reason" class="form__field" type="text" placeholder=" " required>
-                        <label for="reason" class="field__placeholder">Тип события</label>
+                        <label for="reason" class="field__placeholder">Тип события — например, День рождения</label>
                     </li>
                     <li class="form__item form__item_margin">
                         <input id="target" name="target" class="form__field" type="text" placeholder=" " required>
-                        <label for="target" class="field__placeholder">Кому собираем</label>
+                        <label for="target" class="field__placeholder">Виновник торжества</label>
                     </li>
                     <li class="form__item form__item_margin">
                         <input id="event-date-input" class="form__field" type="text" placeholder=" " required>
@@ -39,10 +39,10 @@
                     </li>
                     <li class="form__item">
                         <input id="transfer-info" name="transfer_info" class="form__field" type="text" placeholder=" " required>
-                        <label for="transfer-info" class="field__placeholder field__placeholder_s-font">Ссылка на внешнюю копилку/карту</label>
+                        <label for="transfer-info" class="field__placeholder field__placeholder_s-font">Куда переводить деньги (номер карты или телефон)</label>
                     </li>
                     <ul class="form__item-list">
-                        <span class="item-list__span item-list__span_margin">Ссылки на желаемый подарок</span>
+                        <span class="item-list__span item-list__span_margin">Варианты подарков</span>
                         <li class="form__item form__item_link form__item_margin">
                             <input id="gift-info" class="form__field" name='gift_info' type="text" placeholder=" ">
                             <label for="gift-info" class="field__placeholder">Введите ссылку</label>
@@ -54,12 +54,12 @@
                     <input id="add-info" class="form__box" type="checkbox" hidden>
                     <label class="box__label" for="add-info"></label>
                     <span class="box__span">
-                        Добавить данные о праздновании
+                        Добавить данные о праздничном мероприятии
                     </span>
                     <ul class="party-block__wrapper">
                         <li class="form__item party-block__item form__item_margin">
                             <input id="congratulation-date-input" class="form__field" type="text" placeholder=" ">
-                            <label for="congratulation-date-input" class="field__placeholder">Дата события</label>
+                            <label for="congratulation-date-input" class="field__placeholder">Дата поздравления</label>
                             <input id="congratulation-date" type="date" class="form__date"  name="congratulation_date">
                         </li>
                         <li class="form__item party-block__item form__item_margin">
@@ -68,7 +68,7 @@
                         </li>
                         <li class="form__item party-block__item form__item_margin">
                             <input id="event-place" name="event_place" class="form__field" type="text" placeholder=" ">
-                            <label for="event-place" class="field__placeholder">Ссылка на место празднования</label>
+                            <label for="event-place" class="field__placeholder field__placeholder_s-font">Где поздравляем (можно добавить ссылку на место)</label>
                         </li>
                         <li class="form__item party-block__item">
                             <input id="event-dresscode" name="event_dresscode" class="form__field" type="text" placeholder=" ">
@@ -77,8 +77,8 @@
                     </ul>
                 </div>
                 <div class="form__footer">
-                    <span class="form__cancel">Отмена</span>
-                    <button class="form__button">Оплатить</button>
+                    <span class="form__cancel">Отменить</span>
+                    <button class="form__button"></button>
                 </div>
             </form>
         </main>
@@ -164,9 +164,6 @@
 
         function init_add_button(button) {
 
-            IMask(button.parentElement.querySelector(".form__field"), {
-                mask: `{https://}[${'*'.repeat(1000)}]`
-            });
             button.onclick = () => {
                 let new_item = button.parentElement.cloneNode(true)
 
@@ -174,8 +171,13 @@
                 init_add_button(new_item.querySelector(".item__button"))
                 item_list.appendChild(new_item)
 
+                let _id = `gift-${item_list.length}`
                 new_item.querySelector(".form__field").value = ""
+                new_item.querySelector(".form__field").id = _id
+
                 new_item.querySelector(".field__placeholder").innerText = "Дополнительная ссылка"
+                new_item.querySelector(".field__placeholder").for = _id
+                mainItem = new_item
             }
         }
 
@@ -197,13 +199,13 @@
 
         let api_url = "{{host}}";
         let account_id = "{{account_id}}";
-        let payed_events = 1;
+        let payed_events = "{{ payed_events }}";
 
         let form_button = document.querySelector(".form__button")
 
         let need_pay = payed_events < 1;
         if (need_pay)
-            form_button.innerText = "Оплатить";
+            form_button.innerText = "Оплатить и запустить";
         else
             form_button.innerText = "Запустить";
 

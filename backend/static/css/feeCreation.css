@@ -171,6 +171,7 @@ ul {
     position: absolute;
     top: 12px;
     left: 12px;
+    cursor: text;
 }
 
 .field__placeholder_s-font {

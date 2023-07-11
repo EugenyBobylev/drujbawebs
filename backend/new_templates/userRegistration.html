@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-control: max-age=172800" content="public">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -26,15 +27,14 @@
                 </div>
                 <div class="info__content">
                     Пожалуйста, введите данные
-                    для регистрации. После этого
-                    вы сможете начать сбор
+                    для регистрации.
                 </div>
             </div>
             <form class="app__form" onsubmit="sendData(event)" />
                 <ul class="form__blocks block_margin">
                     <li class="form__item">
                         <input id="full-name" class="form__field" type="text" name="name" placeholder=" "required>
-                        <label for="full-name" class="field__placeholder">Имя и фамилия</label>
+                        <label for="full-name" class="field__placeholder">Ваши имя и фамилия</label>
                     </li>
                     <li class="form__item">
                         <input id="birth-date-input" class="form__field" type="text" placeholder=" " required>
@@ -69,7 +69,7 @@
                         <a href="https://druzhba.io/user-agreement">Пользовательским соглашением</a>
                     </span>
                 </div>
-                <button class="form__button">Сохранить</button>
+                <button class="form__button">Зарегистрироваться</button>
             </form>
         </main>
     </div>
@@ -120,11 +120,11 @@
         }
 
         date.onfocus = () => {
-            date.display.opacity = 0
+            date.style.opacity = 0
         }
 
         date.onblur = () => {
-            date.display.opacity = 1
+            date.style.opacity = 1
         }
 
         date.onchange = () => {
@@ -144,8 +144,8 @@
         const api_url = "{{ host }}"
 
         if (App.initDataUnsafe.user !== undefined) {
-            let [first_name, last_name] = [App.initDataUnsafe.user.first_name, App.initDataUnsafe.user.last_name]
-            document.querySelector("#full-name").value = `${first_name} ${last_name}`;
+            let username = App.initDataUnsafe.user.username
+            document.querySelector("#full-name").value = `${username}`;
         }
 
         const form = document.querySelector(".app__form")
@@ -171,7 +171,7 @@
                 id: account_id,
                 name: document.querySelector("#full-name").value,
                 birthdate: document.querySelector("#birth-date").value,
-                timezone: timezone ? timezone !== "" : 0,
+                timezone:  timezone !== "" ? parseInt(timezone) : 0,
             };
 
             await fetch(url, {

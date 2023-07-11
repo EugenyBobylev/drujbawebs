@@ -134,6 +134,7 @@
     position: absolute;
     top: 12px;
     left: 12px;
+    cursor: text;
 }
 
 .field__placeholder::after {
@@ -179,7 +180,7 @@
     background: none;
     outline: none;
     color: white;
-    width: 25px;
+    width: 23px;
 }
 
 #birth-date::-webkit-calendar-picker-indicator {
@@ -195,23 +196,24 @@
   position: absolute;
   top: -2.5px;
   right: 0;
-  cursor: pointer
 }
 
 .field__selector {
     position: absolute;
     min-width: calc(100% - 12px);
     overflow: hidden;
-    top: 40px;
+    top: -100px;
     left: 12px;
     color: var(--black);
     height: 80px;
     overflow-y: scroll;
+    border-radius: 8px;
+    list-style: none;
 }
 
 .selector__item {
     cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 1);
     text-align: center;
     padding: 10px 0;
 }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-control: max-age=172800" content="public">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/userRegistration.css') }}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -38,15 +39,15 @@
                         <ul class="field__selector wrapped">
                             <li class="selector__item" value=-1>Калининград (МСК-1)</li>
                             <li class="selector__item" value=0>Москва (МСК)</li>
-                            <li class="selector__item" value=+1>Самара (МСК+1)</li>
-                            <li class="selector__item" value=+2>Екатеринбург (МСК+2).</li>
-                            <li class="selector__item" value=+3>Омск (МСК+3)</li>
-                            <li class="selector__item" value=+4>Красноярск (МСК+4)</li>
-                            <li class="selector__item" value=+5>Иркутск (МСК+5)</li>
-                            <li class="selector__item" value=+6>Якутск (МСК+6)</li>
-                            <li class="selector__item" value=+7>Владивосток (МСК+7)</li>
-                            <li class="selector__item" value=+8>Магадан (МСК+8)</li>
-                            <li class="selector__item" value=+9>Камчатка (МСК+9)</li>
+                            <li class="selector__item" value=1>Самара (МСК+1)</li>
+                            <li class="selector__item" value=2>Екатеринбург (МСК+2).</li>
+                            <li class="selector__item" value=3>Омск (МСК+3)</li>
+                            <li class="selector__item" value=4>Красноярск (МСК+4)</li>
+                            <li class="selector__item" value=5>Иркутск (МСК+5)</li>
+                            <li class="selector__item" value=6>Якутск (МСК+6)</li>
+                            <li class="selector__item" value=7>Владивосток (МСК+7)</li>
+                            <li class="selector__item" value=8>Магадан (МСК+8)</li>
+                            <li class="selector__item" value=9>Камчатка (МСК+9)</li>
                         </ul>
                     </li>
                 </ul>
@@ -54,6 +55,11 @@
             </form>
         </main>
     </div>
+    <!-- Для нормального отображения поля даты на IOS-->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css'">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">
+        $("#birth-date").datepicker();
+    </script>
     <!-- Плагин для маски ввода данных-->
     <script type="text/javascript" src="{{ url_for('static', path='js/inputmask.js') }}"></script>
     <!-- Фильтрация для текстового поля 'часовой пояс'-->
@@ -101,11 +107,11 @@
         }
 
         date.onfocus = () => {
-            date.display.opacity = 0
+            date.style.opacity = 0
         }
 
         date.onblur = () => {
-            date.display.opacity = 1
+            date.style.opacity = 1
         }
 
         date.onchange = () => {
@@ -163,7 +169,7 @@
                 id: user_id,
                 name: document.querySelector("#full-name").value,
                 birthdate: document.querySelector("#birth-date").value,
-                timezone: timezone ? timezone !== "" : 0,
+                timezone:  timezone !== "" ? parseInt(timezone) : 0,
             };
 
             await fetch(url, {

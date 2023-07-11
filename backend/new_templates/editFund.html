@@ -86,13 +86,13 @@
     <script type="text/javascript" src="{{ url_for('static', path='/js/inputmask.js') }}"></script>
     <script>
 
-        /* Сохдание валидации полей */
+        /* Создание валидации полей */
 
         ["#event-date", "#congratulation-date"].forEach((_id) => {
             let date = document.querySelector(_id)
             let date_input = document.querySelector(_id + "-input")
 
-            let mask = IMask(date_input, {
+            date.mask = IMask(date_input, {
                 mask: Date,
                 pattern: 'DD.MM.YYYY',
                 blocks: {
@@ -121,17 +121,16 @@
             }
 
             date.onfocus = () => {
-                date.display.opacity = 0
+                date.style.opacity = 0
             }
 
             date.onblur = () => {
-                date.display.opacity = 1
+                date.style.opacity = 1
             }
 
             date.onchange = () => {
                 let [year, month, day] = date.value.split("-")
                 date_input.value = `${day}.${month}.${year}`
-                mask.updateValue()
             }
 
             date_input.onchange = () => {
@@ -139,8 +138,8 @@
                 date.value = `${year}-${month}-${day}`
             }
         })
-
-        const time_mask = IMask(document.querySelector("#congratulation-time"), {
+        const time = document.querySelector("#congratulation-time")
+        time.mask = IMask(document.querySelector("#congratulation-time"), {
             mask: Date,
             pattern: 'HH:MM',
             blocks: {
@@ -158,14 +157,13 @@
         })
 
         /* Создание добавляющихся ссылок */
+
         var mainItem = init_add_button(document.querySelector(".item__button_add"))
         const item_list = document.querySelector(".form__item-list")
 
         function init_add_button(button) {
             let item = button.parentElement
-            item.mask = IMask(item.querySelector(".form__field"), {
-                mask: `{https://}[${'*'.repeat(1000)}]`
-            });
+
             button.onclick = () => {
                 let new_item = button.parentElement.cloneNode(true)
 
@@ -173,8 +171,12 @@
                 init_add_button(new_item.querySelector(".item__button"))
                 item_list.appendChild(new_item)
 
+                let _id = `gift-${item_list.length}`
                 new_item.querySelector(".form__field").value = ""
+                new_item.querySelector(".form__field").id = _id
+
                 new_item.querySelector(".field__placeholder").innerText = "Дополнительная ссылка"
+                new_item.querySelector(".field__placeholder").for = _id
                 mainItem = new_item
             }
             return item
@@ -188,9 +190,7 @@
             }
         }
 
-        /* Отправка формы */
-
-        let App = window.Telegram.WebApp;
+        /* Автокомплит */
 
         function create_links(data_array) {
             for(let key in data_array) {
@@ -198,32 +198,46 @@
                     mainItem.querySelector(".item__button").click()
                 }
                 mainItem.querySelector(".form__field").value = data_array[key]
-                mainItem.mask.updateValue()
             }
 
         }
 
-        document.querySelector("#reason").value = '{{ reason }}'
-        document.querySelector("#target").value = '{{ target }}'
-        document.querySelector("#event-date").value = '{{ event_date }}'
-        document.querySelector("#event-date").onchange('{{ event_date }}')
-        document.querySelector("#transfer-info").value = '{{ transfer_info }}'
+        function auto_complete(data_array) {
+            data_array.forEach((data_item) => {
+                let [_id, data] = data_item
+                let input = document.querySelector(_id)
+                if (data !== '') {
+                    input.value = data
+                    if (_id.includes("date")) {
+                        input.onchange()
+                    }
+                    if (input.mask) {
+                        input.mask.updateValue()
+                    }
+                }
+            })
+        }
+        auto_complete([
+            ["#reason", '{{ reason }}'],
+            ["#target", '{{ target }}'],
+            ["#event-date", '{{ event_date }}'],
+            ["#transfer-info", '{{ transfer_info }}']
+        ])
         create_links(JSON.parse({{ gift_info | tojson }}))
-        const con_date = '{{ congratulation_date }}'
-        const con_time = '{{ congratulation_time }}'
-        const ev_place = '{{ event_place }}'
-        const dress_code = '{{ event_dresscode }}'
-        if (con_date || con_time || ev_place || dress_code) {
+
+        if ('{{ congratulation_date }}' || '{{ congratulation_time }}' || '{{ event_place }}' || '{{ event_dresscode }}') {
             document.querySelector("#add-info").checked = true
-            if (con_date) {
-                document.querySelector("#congratulation-date").value = con_date
-                document.querySelector("#congratulation-date").onchange(con_date)
-            }
-            document.querySelector("#congratulation-time").value = con_time
-            time_mask.updateValue()
-            document.querySelector("#event-place").value = ev_place
-            document.querySelector("#event-dresscode").value = dress_code
+            auto_complete([
+                ["#congratulation-date", '{{ congratulation_date }}'],
+                ["#congratulation-time", '{{ congratulation_time }}'],
+                ["#event-place", '{{ event_place }}'],
+                ["#event-dresscode", '{{ event_dresscode }}']
+            ])
         }
+
+        /* Отправка формы */
+
+        let App = window.Telegram.WebApp;
 
 
         document.querySelector(".form__cancel").onclick = () => {
@@ -261,7 +275,7 @@
                 event_place: document.getElementById("event-place").value,
                 event_dresscode: document.getElementById("event-dresscode").value,
             };
-            console.log(fund)
+
             let body = JSON.stringify(fund);
             // Отладочное сообщение
             // tg.showAlert(fund.reason);
