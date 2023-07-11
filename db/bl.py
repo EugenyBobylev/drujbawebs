@@ -1,6 +1,8 @@
 import asyncio
+import json
 from datetime import date
 from enum import Enum
+from json import JSONDecodeError
 
 from sqlalchemy import select, func
 
@@ -598,11 +600,19 @@ def about_fund_info(fund_id) -> str:
     account = db_get_account(fund.account_id, session)
     user_name = account.user.name
 
+    # разобрать поле gift_info на список ссылок
+    gift_info = fund.gift_info
+    try:
+        gift_links = json.loads(gift_info)
+        gift_links = '\n'.join(gift_links.values())
+    except JSONDecodeError:
+        gift_links = gift_info
+
     msg = f'Вас пригласил {user_name}, чтобы подготовить подарок.\n\n'
     msg += f'Тип события: {fund.reason}\n' if fund.reason else ''
     msg += f'Кому собираем: {fund.target}\n' if fund.target else ''
     msg += f'Дата события: {fund.event_date}\n' if fund.event_date else ''
-    msg += f'Варианты подарков: {fund.gift_info}\n' if fund.gift_info else ''
+    msg += f'Варианты подарков: {gift_links}\n' if gift_info else ''
     msg += f'Дата поздравления: {fund.congratulation_date}\n' if fund.congratulation_date else ''
     msg += f'Время: {fund.congratulation_time}\n' if fund.congratulation_time else ''
     msg += f'Где поздравляем: {fund.event_place}\n' if fund.event_place else ''
