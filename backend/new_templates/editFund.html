@@ -83,112 +83,28 @@
             </form>
         </main>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', path='js/blur_and_focus.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/create_mask.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/send_api.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/calendar.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/autocomplete.js') }}"></script>
+        <!-- Создание добавляющихся ссылок -->
+    <script type="text/javascript" src="{{ url_for('static', path='js/add_item.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', path='/js/inputmask.js') }}"></script>
     <script>
 
         /* Создание валидации полей */
 
-        ["#event-date", "#congratulation-date"].forEach((_id) => {
-            let date = document.querySelector(_id)
-            let date_input = document.querySelector(_id + "-input")
+        /* Инициализация маски для полей: имя, дата */
 
-            date.mask = IMask(date_input, {
-                mask: Date,
-                pattern: 'DD.MM.YYYY',
-                blocks: {
-                    YYYY: {
-                        mask: IMask.MaskedRange,
-                        from: 1900,
-                        to: 9999
-                    },
-                    MM: {
-                        mask: IMask.MaskedRange,
-                        from: 1,
-                        to: 12
-                    },
-                    DD: {
-                        mask: IMask.MaskedRange,
-                        from: 1,
-                        to: 31
-                    },
-                }
-            })
-            document.ontouchend = () => {
-                date.blur()
-            }
-            document.onclick = () => {
-                date.blur()
-            }
+        const event_date_mask = create_date_mask("#event-date-input")
+        const con_date_mask = create_date_mask("#congratulation-date-input")
+        const time_mask = create_time_mask("#congratulation-time")
 
-            date.onfocus = () => {
-                date.style.opacity = 0
-            }
+        /* Создание календаря */
 
-            date.onblur = () => {
-                date.style.opacity = 1
-            }
-
-            date.onchange = () => {
-                let [year, month, day] = date.value.split("-")
-                date_input.value = `${day}.${month}.${year}`
-            }
-
-            date_input.onchange = () => {
-                let [day, month, year] = date_input.value.split(".")
-                date.value = `${year}-${month}-${day}`
-            }
-        })
-        const time = document.querySelector("#congratulation-time")
-        time.mask = IMask(document.querySelector("#congratulation-time"), {
-            mask: Date,
-            pattern: 'HH:MM',
-            blocks: {
-                HH: {
-                    mask: IMask.MaskedRange,
-                    from: 0,
-                    to: 23
-                },
-                MM: {
-                    mask: IMask.MaskedRange,
-                    from: 0,
-                    to: 590
-                }
-            }
-        })
-
-        /* Создание добавляющихся ссылок */
-
-        var mainItem = init_add_button(document.querySelector(".item__button_add"))
-        const item_list = document.querySelector(".form__item-list")
-
-        function init_add_button(button) {
-            let item = button.parentElement
-
-            button.onclick = () => {
-                let new_item = button.parentElement.cloneNode(true)
-
-                init_remove_button(button)
-                init_add_button(new_item.querySelector(".item__button"))
-                item_list.appendChild(new_item)
-
-                let _id = `gift-${item_list.length}`
-                new_item.querySelector(".form__field").value = ""
-                new_item.querySelector(".form__field").id = _id
-
-                new_item.querySelector(".field__placeholder").innerText = "Дополнительная ссылка"
-                new_item.querySelector(".field__placeholder").for = _id
-                mainItem = new_item
-            }
-            return item
-        }
-
-        function init_remove_button(button) {
-            button.classList.remove("item__button_add")
-            button.classList.add("item__button_remove")
-            button.onclick = () => {
-                item_list.removeChild(button.parentElement)
-            }
-        }
+        create_calendar("#event-date", event_date_mask)
+        create_calendar("#congratulation-date", con_date_mask)
 
         /* Автокомплит */
 
@@ -202,43 +118,33 @@
 
         }
 
-        function auto_complete(data_array) {
+        function auto(data_array) {
             data_array.forEach((data_item) => {
-                let [_id, data] = data_item
-                let input = document.querySelector(_id)
-                if (data !== '') {
-                    input.value = data
-                    if (_id.includes("date")) {
-                        input.onchange()
-                    }
-                    if (input.mask) {
-                        input.mask.updateValue()
-                    }
-                }
+                let [_id, data, mask] = data_item
+                autocomplete(_id, data, mask)
             })
         }
-        auto_complete([
-            ["#reason", '{{ reason }}'],
-            ["#target", '{{ target }}'],
-            ["#event-date", '{{ event_date }}'],
-            ["#transfer-info", '{{ transfer_info }}']
+        auto([
+            ["#reason", '{{ reason }}', null],
+            ["#target", '{{ target }}', null],
+            ["#event-date", '{{ event_date }}', event_date_mask],
+            ["#transfer-info", '{{ transfer_info }}', null]
         ])
         create_links(JSON.parse({{ gift_info | tojson }}))
 
         if ('{{ congratulation_date }}' || '{{ congratulation_time }}' || '{{ event_place }}' || '{{ event_dresscode }}') {
             document.querySelector("#add-info").checked = true
-            auto_complete([
-                ["#congratulation-date", '{{ congratulation_date }}'],
-                ["#congratulation-time", '{{ congratulation_time }}'],
-                ["#event-place", '{{ event_place }}'],
-                ["#event-dresscode", '{{ event_dresscode }}']
+            auto([
+                ["#congratulation-date", '{{ congratulation_date }}', con_date_mask],
+                ["#congratulation-time", '{{ congratulation_time }}', time_mask],
+                ["#event-place", '{{ event_place }}', null],
+                ["#event-dresscode", '{{ event_dresscode }}', null]
             ])
         }
 
         /* Отправка формы */
 
         let App = window.Telegram.WebApp;
-
 
         document.querySelector(".form__cancel").onclick = () => {
             App.close()
@@ -247,56 +153,8 @@
         let api_url = "{{host}}";
         let fund_id = "{{fund_id}}";
 
+        let form_button = document.querySelector(".form__button")
 
-        //let user_name = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name}`
-
-        async function postFund() {
-            // let user_id = tg.initDataUnsafe.user.id;
-            let url = `${api_url}api/fundraising/${fund_id}/`;
-
-            // создать сбор (fundraising)
-            let congratulations_date = document.getElementById("congratulation-date").value;
-            if (congratulations_date === "")
-                congratulations_date = null;
-
-            let congratulations_time = document.getElementById("congratulation-time").value;
-            if (congratulations_time === "")
-                congratulations_time = null;
-
-            let fund = {
-                reason: document.getElementById("reason").value,
-                target: document.getElementById("target").value,
-                start: new Date().toJSON().slice(0, 10),
-                event_date: document.getElementById("event-date").value,
-                transfer_info: document.getElementById("transfer-info").value,
-                gift_info: create_gift_info_data(),
-                congratulation_date: congratulations_date,
-                congratulation_time: congratulations_time,
-                event_place: document.getElementById("event-place").value,
-                event_dresscode: document.getElementById("event-dresscode").value,
-            };
-
-            let body = JSON.stringify(fund);
-            // Отладочное сообщение
-            // tg.showAlert(fund.reason);
-            // alert(body);
-
-            await fetch(url, {
-                method: 'PUT',
-                mode: 'cors',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Content-Type': 'application/json',
-                    'accept': 'application/json',
-                    'Authorization': btoa(App.initData),
-                },
-                body: body,
-            }).then(res => {
-                App.close()
-            }).catch(err => {
-                App.alert("error")
-            })
-        }
 
         function create_gift_info_data() {
             let data = {}
@@ -308,7 +166,24 @@
 
         function sendData(event) {
             event.preventDefault()
-            postFund()
+            let url = `${api_url}api/fundraising/${fund_id}/`;
+
+            let congratulations_date = document.getElementById("congratulation-date").value;
+            let congratulations_time = document.getElementById("congratulation-time").value;
+
+            let fund = {
+                reason: document.getElementById("reason").value,
+                target: document.getElementById("target").value,
+                start: new Date().toJSON().slice(0, 10),
+                event_date: document.getElementById("event-date").value,
+                transfer_info: document.getElementById("transfer-info").value,
+                gift_info: create_gift_info_data(),
+                congratulation_date: congratulations_date === "" ? null : congratulations_date,
+                congratulation_time: congratulations_time === "" ? null : congratulations_time,
+                event_place: document.getElementById("event-place").value,
+                event_dresscode: document.getElementById("event-dresscode").value,
+            };
+            ajaxSend(App, url, fund, "PUT")
             return true
         }
 

@@ -4,17 +4,13 @@ const timezone_selector = document.querySelector(".field__selector")
 
 const timezone_items = document.querySelectorAll(".selector__item")
 
-// function sort_selector(input) {
-//     timezone_items.forEach((item) => {
-//         let string = item.innerText.toLowerCase()
-//         if (!string.includes(input.toLowerCase())) {
-//             item.classList.add("hidden")
-//         } else {
-//             item.classList.remove("hidden")
-//         }
-//     })
-//
-// }
+timezone.onchange = () => {
+    timezone_items.forEach((item) => {
+        if (item.value == timezone.value) {
+                timezone_input.value = item.innerText
+        }
+    })
+}
 
 timezone_input.onfocus = () => {
     timezone_selector.classList.remove("wrapped");
@@ -24,8 +20,8 @@ timezone_input.onfocus = () => {
 timezone_items.forEach((item) => {
 
     let update = () => {
-        timezone_input.value = item.innerText
         timezone.value = item.value
+        timezone.onchange()
         timezone_selector.classList.add("wrapped");
         timezone_input.blur()
     };
@@ -39,7 +35,5 @@ timezone_items.forEach((item) => {
     });
 
     item.onclick = update
-
-    // item.ontouchend = update
 
 })

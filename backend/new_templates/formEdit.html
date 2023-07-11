@@ -55,108 +55,42 @@
             </form>
         </main>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', path='js/blur_and_focus.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/create_mask.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/send_api.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/calendar.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/autocomplete.js') }}"></script>
     <!-- Плагин для маски ввода данных-->
     <script type="text/javascript" src="{{ url_for('static', path='js/inputmask.js') }}"></script>
     <!-- Фильтрация для текстового поля 'часовой пояс'-->
     <script type="text/javascript" src="{{ url_for('static', path='js/update_selector.js') }}"></script>
     <script>
-
-        document.onclick = (event) => {
-            document.querySelectorAll(".form__item").forEach((item) => {
-                if (event.target === item || item.contains(event.target)) {
-                    return
-                } else {
-                    item.blur();
-                }
-            })
-        }
-
-        /* Инициализация маски для полей: имя, дата */
-
-        const full_name_mask = IMask(document.querySelector("#full-name"), {
-            mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
-        })
-
-        const birth_date_mask = IMask(document.querySelector("#birth-date-input"), {
-            mask: Date,
-            pattern: 'DD.MM.YYYY',
-            blocks: {
-                YYYY: {
-                    mask: IMask.MaskedRange,
-                    from: 1900,
-                    to: 9999
-                },
-                MM: {
-                    mask: IMask.MaskedRange,
-                    from: 1,
-                    to: 12
-                },
-                DD: {
-                    mask: IMask.MaskedRange,
-                    from: 1,
-                    to: 31
-                },
-            }
-        })
-
-        /* Создание календаря */
-
-        const date = document.querySelector("#birth-date")
-        const date_input = document.querySelector("#birth-date-input")
-
-        date.onchange = () => {
-            let [year, month, day] = date.value.split("-")
-            date_input.value = `${day}.${month}.${year}`
-            birth_date_mask.updateValue()
-        }
-
-        date_input.onchange = () => {
-            let [day, month, year] = date_input.value.split(".")
-            date.value = `${year}-${month}-${day}`
-        }
-
-        /* Отправка данных из формы */
-
         const App = window.Telegram.WebApp;
         const api_url = "{{ host }}"
         const user_id = "{{ user_id }}"
 
-        if (App.initDataUnsafe.user !== undefined) {
-            let username = App.initDataUnsafe.user.username
-            if (username) {
-                document.querySelector("#full-name").value = `${username}`;
-                full_name_mask.updateValue()
-            }
-        }
+        /* Инициализация маски для полей: имя, дата */
 
-        function convert_to_string(value) {
-            let input = document.querySelector(`.selector__item[value="${value}"]`)
-            return input.innerText
-        }
+        const full_name_mask = create_string_mask("#full-name")
 
-        document.querySelector("#full-name").value = "{{ name }}"
-        full_name_mask.updateValue()
-        if ('{{ birthdate }}') {
-            document.querySelector("#birth-date").value = '{{ birthdate }}'
-            document.querySelector("#birth-date").onchange()
-            birth_date_mask.updateValue()
-        }
-        document.querySelector('#time-zone-input').value = convert_to_string('{{ timezone }}')
-        document.querySelector('#time-zone').value = '{{ timezone }}'
+        const birth_date_mask = create_date_mask("#birth-date-input")
+
+        /* Создание календаря */
+
+        create_calendar("#birth-date", birth_date_mask)
+
+        /* Отправка данных из формы */
+
+        autocomplete("#full-name", "{{ name }}", full_name_mask)
+        autocomplete("#birth-date", "{{ birthdate }}", birth_date_mask)
+        autocomplete("#time-zone", '{{ timezone }}')
 
 
         function sendData(event) {
             event.preventDefault()
-            putUser()
-            return true
-        }
 
-        async function putUser() {
             let url = `${api_url}api/user/${user_id}/`;
             let timezone = document.querySelector("#time-zone").value
-
-            let app_user = App.initDataUnsafe.user
-            let account_id = app_user === undefined ? null : app_user.id
 
             let user = {
                 id: user_id,
@@ -164,22 +98,8 @@
                 birthdate: document.querySelector("#birth-date").value,
                 timezone:  timezone !== "" ? parseInt(timezone) : 0,
             };
-
-            await fetch(url, {
-                method: 'PUT',
-                mode: 'cors',
-                headers: {
-                    'ngrok-skip-browser-warning': '100',
-                    'Content-Type': 'application/json',
-                    'accept': 'application/json',
-                    'Authorization': btoa(App.initData),
-                },
-                body: JSON.stringify(user),
-            }).then(res => {
-                App.close()
-            }).catch(err => {
-                App.alert("error")
-            })
+            ajaxSend(App, url, user, "PUT")
+            return true
         }
 
     </script>

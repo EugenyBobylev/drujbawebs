@@ -282,6 +282,7 @@ ul {
     color: white;
     width: 23px;
     height: 20px;
+    margin: auto 0;
 }
 
 .form__date::-webkit-calendar-picker-indicator {
@@ -295,7 +296,6 @@ ul {
   background: none;
   content: url("../img/icons/date.svg");
   position: absolute;
-  top: -2.5px;
   right: 0;
   cursor: pointer
 }
