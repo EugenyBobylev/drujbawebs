@@ -29,7 +29,7 @@
                             <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
                             <span class="name">Успешные</span>
                         </div>
-                        <span class="amount">{{ funds_amounts.closed }}</span>
+                        <span class="amount">{{ funds_amounts.success }}</span>
                     </label>
                 </div>
                 <div>
@@ -39,7 +39,7 @@
                             <img src="{{ url_for('static', path='/img/mark.svg') }}" alt="">
                             <span class="name">Закрытые</span>
                         </div>
-                        <span class="amount">{{ funds_amounts.success }}</span>
+                        <span class="amount">{{ funds_amounts.closed }}</span>
                     </label>
 
                     <label>
@@ -66,6 +66,7 @@
                     {% else %}
                         {% set classes = classes + "unsuccessful " %}
                     {% endif %}
+
                     <div class="{{ classes }}" onclick="openFund({{ fi.id }})">
                         <div>
                             <p>{{ fi.target }}</p>
