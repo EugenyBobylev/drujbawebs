@@ -1,9 +1,9 @@
 import json
 from json import JSONDecodeError
 
-from backend import User as apiUser
+from backend import User as apiUser, Fundraising
 import db
-from db import get_session, db_get_user_account, remove_user, UserStatus, get_user_statuses
+from db import get_session, db_get_user_account, remove_user, UserStatus, get_user_statuses, create_fundraising
 from db.models import User, Account
 from db.repository import db_get_member_account, db_get_company, db_get_company_by_name, db_insert_company, \
     db_get_user, db_get_company_user, db_insert_company_user, db_update_company_user, db_delete_company_user, \
@@ -409,10 +409,6 @@ def test_get_trialuser_status():
     # assert status == 'active'
 
 
-class JSONDecoderError:
-    pass
-
-
 def test_unpack_gift_info():
     gift_info = '{"0":"https://21312312","1":"https://23221312312"}'
     gift_links = json.loads(gift_info)
@@ -429,3 +425,15 @@ def test_unpack_gift_info():
     except JSONDecodeError:
         gift_links = gift_info
     assert isinstance(gift_links, str)
+
+
+def test_create_fundraising():
+    # я тестирую создание сбора при нулевом балансе, который надо подготовить до запуска теста
+    fund = Fundraising(reason='Именины', target='У Кристиный',
+                       account_id=96, event_date='2023-08-30', transfer_info='карта 5555-5555-5555-4444')
+    result = create_fundraising(96, fund)
+
+    assert result is not None
+    assert result.id is not None
+    assert result.start is None
+    assert result.invite_url == ''
