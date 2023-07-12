@@ -93,10 +93,8 @@
     let funds = document.querySelectorAll('.fund');
 
     function filterFunds() {
-        let showOpen = document.querySelector('input[name="open"]:checked')?.value === 'open';
-        let showClosed = document.querySelector('input[name="open"]:checked')?.value === 'closed';
-        let showSuccessful = document.querySelector('input[name="success"]:checked')?.value === 'successful';
-        let showUnsuccessful = document.querySelector('input[name="success"]:checked')?.value === 'unsuccessful';
+        let open = document.querySelector('input[name="open"]:checked')?.value;
+        let success = document.querySelector('input[name="success"]:checked')?.value;
 
         openRadios.forEach(radio => {
             radio.parentElement.classList.toggle('active', radio.checked);
@@ -105,20 +103,10 @@
             radio.parentElement.classList.toggle('active', radio.checked);
         });
 
-        if (!showOpen && !showClosed && !showSuccessful && !showUnsuccessful) {
-            funds.forEach(fund => {
-                fund.style.display = 'flex';
-            });
-            return;
-        }
-
         funds.forEach(fund => {
-            let isClosed = fund.classList.contains('closed');
-            let isSuccessful = fund.classList.contains('successful');
-            if ((showOpen && !isClosed) ||
-                (showClosed && isClosed) ||
-                (showSuccessful && isSuccessful) ||
-                (showUnsuccessful && !isSuccessful)) {
+            let opened = open !== undefined ? fund.classList.contains(open) : true
+            let successful = success !== undefined ? fund.classList.contains(success) : true
+            if (opened && successful) {
                 fund.style.display = 'flex';
             } else {
                 fund.style.display = 'none';
