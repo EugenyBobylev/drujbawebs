@@ -203,10 +203,10 @@
     position: absolute;
     min-width: calc(100% - 12px);
     overflow: hidden;
-    top: -100px;
+    top: -170px;
     left: 12px;
     color: var(--black);
-    height: 80px;
+    height: 160px;
     overflow-y: scroll;
     border-radius: 8px;
     list-style: none;
