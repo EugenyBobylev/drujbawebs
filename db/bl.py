@@ -487,7 +487,7 @@ async def start_fund(fund_id: int) -> Fundraising:
     invite_url = f'{bot_url}?start=fund_{fund_id}'
     fund.invite_url = invite_url
 
-    chat_name = f'{fund.reason} {fund.event_date.strftime("%d.%m.%Y")}'
+    chat_name = f'{fund.reason} {fund.target} {fund.event_date.strftime("%d.%m.%Y")}'
     chat_url = await async_create_chat(chat_name)
     fund.chat_url = chat_url
     # fund.chat_url = 'временно не доступен'
@@ -625,7 +625,7 @@ def transfer_fund_info(fund_id) -> str:
     fund: Fundraising = db_get_fundraising(fund_id, session)
     avg_sum = db_get_fund_avg_sum(fund_id, session)
 
-    msg = f'Другие участники уже сдали на подарок в среднем по {avg_sum} руб>. Присоединяйтесь.\n\n'
+    msg = f'Другие участники уже сдали на подарок в среднем по {avg_sum} руб. Присоединяйтесь.\n\n'
     msg += f'Отправить деньги на подарок можно сюда:\n{fund.transfer_info}\n\n'
     msg += f'Поучаствовать в обсуждении можно в этом чате, созданном специально для этого сбора:\n\n{fund.chat_url}'
     return msg

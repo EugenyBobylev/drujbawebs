@@ -675,7 +675,7 @@ def db_get_donors(fund_id, session: Session) -> [Donor]:
     return result
 
 
-def db_is_fundraising_open(fund_id: int, session: Session) -> bool | None:
+def db_is_fundraising_open(fund_id: int, session: Session) -> int | None:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
     fund = db_get_fundraising(fund_id, session)
@@ -699,7 +699,7 @@ def db_get_fund_avg_sum(fund_id: int, session: Session) -> float:
     donor_count = db_get_payed_donor_count(fund_id, session)
     if donor_count == 0:
         return 0.0
-    avg_sum = round(total_sum / donor_count, 2)
+    avg_sum = total_sum // donor_count
     return avg_sum
 
 
