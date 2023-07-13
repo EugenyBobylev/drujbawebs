@@ -15,16 +15,30 @@
         <div class="content">
             <div class="list">
             <script>let total = 0;</script>
+                <div class="item">
+                    <div class="itemContent">
+                        <div class="name">
+                             Кто сдал
+                        </div>
+                        <div class="name">
+                             Cумма
+                        </div>
+                        <div class="name">
+                             Дата
+                        </div>
+                    </div>
+                </div>
                 {% for di in donors_info %}
                     <div class="item">
                         <div class="itemContent">
                             <div class="name">
-                                {{ di.name }}, {{ di.payed }} руб.
+                                {{ di.name }}
                             </div>
-                            <div class="control">
-                                <div class="bod">
-                                    {{ di.payed_date }}
-                                </div>
+                            <div class="name">
+                                {{ di.payed }} руб.
+                            </div>
+                            <div class="name bod">
+                                {{ di.payed_date }}
                             </div>
                         </div>
                     </div>
@@ -33,7 +47,13 @@
                 <div class="item">
                     <div class="itemContent">
                         <div class="name">
-                             Всего сдано <script>document.write(total + " руб.")</script>
+                             Всего сдано
+                        </div>
+                        <div class="name">
+                            <script>document.write(total + " руб.")</script>
+                        </div>
+                        <div class="name">
+
                         </div>
                     </div>
                 </div>
@@ -46,7 +66,6 @@
         </footer>
     </div>
 </div>
-<script src="{{ url_for('static', path='/js/participantList.js') }}"></script>
 <script>
     let App = window.Telegram.WebApp;
 
