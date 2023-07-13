@@ -288,6 +288,7 @@ async def start_trial_user(user_id, state: FSMContext):
     name = db.get_user_name(user_id)
     if fund_id is not None:
         keyboard = trial_user_menu_keyboard()
+        msg = f'Здравствуйте, {name}!\nЗдесь вы можете управлять бесплатным сбором и продолжать общение со мной\n\n'
         msg = db.get_message_text('trial_menu').format(name=name)
         await state.set_state(Steps.tg_13)
     else:
@@ -651,15 +652,17 @@ async def show_fund_success(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     invite_url = user_data.get('invite_url', '')
     target = user_data.get('target')
+    reason = user_data.get('reason')
 
-    msg = f'Поздравляю, вы успешно создали сбор!\nСкопируйте эту ссылку и текст сообщения и отправьте ' \
-          f'друзьям или коллегам.\nПусть каждый внесёт свой вклад в поздравление {target}\n\n'
+    msg = f'Всё получилось — вы успешно создали сбор.\n' \
+          f'Скопируйте эту ссылку и отправьте друзьям или коллегам. Пусть каждый внесёт свой вклад в поздравление:)\n' \
+          f'\nСами можете тоже поучаствовать в сборе по этой ссылке.'
     await state.set_state(Steps.tg_4)
     _msg = await message.answer(msg, parse_mode=ParseMode.HTML)
     msgs.put(_msg)
 
     keyboard = go_menu_keyboard()
-    msg = f'Здравствуйте! У {target} скоро день рождения.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+    msg = f'Здравствуйте! {target} скоро празднует {reason}.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
           f'{invite_url}'
 
     await state.set_state(Steps.tg_5)
