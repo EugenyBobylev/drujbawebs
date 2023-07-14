@@ -29,20 +29,22 @@
                     </div>
                 </div>
                 {% for di in donors_info %}
-                    <div class="item">
-                        <div class="itemContent">
-                            <div class="name">
-                                {{ di.name }}
-                            </div>
-                            <div class="name">
-                                {{ di.payed }} руб.
-                            </div>
-                            <div class="name bod">
-                                {{ di.payed_date }}
+                    {% if di.payed != 0 %}
+                        <div class="item donor">
+                            <div class="itemContent">
+                                <div class="name">
+                                    {{ di.name }}
+                                </div>
+                                <div class="name sum">
+                                    {{ di.payed }} руб.
+                                </div>
+                                <div class="name bod">
+                                    {{ di.payed_date }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <script>total += parseInt('{{ di.payed }}')</script>
+                        <script>total += parseInt('{{ di.payed }}')</script>
+                    {% endif %}
                 {% endfor %}
                 <div class="item">
                     <div class="itemContent">
@@ -72,15 +74,6 @@
     function closeWebApp() {
         App.close();
     }
-    document.querySelectorAll(".bod").forEach((date) => {
-        if (date.innerText !== '') {
-            let [year, month, day] = date.innerText.split("-")
-
-            date.innerText = `${day}.${month}.${year}`
-        } else {
-            date.innerText = 'не сдал'
-        }
-    })
 </script>
 </body>
 </html>
