@@ -610,7 +610,7 @@ def about_fund_info(fund_id) -> str:
 
     msg = f'Вас пригласил {user_name}, чтобы подготовить подарок.\n\n'
     msg += f'Тип события: {fund.reason}\n' if fund.reason else ''
-    msg += f'Кому собираем: {fund.target}\n' if fund.target else ''
+    msg += f'Виновник торжества: {fund.target}\n' if fund.target else ''
     msg += f'Дата события: {fund.event_date.strftime("%d.%m.%Y")}\n' if fund.event_date else ''
     msg += f'Варианты подарков: {gift_links}\n' if len(gift_links) > 0 else ''
     msg += f'Дата поздравления: {fund.congratulation_date.strftime("%d.%m.%Y")}\n' if fund.congratulation_date else ''

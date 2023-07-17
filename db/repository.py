@@ -675,7 +675,7 @@ def db_get_donors(fund_id, session: Session) -> [Donor]:
     return result
 
 
-def db_is_fundraising_open(fund_id: int, session: Session) -> int | None:
+def db_is_fundraising_open(fund_id: int, session: Session) -> bool | None:
     if fund_id is None:
         raise ValueError('fund_id can not be None')
     fund = db_get_fundraising(fund_id, session)
