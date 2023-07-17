@@ -157,7 +157,7 @@ class FundraisingInfo(BaseModel):
         is_ok = 'да' if self.is_ok else 'нет'
 
         return f'Сбор открыт: {is_open}\n\nТип события: {self.reason}\nВиновник торжества: {self.target}\n' \
-               f'Дата: {self.event_date}\nОсталось дней: {self.days_left}\n\nСбор успешен: {is_ok}\n ' \
+               f'Дата: {self.event_date}\nОсталось дней: {self.days_left}\n\nСбор успешен: {is_ok}\n' \
                f'Участники сбора: {self.donor_count} чел.\n\nСдали деньги: {self.payed_count} чел.\n' \
                f'Сумма сбора: {self.total_sum} руб.\nСредний чек: {int(self.avg_sum)} руб.'
 

@@ -142,7 +142,6 @@ def trial_user_menu_keyboard():
         InlineKeyboardButton(text="Чаты", callback_data='chat'),
         InlineKeyboardButton(text="Оплатить тариф и создать новый сбор", callback_data='start_pay'),
         InlineKeyboardButton(text="Зарегистрировать компанию", callback_data='None'),
-        InlineKeyboardButton(text="Переключить аккаунт", callback_data='None'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -616,7 +615,11 @@ async def webapp_user_operation(message: types.Message, state: FSMContext):
         await state.update_data(fund_id=fund_id)
         await state.update_data(account_id=account_id)
 
-        return await open_fund_info(message, fund_id, state)
+        await db.start_fund(fund_id)
+        is_fund_open = db.is_fund_open(fund_id)
+        if is_fund_open:
+            return await open_fund_info(message, fund_id, state)
+        return await closed_fund_info(message, fund_id, state)
     await _remove_all_messages(message.from_user.id)
 
 
@@ -662,7 +665,7 @@ async def show_fund_success(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
     keyboard = go_menu_keyboard()
-    msg = f'Здравствуйте! {target} скоро празднует {reason}.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+    msg = f'Здравствуйте! {target} скоро празднует {reason}.\nЭто ссылка для сбора на подарок. Присоединяйтесь!\n' \
           f'{invite_url}'
 
     await state.set_state(Steps.tg_5)
