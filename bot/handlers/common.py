@@ -1,4 +1,3 @@
-import asyncio
 import json
 from queue import Queue
 
@@ -10,9 +9,8 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 import db
 from backend import FundraisingInfo, Account, PaymentResult, UserInfo, ApiUserStatus
-from chat.user_chat import get_json_file, ChatConfig, async_get_chats, async_change_chats_owners, async_create_chat
 from config import Config
-from db.bl import UserStatus, get_user_statuses
+from db.bl import UserStatus
 from utils import is_number, calc_payment_sum
 
 bot_config = Config()
@@ -51,6 +49,13 @@ class Steps(StatesGroup):
 
     fund_info = State()
     reg_company = State()
+
+
+async def del_msg(message: types.Message):
+    try:
+        await message.delete()
+    except MessageToDeleteNotFound:
+        pass
 
 
 async def _remove_all_messages(chat_id: int):
@@ -318,7 +323,7 @@ async def start_user(user_id: int, state: FSMContext):
     msgs.put(_msg)
 
 
-async def start_admin(user_id: int, state: FSMContext):
+async def start_admin(user_id: int):
     await _remove_all_messages(user_id)
     msg = db.get_message_text('start_message')
     keyboard = admin_menu_keyboard()
@@ -361,7 +366,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     """
     Точка входа в бот
     """
-    await message.delete()
+    await del_msg(message)
     await state.finish()
 
     args = message.get_args()
@@ -370,7 +375,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     await state.update_data(user_id=user_id)
     user_status = UserStatus.Unknown
-    statuses: list[ApiUserStatus] = get_user_statuses(user_id, has_invite_url=has_invite_url)
+    statuses: list[ApiUserStatus] = db.get_user_statuses(user_id, has_invite_url=has_invite_url)
     if statuses[0].status == 'AnonymousDonor':
         user_status = UserStatus.AnonymousDonor
     elif statuses[0].status == 'Donor':
@@ -414,7 +419,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 
 async def cmd_reset(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     await state.finish()
     user_id = message.from_user.id
     user_name = message.from_user.username
@@ -427,7 +432,7 @@ async def cmd_reset(message: types.Message, state: FSMContext):
 
 
 async def cmd_reset_payments(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     await state.finish()
     user_id = message.from_user.id
     user_name = message.from_user.username
@@ -448,7 +453,7 @@ async def open_fund_info(message: types.Message, fund_id: int, state: FSMContext
     """
     Показать информацию по открытому сбору
     """
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.chat.id)
     fi: FundraisingInfo = db.get_fund_info(fund_id)
     await state.update_data(invite_url=fi.invite_url)
@@ -464,7 +469,7 @@ async def closed_fund_info(message: types.Message, fund_id: int, state: FSMConte
     """
     Показать информацию по закрытому сбору
     """
-    await message.delete()
+    await del_msg(message)
     fi: FundraisingInfo = db.get_fund_info(fund_id)
     await state.update_data(invite_url=fi.invite_url)
     msg = fi.msg()
@@ -535,7 +540,7 @@ async def create_company_account(message: types.Message, company_id: int, compan
 
 async def webapp_visitors(message: types.Message, state: FSMContext):
     # state == Steps.reg_visitor
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.from_user.id)
 
     items = message.text.split('&')
@@ -605,7 +610,7 @@ async def webapp_create_user_fund(message: types.Message, state: FSMContext):
 
 
 async def show_fund_success(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     user_data = await state.get_data()
     invite_url = user_data.get('invite_url', '')
     target = user_data.get('target')
@@ -627,7 +632,7 @@ async def show_fund_success(message: types.Message, state: FSMContext):
 
 
 async def show_fund_link(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.from_user.id)
     user_data = await state.get_data()
 
@@ -644,13 +649,10 @@ async def show_fund_link(message: types.Message, state: FSMContext):
 
 
 async def show_main_menu(message: types.Message, state: FSMContext):
-    await message.delete()
-    user_data = await state.get_data()
-    # все данные о пользователе
-    exist_user_status = user_data['user_status']
-    account_id = user_data['account_id']
-    fund_id = user_data['fund_id']
-    user_status = db.get_user_status(message.from_user.id, account_id=account_id, has_invite_url=False)
+    await del_msg(message)
+
+    statuses: list[ApiUserStatus] = db.get_user_statuses(message.from_user.id, has_invite_url=False)
+    user_status = statuses[0]
     await state.update_data(user_status=user_status)
 
     await start_trial_user(message, state)
@@ -698,7 +700,7 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
     user_status = UserStatus.Unknown
     user_id = call.from_user.id
     await state.update_data(user_id=user_id)
-    statuses: list[ApiUserStatus] = get_user_statuses(user_id, has_invite_url=False)
+    statuses: list[ApiUserStatus] = db.get_user_statuses(user_id, has_invite_url=False)
     if statuses[0].status == 'Visitor':
         user_status = UserStatus.Visitor
     elif statuses[0].status == 'TrialUser':
@@ -721,11 +723,11 @@ async def query_return_menu(call: types.CallbackQuery, state: FSMContext) -> typ
     elif user_status == UserStatus.User:
         await start_user(user_id, state)
     elif user_status == UserStatus.Admin:
-        await start_admin(user_id, state)
+        await start_admin(user_id)
 
 
 async def start_payment(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     user_id = message.from_user.id
     user_data: dict = await state.get_data()
     user_status: UserStatus = user_data.get('user_status')
@@ -752,7 +754,7 @@ async def query_start_payment(call: types.CallbackQuery, state: FSMContext):
 
 async def payment_step_2(message: types.Message, state: FSMContext):
     # state tg_8
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.from_user.id)
 
     ok = is_number(message.text)
@@ -784,7 +786,7 @@ async def payment_step_3(message: types.Message, state: FSMContext):
 
 
 async def show_payment_success(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.from_user.id)
     keyboard = go_menu_keyboard()
 
@@ -799,7 +801,7 @@ async def show_payment_success(message: types.Message, state: FSMContext):
 
 
 async def show_payment_error(message: types.Message, state: FSMContext):
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.from_user.id)
 
     user_data = await state.get_data()
@@ -858,7 +860,7 @@ async def webapp_reg_user(message: types.Message, state: FSMContext):
     :return:
     """
     # state s_11
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.from_user.id)
 
     items = message.text.split('&')
@@ -890,12 +892,12 @@ async def query_sent_money(call: types.CallbackQuery, state: FSMContext):
 
 async def sent_money_2(message: types.Message, state: FSMContext):
     # state s_4
-    await message.delete()
+    await del_msg(message)
     await _remove_all_messages(message.chat.id)
 
     ok = is_number(message.text)
     if not ok:
-        _msg = await message.answer('Нужно ввести число, попробуйте еще раз.' )
+        _msg = await message.answer('Нужно ввести число, попробуйте еще раз.')
         msgs.put(_msg)
         return
 
@@ -913,11 +915,7 @@ async def sent_money_2(message: types.Message, state: FSMContext):
     msgs.put(_msg)
 
 
-async def query_reg_user(call: types.CallbackQuery, state: FSMContext):
-    pass
-
-
-async def query_edit_user(call: types.CallbackQuery, state: FSMContext):
+async def query_edit_user(call: types.CallbackQuery):
     await call.message.delete()
     await call.message.answer('Операция редактирования анкеты пользователя находится в разработке')
 
