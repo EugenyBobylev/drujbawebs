@@ -458,6 +458,7 @@ async def open_fund_info(message: types.Message, fund_id: int, state: FSMContext
     fi: FundraisingInfo = db.get_fund_info(fund_id)
     await state.update_data(invite_url=fi.invite_url)
     await state.update_data(fund_target=fi.target)
+    await state.update_data(fund_reason=fi.reason)
     msg = fi.msg()
     keyboard = await open_fund_info_keyboard(state)
     await state.set_state(Steps.tg_16)
@@ -674,20 +675,20 @@ async def query_show_invite_link_continue(call: types.CallbackQuery, state: FSMC
 
 
 async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> types.Message:
+    # tg_17, tg_18
     await call.message.delete()
     user_data = await state.get_data()
     invite_url = user_data.get('invite_url', None)
     fund_target = user_data.get('fund_target', None)
+    reason = user_data.get('fund_reason', None)
 
-    curr_state = await state.get_state()
-
-    msg = f'Всё получилось — вы успешно создали сбор.\nСкопируйте эту ссылку и отправьте друзьям или коллегам. ' \
-          f'Пусть каждый внесёт свой вклад в поздравление {fund_target}'
+    msg = f'Скопируйте эту ссылку и отправьте друзьям или коллегам. ' \
+          f'Пусть каждый внесёт свой вклад в поздравление :)'
     _msg = await call.message.answer(msg)
     msgs.put(_msg)
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! У {fund_target} скоро день рождения. Это ссылка для сбор на подарок. Присоединяйтесь!' \
+    msg = f'Здравствуйте! У {fund_target} скоро {reason}. Это ссылка для сбор на подарок. Присоединяйтесь!' \
           f'\n{invite_url}'
     await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     return
