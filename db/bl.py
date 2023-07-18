@@ -488,9 +488,9 @@ async def start_fund(fund_id: int) -> Fundraising:
     fund.invite_url = invite_url
 
     chat_name = f'{fund.reason} {fund.target} {fund.event_date.strftime("%d.%m.%Y")}'
-    chat_url = await async_create_chat(chat_name)
+    # chat_url = await async_create_chat(chat_name)
+    chat_url = 'временно отключен'
     fund.chat_url = chat_url
-    # fund.chat_url = 'временно не доступен'
 
     fund.owner.payed_events -= 1
     session.commit()
