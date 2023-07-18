@@ -252,7 +252,7 @@ async def closed_fund_info_keyboard(state: FSMContext):
     url1 = f'{bot_config.base_url}donors/{fund_id}'
     buttons = [
         InlineKeyboardButton(text="Детали сбора", web_app=types.WebAppInfo(url=url1)),
-        InlineKeyboardButton(text="Закрыть", callback_data='return_menu'),
+        InlineKeyboardButton(text="В меню", callback_data='go_menu'),
     ]
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -604,6 +604,7 @@ async def webapp_visitors(message: types.Message, state: FSMContext):
 
 async def webapp_user_operation(message: types.Message, state: FSMContext):
     # state == [Steps.tg_19]
+    await _remove_all_messages(message.from_user.id)
     items = message.text.split('&')
     answer = json.loads(items[1])
     operation = answer.get('operation', '')
@@ -620,7 +621,6 @@ async def webapp_user_operation(message: types.Message, state: FSMContext):
         if is_fund_open:
             return await open_fund_info(message, fund_id, state)
         return await closed_fund_info(message, fund_id, state)
-    await _remove_all_messages(message.from_user.id)
 
 
 async def webapp_create_user_fund(message: types.Message, state: FSMContext):
