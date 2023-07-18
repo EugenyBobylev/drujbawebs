@@ -519,7 +519,7 @@ async def create_company_account(message: types.Message, company_id: int, compan
     await state.update_data(user_status=UserStatus.TrialUser)
 
     company = db.get_company(company_id)
-    company_url = await db.create_company_url(company_id)
+    company_url = db.create_company_url(company_id)
     user_id = message.from_user.id
     user_name = db.get_user_name(user_id)
 
@@ -559,7 +559,7 @@ async def webapp_visitors(message: types.Message, state: FSMContext):
         company_id = answer['company_id']
         company_account_id = answer['company_account_id']
         member_account_id = answer['member_account_id']
-        await create_company_account(message, company_id, company_account_id, state)
+        create_company_account(message, company_id, company_account_id, state)
 
 
 async def webapp_user_operation(message: types.Message, state: FSMContext):

@@ -17,6 +17,7 @@ from backend import UserInfo as ApiUserInfo
 from backend import PaymentResult as ApiPaymentResult
 from backend import ApiUserStatus as ApiUserStatus
 from chat.user_chat import async_create_chat
+from config import Config
 
 from db.models import User, Company, Account, Fundraising, Donor, Payment
 from db.repository import get_session, db_get_account, db_get_company, db_get_user_account, db_update_user, \
@@ -27,7 +28,7 @@ from db.repository import get_session, db_get_account, db_get_company, db_get_us
     db_get_payed_donor_count, db_get_fund_total_sum, db_get_fund_avg_sum, db_delete_donor, db_get_donors, \
     db_get_last_payment, db_get_msg, db_update_account, db_insert_payment, db_insert_user, db_insert_donor, \
     db_register_user, db_get_user_all_accounts
-from utils import get_days_left, get_bot_url
+from utils import get_days_left
 
 
 # **********************************************************************
@@ -309,11 +310,11 @@ def create_company_user(company_user: ApiCompanyUser) -> (Company, Account, User
     return company, company_account, user, member_acount
 
 
-async def create_company_url(company_id: int) -> str:
+def create_company_url(company_id: int) -> str:
     session = get_session()
     company = db_get_company(company_id, session)
     if company is not None:
-        bot_url = await get_bot_url()
+        bot_url = Config().bot_url
         company_url = f'{bot_url}?start=company_{company.id}'
         company.company_url = company_url
         session.commit()
@@ -341,7 +342,10 @@ def create_fundraising(account_id: int, fund: ApiFundraising) -> ApiFundraising 
     fund: Fundraising = db_insert_fundraising(account_id, session, **fund_data)
 
     if fund.owner.payed_events > 0:
-        fund = asyncio.run(start_fund(fund.id))
+        # await start_fund(fund.id)
+        # loop = asyncio.new_event_loop()
+        # loop.run_until_complete(start_fund(fund.id))
+        fund = start_fund(fund.id)
 
     fund: ApiFundraising = ApiFundraising(id=fund.id, reason=fund.reason, target=fund.target,
                                           account_id=fund.account_id, start=fund.start, end=fund.end,
@@ -478,12 +482,13 @@ def is_fund_open(fund_id) -> bool:
     return db_is_fundraising_open(fund_id, session)
 
 
-async def start_fund(fund_id: int) -> Fundraising:
+def start_fund(fund_id: int) -> Fundraising:
     session = get_session()
     fund = db_get_fundraising(fund_id, session)
     fund.start = date.today()
 
-    bot_url = await get_bot_url()
+    # bot_url = await get_bot_url()
+    bot_url = Config().bot_url
     invite_url = f'{bot_url}?start=fund_{fund_id}'
     fund.invite_url = invite_url
 
