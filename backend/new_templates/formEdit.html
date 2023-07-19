@@ -81,14 +81,16 @@
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
-        document.querySelector("#full-name").onchange = (event) => {
-            let fullname = event.target.value.split(" ")
-            if (fullname.length !== 2) {
+        const full_name_input = document.querySelector("#full-name")
+
+        full_name_input.onchange = (event) => {
+            let fullname = full_name_input.value.split(" ")
+            if (fullname.length !== 2 && fullname[1] !== '') {
                 alert("Введите как имя, так и фамилию")
-                event.target.value = ""
+                full_name_input.value = ""
             } else {
                 let [first_name, last_name] = fullname
-                event.target.value = `${upper(first_name)} ${upper(last_name)}`
+                full_name_input.value = `${upper(first_name)} ${upper(last_name)}`
             }
         }
 
@@ -100,7 +102,7 @@
 
         autocomplete("#full-name", "{{ name }}", full_name_mask)
         autocomplete("#birth-date", "{{ birthdate }}", birth_date_mask)
-        autocomplete("#time-zone", '{{ timezone }}')
+        autocomplete("#time-zone", "{{ timezone }}")
 
 
         function sendData(event) {
