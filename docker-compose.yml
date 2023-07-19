@@ -6,7 +6,7 @@ services:
     container_name: postgres1
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB}
     volumes:
