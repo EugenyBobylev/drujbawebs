@@ -688,7 +688,7 @@ async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> 
     msgs.put(_msg)
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! {fund_target} скоро празднует {reason}. Это ссылка для сбор на подарок. Присоединяйтесь!' \
+    msg = f'Здравствуйте! {fund_target} скоро празднует {reason}. Это ссылка для сбора на подарок. Присоединяйтесь!' \
           f'\n{invite_url}'
     await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     return
