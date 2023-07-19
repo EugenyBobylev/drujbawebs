@@ -1,6 +1,6 @@
 function create_string_mask(selector) {
     return IMask(document.querySelector(selector), {
-        mask: "[" + "a".repeat(20) + "] [" + "a".repeat(20) + "]"
+        mask: `[${'a'.repeat(20)}] [${'a'.repeat(20)}] [${'a'.repeat(20)}]`
     })
 }
 

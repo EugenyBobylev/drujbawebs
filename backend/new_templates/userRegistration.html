@@ -102,7 +102,7 @@
         full_name_input.onchange = (event) => {
             let fullname = full_name_input.value.split(" ")
             if (fullname.length !== 2 || fullname[1] === '') {
-                alert("Введите как имя, так и фамилию")
+                alert("Введите как минимум имя и фамилию")
                 full_name_input.value = ""
             } else {
                 let [first_name, last_name] = fullname
