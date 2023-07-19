@@ -6,9 +6,9 @@ services:
     container_name: postgres1
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 7o609m31h2ax
-      POSTGRES_DB: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     ports:
