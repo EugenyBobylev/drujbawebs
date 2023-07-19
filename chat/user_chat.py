@@ -80,6 +80,8 @@ async def _create_channel(chat_name, chat_about, client: TelegramClient) -> str:
         channel_link = await get_channel_link(channel_id, client)
     except (UserRestrictedError, UserDeactivatedBanError):
         channel_link = 'user account is blocked'
+    except:
+        channel_link = '"An exception occurred"'
     finally:
         await client.disconnect()
     return channel_link
@@ -141,16 +143,16 @@ def get_chat_config(json_file: str) -> ChatConfig:
     return chat_config
 
 
-async def async_create_chat2(chat_name: str, about: str = '') -> str:
-    """
-    Создать чат и удалить из чата создателя, передав права владельца первому пользователю чата
-    """
-    json_file = get_json_file()
-    _config: ChatConfig = get_chat_config(json_file)
-
-    chat_url = await async_create_chat(chat_name, about, _config)
-    cnt = await async_change_chats_owners(_config)
-    return chat_url
+# async def async_create_chat2(chat_name: str, about: str = '') -> str:
+#     """
+#     Создать чат и удалить из чата создателя, передав права владельца первому пользователю чата
+#     """
+#     json_file = get_json_file()
+#     _config: ChatConfig = get_chat_config(json_file)
+#
+#     chat_url = await async_create_chat(chat_name, about, _config)
+#     cnt = await async_change_chats_owners(_config)
+#     return chat_url
 
 
 async def async_create_chat(chat_name: str, about: str = '', config: ChatConfig = None) -> str:

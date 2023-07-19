@@ -1,9 +1,9 @@
+import asyncio
 import os
-from dataclasses import dataclass
 from pathlib import Path
 
-
-from dotenv import load_dotenv, dotenv_values
+from aiogram import Bot
+from dotenv import load_dotenv
 
 
 class SingletonMeta(type):
@@ -46,6 +46,9 @@ class Config(metaclass=SingletonMeta):
         self.logs_dir: str = os.getenv('LOGS_DIR', '')
         self.api_log_path = f'{self.app_dir}/{self.logs_dir}/api.log'
         self.bot_log_path = f'{self.app_dir}/{self.logs_dir}/bot.log'
+
+        botname = os.getenv('BOTNAME', '')
+        self.bot_url: str = f'https://t.me/{botname}'
 
     def get_postgres_url(self):
         """
