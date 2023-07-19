@@ -15,6 +15,10 @@
         <div class="content">
             <h1>Список<br>
                 участников</h1>
+            <div class="help-text">
+                Здесь вы можете передать свои права или удалить участника из сбора.
+                Например, если он не хочет участвовать.
+            </div>
             <div class="list">
                 {% for di in donors_info %}
                     <div class="item">
@@ -35,6 +39,10 @@
                         </div>
                     </div>
                 {% endfor %}
+            </div>
+            <div class="help-text">
+                Вы можете передать права человеку, которого нет в списке.
+                Для этого отправьте ему ссылку на сбор и попросите подключиться.
             </div>
             <div class="copyLinkContainer">
                 <div class="label">Ссылка на подключение к сбору</div>

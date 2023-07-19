@@ -202,3 +202,12 @@ a {
     width: 100px;
     overflow-x: auto;
 }
+
+.help-text {
+    margin: 24px;
+    font-size: 12px;
+    max-width: 450px;
+    line-height: 140%;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
