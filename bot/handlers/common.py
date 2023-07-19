@@ -576,7 +576,7 @@ async def webapp_user_operation(message: types.Message, state: FSMContext):
         await state.update_data(fund_id=fund_id)
         await state.update_data(account_id=account_id)
 
-        await db.start_fund(fund_id)
+        db.start_fund(fund_id)
         is_fund_open = db.is_fund_open(fund_id)
         if is_fund_open:
             return await open_fund_info(message, fund_id, state)
