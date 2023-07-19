@@ -642,7 +642,7 @@ async def show_fund_link(message: types.Message, state: FSMContext):
     reason = user_data['reason']
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! У {target} скоро {reason}.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
+    msg = f'Здравствуйте! {target} скоро {reason}.\nЭто ссылка для сбора на подарок.Присоединяйтесь!\n' \
           f'{invite_url}'
 
     await state.set_state(Steps.tg_5)
@@ -688,7 +688,7 @@ async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> 
     msgs.put(_msg)
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! У {fund_target} скоро празднует {reason}. Это ссылка для сбор на подарок. Присоединяйтесь!' \
+    msg = f'Здравствуйте! {fund_target} скоро празднует {reason}. Это ссылка для сбор на подарок. Присоединяйтесь!' \
           f'\n{invite_url}'
     await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     return
