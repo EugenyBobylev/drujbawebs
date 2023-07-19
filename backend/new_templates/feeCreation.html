@@ -98,6 +98,21 @@
         const con_date_mask = create_date_mask("#congratulation-date-input")
         const time_mask = create_time_mask("#congratulation-time")
 
+        /* Валидация congratulation_time */
+
+        const time_input = document.querySelector("#congratulation-time")
+
+        time_input.onchange = () => {
+            let time = time_input.value.split(":")
+            if (time[1] === undefined) {
+                time[1] = "00"
+            }
+            if (time[0] !== undefined) {
+                time_input.value = `${time[0]}:${time[1]}`
+            }
+            time_mask.updateValue()
+        }
+
         /* Создание календаря */
 
         create_calendar("#event-date", event_date_mask)

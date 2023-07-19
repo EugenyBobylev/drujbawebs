@@ -49,7 +49,7 @@
                             <li class="selector__item" value=-1>Калининград (МСК-1)</li>
                             <li class="selector__item" value=0>Москва (МСК)</li>
                             <li class="selector__item" value=+1>Самара (МСК+1)</li>
-                            <li class="selector__item" value=+2>Екатеринбург (МСК+2).</li>
+                            <li class="selector__item" value=+2>Екатеринбург (МСК+2)</li>
                             <li class="selector__item" value=+3>Омск (МСК+3)</li>
                             <li class="selector__item" value=+4>Красноярск (МСК+4)</li>
                             <li class="selector__item" value=+5>Иркутск (МСК+5)</li>
@@ -90,6 +90,23 @@
         const full_name_mask = create_string_mask("#full-name")
 
         const birth_date_mask = create_date_mask("#birth-date-input")
+
+        /* Валидация имени */
+
+        function upper(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        document.querySelector("#full-name").onchange = (event) => {
+            let fullname = event.target.value.split(" ")
+            if (fullname.length !== 2) {
+                alert("Введите как имя, так и фамилию")
+                event.target.value = ""
+            } else {
+                let [first_name, last_name] = fullname
+                event.target.value = `${upper(first_name)} ${upper(last_name)}`
+            }
+        }
 
         /* Создание календаря */
 
