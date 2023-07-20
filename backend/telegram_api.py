@@ -91,7 +91,7 @@ async def send_payment_ok_msg(chat_id: int, payed_events: int):
     :param payed_events: количество оплаченных сборов
     """
     token = Config().token
-    _txt = f'Поздравляю! Вы успешно приобрели пакет из: {payed_events} сборов. ' \
+    _txt = f'Поздравляю! Вы успешно приобрели пакет из {payed_events} сборов.\n' \
            'Теперь можно начинать готовиться к праздникам :)\n\nСпасибо, что выбрали Дружбу!'
     data = {
         "chat_id": chat_id,
