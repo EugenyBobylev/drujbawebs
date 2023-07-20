@@ -94,19 +94,27 @@
         /* Валидация имени */
 
         function upper(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
+            if (string !== "") {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            return ""
         }
 
         const full_name_input = document.querySelector("#full-name")
 
         full_name_input.onchange = (event) => {
             let fullname = full_name_input.value.split(" ")
-            if (fullname.length !== 2 || fullname[1] === '') {
+            if (fullname.length < 2 || fullname[1] === '') {
                 alert("Введите как минимум имя и фамилию")
                 full_name_input.value = ""
             } else {
-                let [first_name, last_name] = fullname
-                full_name_input.value = `${upper(first_name)} ${upper(last_name)}`
+                let [first_name, last_name, third_name] = fullname
+                let validated_name = `${upper(first_name)} ${upper(last_name)}`
+                if (third_name !== "") {
+                    validated_name += ` ${upper(third_name)}`
+                }
+                full_name_input.value = validated_name
+                console.log(validated_name)
             }
         }
 
