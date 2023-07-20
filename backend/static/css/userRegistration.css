@@ -199,6 +199,14 @@
   right: 0;
 }
 
+#time-zone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -2;
+}
+
 .field__selector {
     position: absolute;
     min-width: calc(100% - 12px);

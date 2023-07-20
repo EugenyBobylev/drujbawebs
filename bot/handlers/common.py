@@ -682,13 +682,14 @@ async def query_show_fund_link(call: types.CallbackQuery, state: FSMContext) -> 
     fund_target = user_data.get('fund_target', None)
     reason = user_data.get('fund_reason', None)
 
-    msg = f'Скопируйте эту ссылку и отправьте друзьям или коллегам. ' \
+    msg = f'Спасибо, что выбрали Дружбу!\n' \
+          f'Скопируйте эту ссылку и отправьте друзьям или коллегам.\n' \
           f'Пусть каждый внесёт свой вклад в поздравление :)'
     _msg = await call.message.answer(msg)
     msgs.put(_msg)
 
     keyboard = go_back_keyboard()
-    msg = f'Здравствуйте! {fund_target} скоро празднует {reason}. Это ссылка для сбора на подарок. Присоединяйтесь!' \
+    msg = f'Здравствуйте! {fund_target} скоро празднует {reason}.\nЭто ссылка для сбора на подарок. Присоединяйтесь!' \
           f'\n{invite_url}'
     await call.message.answer(msg, parse_mode=ParseMode.HTML, reply_markup=keyboard)
     return
@@ -769,7 +770,8 @@ async def payment_step_2(message: types.Message, state: FSMContext):
     payment_sum = calc_payment_sum(fund_count)
     keyboard = payment_keyboard(account_id, fund_count)
     # await state.update_data(fund_count=fund_count)
-    msg = f'Стоимость {fund_count} сборов составит {payment_sum} руб.\n\n' \
+    msg = f'Количество сборов: {fund_count}\n' \
+          f'Стоимость составит {payment_sum} руб.\n\n' \
           f'Нажмите «Оплатить» или введите другое количество сборов.'
     await state.set_state(Steps.tg_9)
     _msg = await message.answer(msg, reply_markup=keyboard)
@@ -793,8 +795,8 @@ async def show_payment_success(message: types.Message, state: FSMContext):
 
     user_data = await state.get_data()
     payed_events = user_data.get('payed_events')
-    msg = f'Поздравляю! Вы успешно приобрели пакет из: {payed_events} сборов. ' \
-          f'Теперь можно начинать готовиться к праздникам :)\n\nСпасибо, что выбрали Дружбу!'
+    msg = f'Поздравляю! Вы успешно приобрели пакет из {payed_events} сборов.\n' \
+          f'Теперь можно начинать готовиться к праздникам 🙂\n\nСпасибо, что выбрали Дружбу!'
     await state.set_state(Steps.tg_11)
 
     _msg = await message.answer(msg, reply_markup=keyboard)
